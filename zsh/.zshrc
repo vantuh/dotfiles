@@ -140,6 +140,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export PNPM_HOME="$HOME/Library/pnpm"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   export PNPM_HOME="$HOME/.local/share/pnpm"
+
+  if [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  fi
 fi
 
 # pnpm PATH
