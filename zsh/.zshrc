@@ -8,6 +8,7 @@ fpath=(${^fpath}(N))
 
 # User configuration
 export LANG=en_US.UTF-8
+export LC_TIME=uk_UA.UTF-8
 
 # History
 HISTSIZE=10000
@@ -142,6 +143,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export PNPM_HOME="$HOME/Library/pnpm"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   export PNPM_HOME="$HOME/.local/share/pnpm"
+
+  alias obsidian="/opt/Obsidian/obsidian"
 
   if [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
