@@ -36,6 +36,7 @@ alias ohmyzsh="c ~/.oh-my-zsh"
 alias lg="lazygit"
 alias lgit="lazygit"
 alias ldocker="lazydocker"
+alias tf="terraform"
 
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
@@ -60,11 +61,7 @@ zinit light-mode for \
 ### End of Zinit's installer chunk
 
 # Theme start
-# zinit ice pick"async.zsh" src"pure.zsh" # with zsh-async library that's bundled with it.
-# zinit light sindresorhus/pure
 zinit light spaceship-prompt/spaceship-prompt
-
-SPACESHIP_DIR_TRUNC_REPO=false
 
 SPACESHIP_TIME_SHOW=false
 SPACESHIP_USER_SHOW=never
@@ -72,19 +69,7 @@ SPACESHIP_DIR_TRUNC_REPO=false
 
 SPACESHIP_AWS_SHOW=true
 SPACESHIP_NODE_SHOW=false
-# SPACESHIP_AWS_SYMBOL="☁️ "
-# SPACESHIP_AWS_COLOR="208"
-
 # Theme end
-
-# tmux
-# zinit for \
-#     configure'--disable-utf8proc --prefix=$PWD --quiet' \
-#     make'PREFIX=$PWD --quiet install'\
-#     null \
-#     sbin \
-#   @tmux/tmux
-# tmux end
 
 zi snippet OMZ::lib/clipboard.zsh
 zi snippet OMZ::lib/termsupport.zsh
@@ -114,9 +99,13 @@ zi for \
 # Other packages
 zi snippet 'https://github.com/agkozak/zsh-z/blob/master/zsh-z.plugin.zsh'
 zi snippet OMZP::git
-zi snippet OMZP::brew
 zi snippet OMZP::npm
 zi pack:"default+keys" for fzf
+
+# brew plugin (macOS only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  zi snippet OMZP::brew
+fi
 
 export NVM_COMPLETION=true
 export NVM_SYMLINK_CURRENT="true"
@@ -126,15 +115,16 @@ zinit wait lucid light-mode for lukechilds/zsh-nvm
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-# Completion styling start
+# Completion styling
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' accept-exact 'yes'
 zstyle ':completion:*:descriptions' format '%B-- %d --%b'
 
 # Yazi
-export EDITOR='code' # for yazi open
+export EDITOR='code'
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	yazi "$@" --cwd-file="$tmp"
@@ -144,36 +134,43 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /opt/homebrew/bin/terraform terraform
-
-alias tf="terraform"
-
-export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
-export PATH="$HOME/.gem/ruby/3.4.0/bin:$PATH"
-export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH"
-
-# bun completions
-[ -s "/Users/vantuh/.bun/_bun" ] && source "/Users/vantuh/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# opencode
+export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
-# opencode
-export PATH=/Users/vantuh/.opencode/bin:$PATH
+# --- Platform-specific ---
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # Homebrew
+  export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+  export PATH="$HOME/.gem/ruby/3.4.0/bin:$PATH"
+  export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH"
 
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/vantuh/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
+  # Terraform (homebrew)
+  autoload -U +X bashcompinit && bashcompinit
+  complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
-# pnpm
-export PNPM_HOME="/Users/vantuh/Library/pnpm"
+  # Docker Desktop completions
+  if [[ -d "$HOME/.docker/completions" ]]; then
+    fpath=("$HOME/.docker/completions" $fpath)
+    autoload -Uz compinit
+    compinit
+  fi
+
+  # pnpm (macOS path)
+  export PNPM_HOME="$HOME/Library/pnpm"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  # Terraform (linux)
+  if command -v terraform &>/dev/null; then
+    autoload -U +X bashcompinit && bashcompinit
+    complete -o nospace -C "$(which terraform)" terraform
+  fi
+
+  # pnpm (linux path)
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
+
+# pnpm PATH
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
-# pnpm end
