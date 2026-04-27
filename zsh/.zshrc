@@ -87,10 +87,6 @@ zinit light jqlang/jq
 zinit ice wait lucid from"gh-r" as"program"
 zinit light jesseduffield/lazygit
 
-# zsh-z (turbo)
-zinit wait lucid for \
-  https://github.com/agkozak/zsh-z/blob/master/zsh-z.plugin.zsh
-
 # fzf
 zinit wait lucid pack:"default+keys" for fzf
 
@@ -151,3 +147,5 @@ case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
+
+eval "$(zoxide init zsh)"
