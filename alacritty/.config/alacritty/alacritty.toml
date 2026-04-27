@@ -49,6 +49,10 @@ dimensions = { columns = 160, lines = 45 }
 [terminal]
 osc52 = "CopyPaste"
 
+[terminal.shell]
+program = "/opt/homebrew/bin/tmux"
+args = ["new-session", "-A", "-D", "-s", "main"]
+
 # Working directory
 [general]
 working_directory = "/Users/vantuh/projects"
@@ -57,6 +61,7 @@ working_directory = "/Users/vantuh/projects"
 [keyboard]
 bindings = [
   { key = "V", mods = "Control", action = "Paste" },
+  { key = "V", mods = "Super", action = "Paste" },
   { key = "C", mods = "Control|Shift", action = "Copy" },
   { key = "N", mods = "Control", action = "CreateNewWindow" },
 ]

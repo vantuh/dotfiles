@@ -19,11 +19,18 @@ setopt SHARE_HISTORY
 
 # Aliases
 alias ncu="npx npm-check-updates -i"
-alias zshconfig="c ~/.zshrc"
 alias lg="lazygit"
 alias ld="lazydocker"
 alias tf="terraform"
 alias dotfix="cd ~/dotfiles && ./install.sh"
+
+# Brew wrapper — auto-sync Brewfile on install/uninstall
+function brew() {
+  command brew "$@"
+  if [[ "$1" == "install" || "$1" == "uninstall" || "$1" == "remove" ]]; then
+    command brew bundle dump --force --file=~/dotfiles/Brewfile
+  fi
+}
 
 ### Zinit installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
