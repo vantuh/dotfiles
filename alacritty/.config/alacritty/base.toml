@@ -31,33 +31,18 @@ magenta = "#ff92df"
 cyan    = "#a4ffff"
 white   = "#ffffff"
 
-# Font
-[font]
-size = 16.0
-
 [font.normal]
 family = "JetBrainsMono Nerd Font"
 
-# Window
 [window]
 padding = { x = 8, y = 8 }
 option_as_alt = "Both"
 startup_mode = "Windowed"
 dimensions = { columns = 160, lines = 45 }
 
-# Terminal
 [terminal]
 osc52 = "CopyPaste"
 
-[terminal.shell]
-program = "/opt/homebrew/bin/tmux"
-args = ["new-session", "-A", "-D", "-s", "main"]
-
-# Working directory
-[general]
-working_directory = "/Users/vantuh/projects"
-
-# Keybindings
 [keyboard]
 bindings = [
   { key = "V", mods = "Control", action = "Paste" },
