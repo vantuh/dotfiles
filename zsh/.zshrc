@@ -4,6 +4,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v keychain &>/dev/null; then
   eval "$(keychain --eval --quiet github 2>/dev/null)"
 fi
 
+fpath=(${^fpath}(N))
+
 # User configuration
 export LANG=en_US.UTF-8
 
