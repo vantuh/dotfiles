@@ -45,8 +45,8 @@ osc52 = "CopyPaste"
 
 [keyboard]
 bindings = [
-  { key = "V", mods = "Control", action = "Paste" },
-  { key = "V", mods = "Super", action = "Paste" },
+  { key = "V", mods = "Control|Shift", action = "Paste" },
+  { key = "М", mods = "Control|Shift", action = "Paste" },
   { key = "C", mods = "Control|Shift", action = "Copy" },
-  { key = "N", mods = "Control", action = "CreateNewWindow" },
+  { key = "С", mods = "Control|Shift", action = "Copy" }
 ]

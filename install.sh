@@ -49,8 +49,9 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
   if [[ -n "$WINDOWS_USER" ]]; then
     echo "Detected WSL. Setting up Alacritty for Windows..."
     mkdir -p "$ALACRITTY_WIN"
-    cp "$DOTFILES_DIR/alacritty/.config/alacritty/alacritty.toml" "$ALACRITTY_WIN/alacritty.toml"
-    echo "  -> Copied alacritty.toml to $ALACRITTY_WIN"
+    cp "$DOTFILES_DIR/alacritty/.config/alacritty/base.toml" "$ALACRITTY_WIN/base.toml"
+    cp "$DOTFILES_DIR/alacritty/.config/alacritty/windows.toml" "$ALACRITTY_WIN/alacritty.toml"
+    echo "  -> Copied base.toml + windows.toml (as alacritty.toml) to $ALACRITTY_WIN"
     echo ""
   fi
 fi
@@ -67,6 +68,15 @@ for pkg in $PACKAGES; do
     echo "  [$pkg] skipped (directory not found)"
   fi
 done
+
+# --- Post-stow: Alacritty platform config on macOS ---
+if [[ "$PLATFORM" == "macos" ]]; then
+  ALACRITTY_CFG="$HOME/.config/alacritty"
+  if [[ -d "$ALACRITTY_CFG" ]]; then
+    ln -sf "$DOTFILES_DIR/alacritty/.config/alacritty/macos.toml" "$ALACRITTY_CFG/alacritty.toml"
+    echo "  [alacritty] -> Symlinked macos.toml as alacritty.toml"
+  fi
+fi
 
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"
