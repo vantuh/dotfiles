@@ -1,6 +1,8 @@
-# Homebrew first — avoid slow /usr/bin/git shim on macOS
+# Homebrew + /usr/local/bin first — avoid slow /usr/bin/git shim on macOS
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  export PATH="/opt/homebrew/bin:$PATH"
+  export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+elif [[ "$OSTYPE" == "linux-gnu"* ]] && [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
 [ -f ~/.tokens ] && source ~/.tokens
@@ -150,10 +152,6 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   export PNPM_HOME="$HOME/.local/share/pnpm"
 
   alias obsidian="/opt/Obsidian/obsidian"
-
-  if [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  fi
 fi
 
 # pnpm PATH
