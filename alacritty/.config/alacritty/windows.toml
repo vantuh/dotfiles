@@ -5,8 +5,5 @@ import = ["C:\\Users\\Ivan\\AppData\\Roaming\\alacritty\\base.toml"]
 program = "wsl.exe"
 args = ["--cd", "~", "--", "tmux", "new-session", "-A", "-D", "-s", "main"]
 
-[window]
-startup_mode = "Fullscreen"
-
 [font]
 size = 13.0
