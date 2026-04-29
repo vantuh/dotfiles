@@ -1,3 +1,8 @@
+# Homebrew first — avoid slow /usr/bin/git shim on macOS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export PATH="/opt/homebrew/bin:$PATH"
+fi
+
 [ -f ~/.tokens ] && source ~/.tokens
 
 if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v keychain &>/dev/null; then
