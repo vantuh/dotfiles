@@ -6,5 +6,8 @@ working_directory = "/Users/vantuh/projects"
 program = "/opt/homebrew/bin/tmux"
 args = ["new-session", "-A", "-D", "-s", "main"]
 
+[window]
+startup_mode = "SimpleFullscreen"
+
 [font]
 size = 16.0
