@@ -1,0 +1,8 @@
+{
+  "defaultProvider": "kiro",
+  "defaultModel": "claude-opus-4-6",
+  "packages": [
+    "npm:pi-provider-kiro"
+  ],
+  "lastChangelogVersion": "0.70.6"
+}
