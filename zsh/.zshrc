@@ -70,8 +70,12 @@ zinit wait lucid light-mode for \
     zdharma-continuum/zinit-annex-bin-gem-node \
     zdharma-continuum/zinit-annex-patch-dl
 
-# Prompt — starship (fast, Rust-based)
-eval "$(starship init zsh)"
+# Prompt — starship (fast, Rust-based, cached init)
+if [[ ! -f ~/.cache/starship/init.zsh ]] || [[ ~/.config/starship.toml -nt ~/.cache/starship/init.zsh ]]; then
+    mkdir -p ~/.cache/starship
+    starship init zsh > ~/.cache/starship/init.zsh
+fi
+source ~/.cache/starship/init.zsh
 
 # OMZ snippets (turbo)
 zinit wait lucid for \
