@@ -33,7 +33,7 @@ if ! command -v stow &>/dev/null; then
 fi
 
 # --- Packages to install ---
-COMMON_PACKAGES="zsh tmux starship yazi opencode"
+COMMON_PACKAGES="zsh tmux starship yazi opencode pi"
 
 if [[ "$PLATFORM" == "macos" ]]; then
   PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"

@@ -109,6 +109,7 @@ export NVM_COMPLETION=true
 export NVM_SYMLINK_CURRENT="true"
 export NVM_LAZY_LOAD=true
 zinit wait lucid light-mode for lukechilds/zsh-nvm
+export PATH="$HOME/.nvm/current/bin:$PATH"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
