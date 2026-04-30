@@ -1,6 +1,6 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
-command_timeout = 5000
+command_timeout = 500
 format = """
 [](#9A348E)\
 $os\
@@ -12,15 +12,20 @@ $git_branch\
 $git_status\
 [](fg:#FCA17D bg:#86BBD8)\
 $c\
+$cpp\
 $elixir\
 $elm\
 $golang\
 $gradle\
 $haskell\
 $java\
+$maven\
 $julia\
 $nodejs\
+$bun\
 $nim\
+$python\
+$lua\
 $rust\
 $scala\
 [](fg:#86BBD8 bg:#06969A)\
@@ -28,10 +33,12 @@ $docker_context\
 [](fg:#06969A bg:#33658A)\
 $time\
 [ ](fg:#33658A)\
-"""
+$cmd_duration\
+$line_break\
+$character"""
 
 # Disable the blank line at the start of the prompt
-add_newline = false
+add_newline = true
 
 # You can also replace your username with a neat symbol like   or disable this
 # and use the os module below
@@ -69,6 +76,11 @@ truncation_symbol = "…/"
 
 [c]
 symbol = " "
+style = "bg:#86BBD8"
+format = '[ $symbol ($version) ]($style)'
+
+[cpp]
+symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
@@ -116,13 +128,22 @@ symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
+[maven]
+style = "bg:#86BBD8"
+format = '[ $symbol ($version) ]($style)'
+
 [julia]
 symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
 [nodejs]
-symbol = ""
+symbol = " "
+style = "bg:#86BBD8"
+format = '[ $symbol ($version) ]($style)'
+
+[bun]
+symbol = "🥟 "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
 
@@ -140,6 +161,25 @@ format = '[ $symbol ($version) ]($style)'
 symbol = " "
 style = "bg:#86BBD8"
 format = '[ $symbol ($version) ]($style)'
+
+[python]
+symbol = " "
+style = "bg:#86BBD8"
+format = '[ $symbol ($version) ]($style)'
+
+[lua]
+symbol = "󰢱 "
+style = "bg:#86BBD8"
+format = '[ $symbol ($version) ]($style)'
+
+[cmd_duration]
+min_time = 2_000
+style = "bold yellow"
+format = ' [$duration]($style)'
+
+[character]
+success_symbol = '[❯](bold green)'
+error_symbol = '[❯](bold red)'
 
 [time]
 disabled = true
