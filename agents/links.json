@@ -6,6 +6,11 @@
     "claude": "~/.claude"
   },
   "instructions": {
+    "AGENTS.md": [
+      "~/.pi/agent/AGENTS.md",
+      "~/.config/opencode/AGENTS.md",
+      "~/.kiro/AGENTS.md"
+    ],
     "caveman.md": [
       "~/.config/opencode/caveman.md"
     ]
