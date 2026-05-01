@@ -12,6 +12,8 @@ Cross-platform dotfiles (macOS + Windows/WSL) managed with [GNU Stow](https://ww
 | starship   | Starship prompt theme             | ✓     | ✓   |
 | yazi       | Yazi file manager config          | ✓     | ✓   |
 | opencode   | OpenCode config + TUI theme       | ✓     | ✓   |
+| pi         | Pi coding agent config            | ✓     | ✓   |
+| agents     | Shared AI agent skills & instructions (symlinked to Pi, OpenCode, Kiro) | ✓ | ✓ |
 | karabiner  | Karabiner-Elements key remapping  | ✓     |     |
 | zed        | Zed editor settings + keymap      | ✓     |     |
 
@@ -38,6 +40,24 @@ The `install.sh` script auto-detects the platform (macOS / WSL) and stows the ap
 Restart your terminal after install. Zinit will auto-install all plugins on first launch.
 
 For Windows/WSL-specific setup steps, see [docs/windows.md](docs/windows.md).
+
+## Shared Agent Skills
+
+The `agents/` directory is the single source of truth for AI agent skills and instructions shared across multiple agents (Pi, OpenCode, Kiro). Instead of duplicating skills in each agent's config, `install.sh` runs `agents/link.sh` which creates symlinks from each agent's expected location to the canonical source.
+
+```
+agents/
+  skills/           # shared SKILL.md files
+  instructions/      # shared instruction files
+  links.json         # manifest: skill → [target paths]
+  link.sh            # creates symlinks from links.json
+  skills.json        # GitHub sources for skill updates
+  update-skills.sh   # fetch latest skills from GitHub
+```
+
+To add a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add target paths to `agents/links.json`.
+
+To update skills from GitHub sources: `./agents/update-skills.sh`
 
 ## Uninstall
 

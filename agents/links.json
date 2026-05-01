@@ -1,0 +1,13 @@
+{
+  "agents": {
+    "pi": "~/.pi/agent",
+    "opencode": "~/.config/opencode",
+    "kiro": "~/.kiro",
+    "claude": "~/.claude"
+  },
+  "instructions": {
+    "caveman.md": [
+      "~/.config/opencode/caveman.md"
+    ]
+  }
+}

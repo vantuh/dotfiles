@@ -9,5 +9,5 @@
     "app.thinking.cycle": []
   },
   "defaultThinkingLevel": "high",
-  "hideThinkingBlock": true
+  "hideThinkingBlock": false
 }

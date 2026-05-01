@@ -1,0 +1,9 @@
+{
+  "skills": {
+    "JuliusBrussee/caveman": [
+      { "name": "caveman", "path": "caveman" },
+      { "name": "caveman-commit", "path": "skills/caveman-commit" },
+      { "name": "caveman-review", "path": "skills/caveman-review" }
+    ]
+  }
+}

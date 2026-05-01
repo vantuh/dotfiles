@@ -78,5 +78,10 @@ if [[ "$PLATFORM" == "macos" ]]; then
   fi
 fi
 
+# --- Link shared agent skills/instructions ---
+echo ""
+echo "Linking shared agent skills..."
+"$DOTFILES_DIR/agents/link.sh"
+
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"

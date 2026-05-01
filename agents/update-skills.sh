@@ -6,8 +6,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_DIR="$SCRIPT_DIR"
-MANIFEST="$SKILLS_DIR/skills.json"
+SKILLS_DIR="$SCRIPT_DIR/skills"
+MANIFEST="$SCRIPT_DIR/skills.json"
 TMPDIR=$(mktemp -d)
 
 trap 'rm -rf "$TMPDIR"' EXIT
