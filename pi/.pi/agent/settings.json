@@ -9,5 +9,6 @@
     "app.thinking.cycle": []
   },
   "defaultThinkingLevel": "high",
-  "hideThinkingBlock": false
+  "hideThinkingBlock": true,
+  "theme": "dracula"
 }

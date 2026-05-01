@@ -63,3 +63,12 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Safety Rules
+
+- Never run destructive git commands (`reset --hard`, `push --force`, `clean -f`, `branch -D`) without asking.
+- Never run `rm -rf` or recursive deletes without confirmation.
+- Don't modify or delete `.env`, credentials, or secret files.
+- Don't run `sudo` commands without asking.
+- Don't install or remove system packages (brew, apt) without asking.
+- Ask before running any command that affects files outside the current repo.
