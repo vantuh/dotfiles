@@ -4,5 +4,10 @@
   "packages": [
     "npm:pi-provider-kiro"
   ],
-  "lastChangelogVersion": "0.70.6"
+  "lastChangelogVersion": "0.71.0",
+  "keybindings": {
+    "app.thinking.cycle": []
+  },
+  "defaultThinkingLevel": "high",
+  "hideThinkingBlock": false
 }
