@@ -1,63 +1,72 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["/Users/vantuh/projects/personal/opencode-kiro-auth"],
-  "autoupdate": false,
-  "instructions": ["~/.config/opencode/caveman.md"],
+  "autoupdate": true,
+  "instructions": [
+    "~/.config/opencode/caveman.md"
+  ],
   "provider": {
-    "kiro": {
+    "kiro-gateway": {
+      "name": "Kiro Gateway",
+      "npm": "@ai-sdk/anthropic",
+      "options": {
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "{env:KIRO_GATEWAY_API_KEY}"
+      },
       "models": {
-        "claude-haiku-4-5": {
+        "claude-haiku-4.5": {
           "name": "Claude Haiku 4.5",
           "tool_call": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image"], "output": ["text"] }
-        },
-        "claude-haiku-4-5-thinking": {
-          "name": "Claude Haiku 4.5 Thinking",
-          "tool_call": true,
           "reasoning": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image"], "output": ["text"] },
-          "variants": {
-            "low": { "thinkingConfig": { "thinkingBudget": 8192 } },
-            "medium": { "thinkingConfig": { "thinkingBudget": 16384 } },
-            "max": { "thinkingConfig": { "thinkingBudget": 32768 } }
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
-        "claude-sonnet-4-6": {
+        "claude-sonnet-4.6": {
           "name": "Claude Sonnet 4.6",
           "tool_call": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
-        },
-        "claude-sonnet-4-6-thinking": {
-          "name": "Claude Sonnet 4.6 Thinking",
-          "tool_call": true,
           "reasoning": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
-          "variants": {
-            "low": { "thinkingConfig": { "thinkingBudget": 8192 } },
-            "medium": { "thinkingConfig": { "thinkingBudget": 16384 } },
-            "max": { "thinkingConfig": { "thinkingBudget": 32768 } }
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         },
-        "claude-opus-4-6": {
+        "claude-opus-4.6": {
           "name": "Claude Opus 4.6",
           "tool_call": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
-        },
-        "claude-opus-4-6-thinking": {
-          "name": "Claude Opus 4.6 Thinking",
-          "tool_call": true,
           "reasoning": true,
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
-          "variants": {
-            "low": { "thinkingConfig": { "thinkingBudget": 8192 } },
-            "medium": { "thinkingConfig": { "thinkingBudget": 16384 } },
-            "max": { "thinkingConfig": { "thinkingBudget": 32768 } }
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
           }
         }
       }
