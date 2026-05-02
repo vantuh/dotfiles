@@ -4,10 +4,7 @@
   "packages": [
     "npm:pi-provider-kiro"
   ],
-  "lastChangelogVersion": "0.71.0",
-  "keybindings": {
-    "app.thinking.cycle": []
-  },
+  "lastChangelogVersion": "0.72.0",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "theme": "dracula"

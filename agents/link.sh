@@ -18,8 +18,10 @@ fi
 do_link() {
   local src="$1" target="$2"
   mkdir -p "$(dirname "$target")"
+  local real_target_dir
+  real_target_dir=$(realpath "$(dirname "$target")")
   local rel
-  rel=$(python3 -c "import os; print(os.path.relpath('$src', os.path.dirname('$target')))")
+  rel=$(python3 -c "import os; print(os.path.relpath('$src', '$real_target_dir'))")
   if [[ "$DRY_RUN" == true ]]; then
     echo "  [dry-run] $target -> $rel"
   else

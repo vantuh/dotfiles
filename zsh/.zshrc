@@ -5,6 +5,16 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]] && [[ -f /home/linuxbrew/.linuxbrew/bin/bre
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
+# WSL: strip slow Windows paths (9P filesystem), keep only useful ones
+if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
+  path=( ${path:#/mnt/c/*} )
+  path+=(
+    "/mnt/c/Users/Ivan/AppData/Local/Programs/Microsoft VS Code/bin"
+    "/mnt/c/Program Files/Docker/Docker/resources/bin"
+    "/mnt/c/WINDOWS"
+  )
+fi
+
 [ -f ~/.tokens ] && source ~/.tokens
 
 if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v keychain &>/dev/null; then
