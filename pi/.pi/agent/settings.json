@@ -1,11 +1,11 @@
 {
-  "defaultProvider": "kiro",
-  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "llama-cpp",
+  "defaultModel": "Qwen3.6-27B-IQ3_XXS",
   "packages": [
     "npm:pi-provider-kiro"
   ],
-  "lastChangelogVersion": "0.72.0",
+  "lastChangelogVersion": "0.72.1",
   "defaultThinkingLevel": "high",
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "theme": "dracula"
 }
