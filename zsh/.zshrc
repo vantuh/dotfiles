@@ -176,3 +176,8 @@ case ":$PATH:" in
 esac
 
 eval "$(zoxide init zsh)"
+
+# llama.cpp (WSL only)
+if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
+  export LLAMA_CPP_PATH=~/.local/bin/llama-cpp
+fi

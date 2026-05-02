@@ -54,6 +54,13 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
     echo "  -> Copied base.toml + windows.toml (as alacritty.toml) to $ALACRITTY_WIN"
     echo ""
   fi
+
+  # Install llama-update script
+  echo "Setting up llama-update..."
+  mkdir -p "$HOME/.local/bin"
+  ln -sf "$DOTFILES_DIR/scripts/llama-update.sh" "$HOME/.local/bin/llama-update"
+  echo "  -> Symlinked llama-update to ~/.local/bin/llama-update"
+  echo ""
 fi
 
 # --- Stow packages ---
