@@ -18,7 +18,6 @@ export default function (pi: ExtensionAPI) {
 
 		if (isDangerous) {
 			if (!ctx.hasUI) {
-				// In non-interactive mode, block by default
 				return { block: true, reason: "Dangerous command blocked (no UI for confirmation)" };
 			}
 
