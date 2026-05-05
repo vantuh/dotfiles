@@ -1,6 +1,7 @@
 #!/bin/bash
-# link.sh — symlink shared agent skills/instructions to all agents
-# Reads links.json for agent paths, links every skill to every agent.
+# link.sh — symlink shared agent skills/instructions
+# Skills go to global (~/.agents/skills) and kiro (~/.kiro/skills).
+# Consumers (pi, opencode, claude) get a directory symlink to global.
 # Usage: ./link.sh [--dry-run]
 
 set -e
@@ -30,31 +31,29 @@ do_link() {
   fi
 }
 
-# --- Skills: every skill → every agent ---
-echo "Linking shared agent skills..."
-agent_paths=$(python3 -c "
+# --- Skills: symlink all targets to dotfiles/agents/skills ---
+echo "Linking skills..."
+all_skill_paths=$(python3 -c "
 import json
 with open('$MANIFEST') as f:
     data = json.load(f)
-for name, path in data['agents'].items():
-    print(name + '|' + path)
+for path in data['skills'].values():
+    print(path)
 ")
 
-for skill_dir in "$SCRIPT_DIR"/skills/*/; do
-  skill_name="$(basename "$skill_dir")"
-  while IFS='|' read -r agent_name agent_path; do
-    agent_path="${agent_path/#\~/$HOME}"
-    # If skills dir is a symlink (e.g. from stow), replace with real dir
-    if [[ -L "$agent_path/skills" ]]; then
-      rm "$agent_path/skills"
-      mkdir -p "$agent_path/skills"
-    fi
-    do_link "$SCRIPT_DIR/skills/$skill_name" "$agent_path/skills/$skill_name"
-  done <<< "$agent_paths"
-done
+while IFS= read -r target_path; do
+  target_path="${target_path/#\~/$HOME}"
+  # Remove existing dir/symlink
+  if [[ -L "$target_path" ]]; then
+    rm "$target_path"
+  elif [[ -d "$target_path" ]]; then
+    rm -rf "$target_path"
+  fi
+  do_link "$SCRIPT_DIR/skills" "$target_path"
+done <<< "$all_skill_paths"
 
 # --- Instructions: explicit targets ---
-echo "Linking shared agent instructions..."
+echo "Linking instructions..."
 instructions=$(python3 -c "
 import json
 with open('$MANIFEST') as f:
