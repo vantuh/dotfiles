@@ -5,10 +5,12 @@
     "npm:pi-provider-kiro",
     "npm:@tintinweb/pi-subagents"
   ],
-  "lastChangelogVersion": "0.72.1",
+  "lastChangelogVersion": "0.73.0",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": false,
   "theme": "dracula",
   "quietStartup": false,
-  "npmCommand": ["bun"]
+  "npmCommand": [
+    "bun"
+  ]
 }
