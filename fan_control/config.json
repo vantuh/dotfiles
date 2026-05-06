@@ -80,8 +80,8 @@
         "SelectedStart": 13,
         "SelectedStop": 7,
         "MinimumPercent": 0,
-        "SelectedCommandStepUp": 8,
-        "SelectedCommandStepDown": 8,
+        "SelectedCommandStepUp": 5,
+        "SelectedCommandStepDown": 3,
         "ManualControlValue": 50,
         "ManualControl": false,
         "ForceApply": false,
@@ -147,8 +147,8 @@
         "SelectedStart": 13,
         "SelectedStop": 7,
         "MinimumPercent": 0,
-        "SelectedCommandStepUp": 8,
-        "SelectedCommandStepDown": 8,
+        "SelectedCommandStepUp": 5,
+        "SelectedCommandStepDown": 3,
         "ManualControlValue": 50,
         "ManualControl": false,
         "ForceApply": false,
@@ -214,8 +214,8 @@
         "SelectedStart": 13,
         "SelectedStop": 7,
         "MinimumPercent": 0,
-        "SelectedCommandStepUp": 8,
-        "SelectedCommandStepDown": 8,
+        "SelectedCommandStepUp": 5,
+        "SelectedCommandStepDown": 3,
         "ManualControlValue": 50,
         "ManualControl": false,
         "ForceApply": false,
@@ -485,24 +485,22 @@
           "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
         },
         "Points": [
-          "35,12",
-          "45,18",
-          "55,25",
-          "65,35",
-          "75,50",
-          "82,60",
+          "40,10",
+          "55,12",
+          "65,15",
+          "75,35",
+          "82,55",
           "88,70",
-          "92,85",
           "95,100"
         ],
         "MaximumTemperature": 120,
         "MinimumTemperature": 20,
         "MaximumCommand": 100,
         "HysteresisConfig": {
-          "ResponseTimeUp": 5,
-          "ResponseTimeDown": 5,
-          "HysteresisValueUp": 2,
-          "HysteresisValueDown": 2,
+          "ResponseTimeUp": 8,
+          "ResponseTimeDown": 18,
+          "HysteresisValueUp": 3,
+          "HysteresisValueDown": 5,
           "IgnoreHysteresisAtLimits": false
         }
       },
@@ -514,21 +512,21 @@
           "Identifier": "/amdcpu/0/temperature/2"
         },
         "Points": [
-          "40,20",
-          "55,30",
-          "65,40",
-          "75,55",
-          "85,80",
-          "90,100"
+          "45,20",
+          "60,25",
+          "70,35",
+          "78,50",
+          "85,75",
+          "92,100"
         ],
         "MaximumTemperature": 120,
         "MinimumTemperature": 20,
         "MaximumCommand": 100,
         "HysteresisConfig": {
-          "ResponseTimeUp": 4,
-          "ResponseTimeDown": 4,
-          "HysteresisValueUp": 2,
-          "HysteresisValueDown": 2,
+          "ResponseTimeUp": 5,
+          "ResponseTimeDown": 14,
+          "HysteresisValueUp": 3,
+          "HysteresisValueDown": 4,
           "IgnoreHysteresisAtLimits": false
         }
       },
@@ -540,12 +538,11 @@
           "Identifier": "Mix/CPU + GPU MAX"
         },
         "Points": [
-          "35,12",
-          "45,18",
-          "55,25",
-          "65,35",
-          "75,45",
-          "82,58",
+          "40,10",
+          "55,12",
+          "68,15",
+          "75,30",
+          "82,50",
           "88,70",
           "95,100"
         ],
@@ -553,10 +550,10 @@
         "MinimumTemperature": 20,
         "MaximumCommand": 100,
         "HysteresisConfig": {
-          "ResponseTimeUp": 6,
-          "ResponseTimeDown": 6,
-          "HysteresisValueUp": 2,
-          "HysteresisValueDown": 2,
+          "ResponseTimeUp": 9,
+          "ResponseTimeDown": 18,
+          "HysteresisValueUp": 3,
+          "HysteresisValueDown": 5,
           "IgnoreHysteresisAtLimits": false
         }
       },
@@ -568,21 +565,21 @@
           "Identifier": "Mix/Case MAX"
         },
         "Points": [
-          "30,15",
-          "40,18",
-          "55,25",
-          "65,32",
-          "75,40",
-          "85,55"
+          "35,10",
+          "55,12",
+          "68,15",
+          "75,30",
+          "82,45",
+          "90,60"
         ],
         "MaximumTemperature": 120,
         "MinimumTemperature": 20,
         "MaximumCommand": 100,
         "HysteresisConfig": {
-          "ResponseTimeUp": 6,
-          "ResponseTimeDown": 6,
-          "HysteresisValueUp": 2,
-          "HysteresisValueDown": 2,
+          "ResponseTimeUp": 9,
+          "ResponseTimeDown": 18,
+          "HysteresisValueUp": 3,
+          "HysteresisValueDown": 5,
           "IgnoreHysteresisAtLimits": false
         }
       }
