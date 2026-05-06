@@ -2,8 +2,7 @@
   "defaultProvider": "kiro",
   "defaultModel": "claude-opus-4-6",
   "packages": [
-    "npm:pi-provider-kiro",
-    "npm:@tintinweb/pi-subagents"
+    "npm:pi-provider-kiro"
   ],
   "lastChangelogVersion": "0.73.0",
   "defaultThinkingLevel": "high",
