@@ -1,0 +1,713 @@
+{
+  "__VERSION__": "262",
+  "FanControl": {
+    "Controls": [
+      {
+        "NickName": "CPU",
+        "Identifier": "/lpc/it8696e/control/0",
+        "IsHidden": false,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "CPU"
+        },
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "/lpc/it8696e/fan/0"
+        },
+        "SelectedStart": 0,
+        "SelectedStop": 0,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            10,
+            255
+          ],
+          [
+            20,
+            417
+          ],
+          [
+            30,
+            619
+          ],
+          [
+            40,
+            839
+          ],
+          [
+            50,
+            1032
+          ],
+          [
+            60,
+            1254
+          ],
+          [
+            70,
+            1470
+          ],
+          [
+            80,
+            1685
+          ],
+          [
+            90,
+            1919
+          ],
+          [
+            100,
+            2039
+          ]
+        ]
+      },
+      {
+        "NickName": "Top exhaust",
+        "Identifier": "/lpc/it8696e/control/1",
+        "IsHidden": false,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "Top exhaust"
+        },
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "/lpc/it8696e/fan/1"
+        },
+        "SelectedStart": 13,
+        "SelectedStop": 7,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            1,
+            0
+          ],
+          [
+            10,
+            596
+          ],
+          [
+            20,
+            865
+          ],
+          [
+            30,
+            1137
+          ],
+          [
+            40,
+            1410
+          ],
+          [
+            50,
+            1673
+          ],
+          [
+            60,
+            1942
+          ],
+          [
+            70,
+            2204
+          ],
+          [
+            80,
+            2477
+          ],
+          [
+            90,
+            2741
+          ],
+          [
+            100,
+            3027
+          ]
+        ]
+      },
+      {
+        "NickName": "Bottom intake",
+        "Identifier": "/lpc/it8696e/control/2",
+        "IsHidden": false,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "Bottom intake"
+        },
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "/lpc/it8696e/fan/2"
+        },
+        "SelectedStart": 13,
+        "SelectedStop": 7,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            1,
+            0
+          ],
+          [
+            10,
+            589
+          ],
+          [
+            20,
+            859
+          ],
+          [
+            30,
+            1134
+          ],
+          [
+            40,
+            1404
+          ],
+          [
+            50,
+            1668
+          ],
+          [
+            60,
+            1945
+          ],
+          [
+            70,
+            2206
+          ],
+          [
+            80,
+            2479
+          ],
+          [
+            90,
+            2741
+          ],
+          [
+            100,
+            2836
+          ]
+        ]
+      },
+      {
+        "NickName": "Vertical intake",
+        "Identifier": "/lpc/it8696e/control/3",
+        "IsHidden": false,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "Vertical intake"
+        },
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "/lpc/it8696e/fan/3"
+        },
+        "SelectedStart": 13,
+        "SelectedStop": 7,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            1,
+            0
+          ],
+          [
+            10,
+            587
+          ],
+          [
+            20,
+            864
+          ],
+          [
+            30,
+            1134
+          ],
+          [
+            40,
+            1403
+          ],
+          [
+            50,
+            1662
+          ],
+          [
+            60,
+            1935
+          ],
+          [
+            70,
+            2199
+          ],
+          [
+            80,
+            2470
+          ],
+          [
+            90,
+            2736
+          ],
+          [
+            100,
+            3013
+          ]
+        ]
+      },
+      {
+        "NickName": "Fan #5",
+        "Identifier": "/lpc/it8696e/control/4",
+        "IsHidden": true,
+        "Enable": false,
+        "SelectedFanCurve": null,
+        "SelectedOffset": 0,
+        "PairedFanSensor": null,
+        "SelectedStart": 0,
+        "SelectedStop": 0,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": []
+      },
+      {
+        "NickName": "Fan #6",
+        "Identifier": "/lpc/it8696e/control/5",
+        "IsHidden": true,
+        "Enable": false,
+        "SelectedFanCurve": null,
+        "SelectedOffset": 0,
+        "PairedFanSensor": null,
+        "SelectedStart": 0,
+        "SelectedStop": 0,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": []
+      },
+      {
+        "NickName": "Control 1 - NVIDIA GeForce RTX 5080",
+        "Identifier": "NVApiWrapper/0-GB203-A/control/0",
+        "IsHidden": false,
+        "Enable": false,
+        "SelectedFanCurve": null,
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "NVApiWrapper/0-GB203-A/fan/0"
+        },
+        "SelectedStart": 9,
+        "SelectedStop": 6,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            696
+          ],
+          [
+            10,
+            696
+          ],
+          [
+            20,
+            696
+          ],
+          [
+            30,
+            696
+          ],
+          [
+            40,
+            1038
+          ],
+          [
+            50,
+            1386
+          ],
+          [
+            60,
+            1734
+          ],
+          [
+            70,
+            2084
+          ],
+          [
+            80,
+            2429
+          ],
+          [
+            90,
+            2772
+          ],
+          [
+            100,
+            3104
+          ]
+        ]
+      },
+      {
+        "NickName": "Control 2 - NVIDIA GeForce RTX 5080",
+        "Identifier": "NVApiWrapper/0-GB203-A/control/1",
+        "IsHidden": false,
+        "Enable": false,
+        "SelectedFanCurve": null,
+        "SelectedOffset": 0,
+        "PairedFanSensor": {
+          "Identifier": "NVApiWrapper/0-GB203-A/fan/1"
+        },
+        "SelectedStart": 9,
+        "SelectedStop": 6,
+        "MinimumPercent": 0,
+        "SelectedCommandStepUp": 8,
+        "SelectedCommandStepDown": 8,
+        "ManualControlValue": 50,
+        "ManualControl": false,
+        "ForceApply": false,
+        "Calibration": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            694
+          ],
+          [
+            10,
+            694
+          ],
+          [
+            20,
+            694
+          ],
+          [
+            30,
+            694
+          ],
+          [
+            40,
+            1034
+          ],
+          [
+            50,
+            1378
+          ],
+          [
+            60,
+            1723
+          ],
+          [
+            70,
+            2068
+          ],
+          [
+            80,
+            2411
+          ],
+          [
+            90,
+            2764
+          ],
+          [
+            100,
+            3091
+          ]
+        ]
+      }
+    ],
+    "CustomSensors": [
+      {
+        "NickName": "CPU + GPU MAX",
+        "Identifier": "Mix/CPU + GPU MAX",
+        "IsHidden": false,
+        "AllowMissingSensor": false,
+        "SelectedMixFunction": 1,
+        "SelectedSensors": [
+          {
+            "Identifier": "/amdcpu/0/temperature/2"
+          },
+          {
+            "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
+          }
+        ]
+      },
+      {
+        "NickName": "Case MAX",
+        "Identifier": "Mix/Case MAX",
+        "IsHidden": false,
+        "AllowMissingSensor": false,
+        "SelectedMixFunction": 1,
+        "SelectedSensors": [
+          {
+            "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
+          },
+          {
+            "Identifier": "/lpc/it8696e/temperature/4"
+          },
+          {
+            "Identifier": "/amdcpu/0/temperature/2"
+          }
+        ]
+      }
+    ],
+    "FanCurves": [
+      {
+        "Name": "Bottom intake",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "SelectedTempSource": {
+          "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
+        },
+        "Points": [
+          "35,12",
+          "45,18",
+          "55,25",
+          "65,35",
+          "75,50",
+          "82,60",
+          "88,70",
+          "92,85",
+          "95,100"
+        ],
+        "MaximumTemperature": 120,
+        "MinimumTemperature": 20,
+        "MaximumCommand": 100,
+        "HysteresisConfig": {
+          "ResponseTimeUp": 5,
+          "ResponseTimeDown": 5,
+          "HysteresisValueUp": 2,
+          "HysteresisValueDown": 2,
+          "IgnoreHysteresisAtLimits": false
+        }
+      },
+      {
+        "Name": "CPU",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "SelectedTempSource": {
+          "Identifier": "/amdcpu/0/temperature/2"
+        },
+        "Points": [
+          "40,20",
+          "55,30",
+          "65,40",
+          "75,55",
+          "85,80",
+          "90,100"
+        ],
+        "MaximumTemperature": 120,
+        "MinimumTemperature": 20,
+        "MaximumCommand": 100,
+        "HysteresisConfig": {
+          "ResponseTimeUp": 4,
+          "ResponseTimeDown": 4,
+          "HysteresisValueUp": 2,
+          "HysteresisValueDown": 2,
+          "IgnoreHysteresisAtLimits": false
+        }
+      },
+      {
+        "Name": "Top exhaust",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "SelectedTempSource": {
+          "Identifier": "Mix/CPU + GPU MAX"
+        },
+        "Points": [
+          "35,12",
+          "45,18",
+          "55,25",
+          "65,35",
+          "75,45",
+          "82,58",
+          "88,70",
+          "95,100"
+        ],
+        "MaximumTemperature": 120,
+        "MinimumTemperature": 20,
+        "MaximumCommand": 100,
+        "HysteresisConfig": {
+          "ResponseTimeUp": 6,
+          "ResponseTimeDown": 6,
+          "HysteresisValueUp": 2,
+          "HysteresisValueDown": 2,
+          "IgnoreHysteresisAtLimits": false
+        }
+      },
+      {
+        "Name": "Vertical intake",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "SelectedTempSource": {
+          "Identifier": "Mix/Case MAX"
+        },
+        "Points": [
+          "30,15",
+          "40,18",
+          "55,25",
+          "65,32",
+          "75,40",
+          "85,55"
+        ],
+        "MaximumTemperature": 120,
+        "MinimumTemperature": 20,
+        "MaximumCommand": 100,
+        "HysteresisConfig": {
+          "ResponseTimeUp": 6,
+          "ResponseTimeDown": 6,
+          "HysteresisValueUp": 2,
+          "HysteresisValueDown": 2,
+          "IgnoreHysteresisAtLimits": false
+        }
+      }
+    ],
+    "FanSensors": [
+      {
+        "Identifier": "/lpc/it8696e/fan/0",
+        "IsHidden": false,
+        "NickName": "CPU"
+      },
+      {
+        "Identifier": "/lpc/it8696e/fan/1",
+        "IsHidden": false,
+        "NickName": "Top exhaust"
+      },
+      {
+        "Identifier": "/lpc/it8696e/fan/2",
+        "IsHidden": false,
+        "NickName": "Bottom intake"
+      },
+      {
+        "Identifier": "/lpc/it8696e/fan/3",
+        "IsHidden": false,
+        "NickName": "Vertical intake"
+      },
+      {
+        "Identifier": "NVApiWrapper/0-GB203-A/fan/0",
+        "IsHidden": false,
+        "NickName": "Control 1 - NVIDIA GeForce RTX 5080"
+      },
+      {
+        "Identifier": "NVApiWrapper/0-GB203-A/fan/1",
+        "IsHidden": false,
+        "NickName": "Control 2 - NVIDIA GeForce RTX 5080"
+      },
+      {
+        "Identifier": "/lpc/it8696e/fan/4",
+        "IsHidden": false,
+        "NickName": "Fan #5"
+      },
+      {
+        "Identifier": "/lpc/it8696e/fan/5",
+        "IsHidden": false,
+        "NickName": "Fan #6"
+      }
+    ],
+    "TemperatureSensors": [
+      {
+        "Identifier": "/amdcpu/0/temperature/2",
+        "IsHidden": false,
+        "NickName": "Core (Tctl/Tdie)"
+      },
+      {
+        "Identifier": "/amdcpu/0/temperature/3",
+        "IsHidden": false,
+        "NickName": "CCD1 (Tdie)"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/0",
+        "IsHidden": false,
+        "NickName": "Temperature #1"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/1",
+        "IsHidden": false,
+        "NickName": "Temperature #2"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/2",
+        "IsHidden": false,
+        "NickName": "Temperature #3"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/3",
+        "IsHidden": false,
+        "NickName": "Temperature #4"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/4",
+        "IsHidden": false,
+        "NickName": "Temperature #5"
+      },
+      {
+        "Identifier": "NVApiWrapper/0-GB203-A/sensor/0",
+        "IsHidden": false,
+        "NickName": "GPU"
+      }
+    ]
+  },
+  "Sensors": {
+    "AdlxWrapperSettings": {
+      "Enabled": true
+    },
+    "DisabledPlugins": [],
+    "DisableStorageSensors": true,
+    "LibreHardwareMonitorSettings": {
+      "Controller": false,
+      "CPU": true,
+      "EmbeddedEC": true,
+      "GPU": true,
+      "Memory": false,
+      "Motherboard": true,
+      "PowerMonitor": false,
+      "PSU": false,
+      "Storage": false,
+      "StorageUpdateInterval": "00:01:00",
+      "ZeroRPMOverride": true
+    },
+    "NvAPIWrapperSettings": {
+      "Enabled": true,
+      "ZeroRPMOverride": true
+    }
+  },
+  "MainWindow": {
+    "Fahrenheit": false,
+    "HideCalibration": false,
+    "HideFanSpeedCards": true,
+    "HorizontalUIOrientation": false,
+    "PrimaryColor": "#FF607D8B",
+    "SecondaryColor": "#FFAEEA00",
+    "SelectedTheme": "",
+    "ShowHiddenCards": false,
+    "SyncThemeWithWindows": true,
+    "SyncTrayIconColorWithWindows": true,
+    "TrayIconColor": null,
+    "TrayIcons": []
+  }
+}
