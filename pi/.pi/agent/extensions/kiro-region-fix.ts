@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@mariozechner/pi";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function (_pi: ExtensionAPI) {
   const origFetch = globalThis.fetch;

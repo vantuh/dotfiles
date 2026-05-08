@@ -4,7 +4,7 @@
  * then shows accurate tok/s from final usage at message end.
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	let startTime = 0;
