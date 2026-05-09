@@ -7,7 +7,7 @@
   "lastChangelogVersion": "0.74.0",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
-  "theme": "dracula",
+  "theme": "dark",
   "quietStartup": false,
   "npmCommand": [
     "bun"
