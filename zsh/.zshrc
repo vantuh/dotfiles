@@ -17,6 +17,8 @@ fi
 
 [ -f ~/.tokens ] && source ~/.tokens
 
+export POWERLINE_NERD_FONTS=1
+
 if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v keychain &>/dev/null; then
   eval "$(keychain --eval --quiet github 2>/dev/null)"
 fi
