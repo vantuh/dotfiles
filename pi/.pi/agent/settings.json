@@ -3,30 +3,14 @@
   "defaultModel": "claude-opus-4-6",
   "packages": [
     "npm:pi-provider-kiro",
-    "npm:pi-powerline-footer"
+    "npm:pi-subagents"
   ],
   "lastChangelogVersion": "0.74.0",
   "defaultThinkingLevel": "high",
   "hideThinkingBlock": true,
   "theme": "dark",
-  "quietStartup": true,
+  "quietStartup": false,
   "npmCommand": [
     "bun"
-  ],
-  "powerline": {
-    "preset": "default",
-    "customItems": [
-      {
-        "id": "tps",
-        "statusKey": "tok/s",
-        "position": "right",
-        "prefix": "⚡",
-        "color": "success",
-        "hideWhenMissing": true,
-        "excludeFromExtensionStatuses": true
-      }
-    ],
-    "fixedEditor": true,
-    "mouseScroll": true
-  }
+  ]
 }
