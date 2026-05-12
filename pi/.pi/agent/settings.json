@@ -3,7 +3,8 @@
   "defaultModel": "claude-opus-4-6",
   "packages": [
     "npm:pi-provider-kiro",
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "npm:pi-web-access"
   ],
   "lastChangelogVersion": "0.74.0",
   "defaultThinkingLevel": "high",
