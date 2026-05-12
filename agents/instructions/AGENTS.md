@@ -9,10 +9,10 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
 Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
+- State your assumptions explicitly. If uncertain, ask. If the uncertainty is low-risk and reversible, state the assumption and proceed cautiously.
 - If multiple interpretations exist, present them - don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- If something important is unclear, stop. Name what's confusing. Ask.
 
 ## 2. Simplicity First
 
@@ -59,6 +59,27 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## 5. Subagents workflow
+
+Use `pi-subagents` proactively when available and when it reduces context or improves quality. Do not use subagents for trivial one-step tasks.
+
+- `scout`: unfamiliar code exploration, relevant files, code flow, concise `context.md`.
+- `context-builder`: larger/ambiguous tasks that need complete handoff context.
+- `planner`: implementation plan after context is gathered; must not edit files.
+- `worker`: focused implementation after a clear plan.
+- `reviewer`: review non-trivial diffs; may apply only trivial safe fixes.
+- `oracle`: risky architectural decisions or second opinion.
+- `researcher`: external docs, changelogs, APIs, recent package behavior.
+- `delegate`: small generic tasks that do not fit other agents.
+
+For bigger coding tasks, prefer:
+
+`scout/context-builder -> planner -> worker -> reviewer`
+
+Keep parent context small. Subagents should return concise handoff summaries, relevant files, risks, and next steps instead of large file dumps.
+
+After non-trivial implementation, run `reviewer` before the final summary.
 
 ---
 
