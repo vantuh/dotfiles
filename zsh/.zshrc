@@ -119,7 +119,9 @@ zinit ice wait lucid from"gh-r" as"program"
 zinit light jesseduffield/lazygit
 
 # fzf
-zinit wait lucid pack:"default+keys" for fzf
+zinit lucid for \
+  https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
+  https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
 
 # NVM (lazy)
 export NVM_COMPLETION=true
