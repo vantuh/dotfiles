@@ -62,24 +62,26 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## 5. Subagents workflow
 
-Use `pi-subagents` proactively when available and when it reduces context or improves quality. Do not use subagents for trivial one-step tasks.
+Use `pi-subagents` proactively. Default to delegating unless the task is clearly a single-file, single-step change.
 
-- `scout`: unfamiliar code exploration, relevant files, code flow, concise `context.md`.
-- `context-builder`: larger/ambiguous tasks that need complete handoff context.
-- `planner`: implementation plan after context is gathered; must not edit files.
-- `worker`: focused implementation after a clear plan.
-- `reviewer`: review non-trivial diffs; may apply only trivial safe fixes.
-- `oracle`: risky architectural decisions or second opinion.
-- `researcher`: external docs, changelogs, APIs, recent package behavior.
-- `delegate`: small generic tasks that do not fit other agents.
+**Always use subagents when:**
+- Working with unfamiliar code or locating implementation details (→ `scout`)
+- Task has broad/ambiguous requirements or needs a complete handoff across code, docs, issues, or URLs (→ `context-builder`)
+- Task touches 3+ files or modules (→ `planner`, then `worker`, then `reviewer`)
+- Need external docs, APIs, changelogs, or recent package behavior (→ `researcher`)
+- After non-trivial implementation (→ `reviewer`)
+- Uncertain about architecture, tradeoffs, or direction (→ `oracle`)
+- Need to offload a small self-contained investigation or transformation that does not fit specialized agents (→ `delegate`)
 
-For bigger coding tasks, prefer:
+**Skip subagents only when:**
+- Single-file edit with obvious fix
+- Simple question answerable from context already loaded
+- Trivial rename, typo fix, or config change
 
-`scout/context-builder -> planner -> worker -> reviewer`
+For multi-file tasks, prefer:
+`scout/context-builder → planner → worker → reviewer`
 
-Keep parent context small. Subagents should return concise handoff summaries, relevant files, risks, and next steps instead of large file dumps.
-
-After non-trivial implementation, run `reviewer` before the final summary.
+Keep parent context small. Delegate early. Subagents should return concise handoff summaries, not large file dumps.
 
 ---
 
