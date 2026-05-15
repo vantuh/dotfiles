@@ -1,17 +1,29 @@
 {
-  "defaultProvider": "kiro",
-  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "llama-cpp",
+  "defaultModel": "Qwen3.6-27B-IQ3_XXS",
   "packages": [
     "npm:pi-provider-kiro",
-    "npm:pi-subagents",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:pi-subagents"
   ],
   "lastChangelogVersion": "0.74.0",
   "defaultThinkingLevel": "high",
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 8192,
+    "keepRecentTokens": 16000
+  },
   "theme": "dark",
   "quietStartup": false,
   "npmCommand": [
     "bun"
+  ],
+  "enabledModels": [
+    "kiro/claude-opus-4-6",
+    "kiro/claude-sonnet-4-6",
+    "llama-cpp/Qwen3.6-27B-IQ3_XXS",
+    "openai-codex/gpt-5.5",
+    "openai-codex/gpt-5.4"
   ]
 }
