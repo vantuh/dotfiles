@@ -28,7 +28,7 @@
       "Qwen3.6-27B-UD-IQ3_XXS.gguf"
     ],
     "alias": "qwen3.6-27b-local",
-    "ctx": 65536,
+    "ctx": 128000,
     "ngl": 99,
     "flash_attn": "on",
     "cache_k": "q4_0",
@@ -39,9 +39,9 @@
     "batch": 2048,
     "ubatch": 512,
     "jinja": "on",
-    "temp": 0.7,
-    "top_p": 0.9,
-    "top_k": 40,
+    "temp": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
     "host": "127.0.0.1"
   }
 ]

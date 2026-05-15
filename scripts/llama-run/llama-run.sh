@@ -137,6 +137,13 @@ fi
 
 MODEL_PATH="${MODELS_DIR}/${MODEL}"
 
+# Convert WSL path to Windows path for .exe
+if [[ "$SERVER" == *.exe ]]; then
+  WIN_MODEL_PATH=$(wslpath -w "$MODEL_PATH")
+else
+  WIN_MODEL_PATH="$MODEL_PATH"
+fi
+
 # ─── Load defaults ───────────────────────────────────────────────────────────
 
 # Generic defaults
@@ -150,7 +157,7 @@ if [[ "$PROFILE_IDX" -ge 0 ]]; then
   pi=$PROFILE_IDX
   DEF_ALIAS=$(jq -r ".[$pi].alias" "$CONFIG_FILE")
   DEF_CTX=$(jq -r ".[$pi].ctx" "$CONFIG_FILE")
-  DEF_NGL=$(jq -r ".[$pi].ngl" "$CONFIG_FILE")
+  DEF_NGL=$(jq -r ".[$pi].ngl // empty" "$CONFIG_FILE")
   DEF_FLASH=$(jq -r ".[$pi].flash_attn" "$CONFIG_FILE")
   DEF_CACHE_K=$(jq -r ".[$pi].cache_k" "$CONFIG_FILE")
   DEF_CACHE_V=$(jq -r ".[$pi].cache_v" "$CONFIG_FILE")
@@ -190,7 +197,7 @@ show_status() {
   local lines="Model: ${MODEL}"
   [[ -n "$ALIAS" ]]   && lines="${lines}\n  Alias: ${ALIAS}"
   [[ -n "$CTX" ]]     && lines="${lines}\n  Context: ${CTX}"
-  [[ -n "$NGL" ]]     && lines="${lines}\n  GPU layers: ${NGL}"
+  lines="${lines}\n  GPU layers: ${NGL:-auto}"
   [[ -n "$FA" ]]      && lines="${lines}\n  Flash attn: ${FA}"
   [[ -n "$CACHE_K" ]] && lines="${lines}\n  KV cache: K=${CACHE_K} V=${CACHE_V}"
   [[ -n "$THREADS" ]] && lines="${lines}\n  Threads: ${THREADS}"
@@ -214,7 +221,8 @@ show_status
 CTX=$(echo -e "4096\n8192\n16384\n32768\n65536\n131072" | gum choose --header "Context size (-c)" --selected "$DEF_CTX")
 
 show_status
-NGL=$(echo -e "0\n10\n20\n30\n40\n50\n60\n80\n99" | gum choose --header "GPU layers (-ngl)" --selected "$DEF_NGL")
+NGL=$(echo -e "auto\n0\n10\n20\n30\n40\n50\n60\n80\n99" | gum choose --header "GPU layers (-ngl)" --selected "${DEF_NGL:-auto}")
+[[ "$NGL" == "auto" ]] && NGL=""
 
 show_status
 FA=$(echo -e "on\noff" | gum choose --header "Flash attention" --selected "$DEF_FLASH")
@@ -260,9 +268,13 @@ fi # end custom mode
 # ─── Build command ───────────────────────────────────────────────────────────
 
 CMD=("$SERVER"
-  -m "$MODEL_PATH"
+  -m "$WIN_MODEL_PATH"
   --alias "$ALIAS"
-  -ngl "$NGL"
+)
+
+[[ -n "$NGL" ]] && CMD+=(-ngl "$NGL")
+
+CMD+=(
   -c "$CTX"
   --cache-type-k "$CACHE_K"
   --cache-type-v "$CACHE_V"
@@ -277,7 +289,7 @@ CMD=("$SERVER"
   --top-k "$TOP_K"
 )
 
-[[ "$FA" == "on" ]] && CMD+=(--flash-attn)
+[[ "$FA" == "on" ]] && CMD+=(--flash-attn on)
 [[ "$JINJA" == "on" ]] && CMD+=(--jinja)
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
@@ -286,7 +298,7 @@ SUMMARY=$(cat <<EOF
   Model:      ${MODEL}
   Alias:      ${ALIAS}
   Context:    ${CTX}
-  GPU layers: ${NGL}
+  GPU layers: ${NGL:-auto}
   Flash attn: ${FA}
   KV cache:   K=${CACHE_K} V=${CACHE_V}
   Threads:    ${THREADS}
