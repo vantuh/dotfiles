@@ -14,5 +14,8 @@
     "caveman.md": [
       "~/.config/opencode/caveman.md"
     ]
+  },
+  "agents": {
+    "pi": "~/.pi/agent/agents"
   }
 }

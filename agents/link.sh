@@ -69,4 +69,26 @@ while IFS='|' read -r name target; do
   do_link "$SCRIPT_DIR/instructions/$name" "$target"
 done <<< "$instructions"
 
+# --- Agents: pi-specific agent definitions ---
+echo "Linking agents..."
+agents=$(python3 -c "
+import json
+with open('$MANIFEST') as f:
+    data = json.load(f)
+for name, path in data.get('agents', {}).items():
+    print(name + '|' + path)
+")
+
+while IFS='|' read -r name target; do
+  [[ -z "$name" ]] && continue
+  target="${target/#\~/$HOME}"
+  src="$SCRIPT_DIR/../pi/.pi/agent/agents"
+  if [[ -L "$target" ]]; then
+    rm "$target"
+  elif [[ -d "$target" ]]; then
+    rm -rf "$target"
+  fi
+  do_link "$src" "$target"
+done <<< "$agents"
+
 echo "Done!"
