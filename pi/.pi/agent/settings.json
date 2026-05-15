@@ -1,13 +1,12 @@
 {
-  "defaultProvider": "llama-cpp",
-  "defaultModel": "Qwen3.6-27B-IQ3_XXS",
+  "defaultProvider": "kiro",
+  "defaultModel": "claude-opus-4-6",
   "packages": [
     "npm:pi-provider-kiro",
     "npm:pi-web-access",
     "npm:pi-subagents"
   ],
   "lastChangelogVersion": "0.74.0",
-  "defaultThinkingLevel": "high",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
