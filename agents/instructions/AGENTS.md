@@ -66,12 +66,9 @@ Use `pi-subagents` proactively. Default to delegating unless the task is clearly
 
 **Always use subagents when:**
 - Working with unfamiliar code or locating implementation details (→ `scout`)
-- Task has broad/ambiguous requirements or needs a complete handoff across code, docs, issues, or URLs (→ `context-builder`)
 - Task touches 3+ files or modules (→ `planner`, then `worker`, then `reviewer`)
 - Need external docs, APIs, changelogs, or recent package behavior (→ `researcher`)
 - After non-trivial implementation (→ `reviewer`)
-- Uncertain about architecture, tradeoffs, or direction (→ `oracle`)
-- Need to offload a small self-contained investigation or transformation that does not fit specialized agents (→ `delegate`)
 
 **Skip subagents only when:**
 - Single-file edit with obvious fix
@@ -79,7 +76,7 @@ Use `pi-subagents` proactively. Default to delegating unless the task is clearly
 - Trivial rename, typo fix, or config change
 
 For multi-file tasks, prefer:
-`scout/context-builder → planner → worker → reviewer`
+`scout → planner → worker → reviewer`
 
 Keep parent context small. Delegate early. Subagents should return concise handoff summaries, not large file dumps.
 
