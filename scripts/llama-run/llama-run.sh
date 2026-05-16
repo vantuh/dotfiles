@@ -221,7 +221,7 @@ show_status
 ALIAS=$(gum input --header "Alias (--alias)" --value "$DEF_ALIAS")
 
 show_status
-CTX=$(echo -e "4096\n8192\n16384\n32768\n65536\n131072" | gum choose --header "Context size (-c)" --selected "$DEF_CTX")
+CTX=$(echo -e "4096\n8192\n16384\n32768\n65536\n131072\n163840\n204800\n262144" | gum choose --header "Context size (-c)" --selected "$DEF_CTX")
 
 show_status
 NGL=$(echo -e "auto\n0\n10\n20\n30\n40\n50\n60\n80\n99" | gum choose --header "GPU layers (-ngl)" --selected "${DEF_NGL:-auto}")

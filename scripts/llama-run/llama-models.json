@@ -29,7 +29,7 @@
       "Qwen3.6-27B-UD-Q3_K_XL.gguf"
     ],
     "alias": "qwen3.6-27b-local",
-    "ctx": 128000,
+    "ctx": 163840,
     "ngl": 99,
     "flash_attn": "on",
     "cache_k": "q4_0",
