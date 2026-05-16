@@ -151,6 +151,7 @@ DEF_ALIAS=$(echo "$MODEL" | sed 's/\.gguf$//' | tr '[:upper:]' '[:lower:]' | tr 
 DEF_CTX=32768 DEF_NGL=99 DEF_FLASH="on" DEF_CACHE_K="q4_0" DEF_CACHE_V="q4_0"
 DEF_THREADS=8 DEF_PORT=8080 DEF_PARALLEL=1 DEF_BATCH=2048 DEF_UBATCH=512
 DEF_JINJA="on" DEF_TEMP=0.7 DEF_TOP_P=0.9 DEF_TOP_K=40 DEF_HOST="127.0.0.1"
+DEF_CHAT_TEMPLATE_KWARGS=""
 
 # Override with profile defaults if configured
 if [[ "$PROFILE_IDX" -ge 0 ]]; then
@@ -171,6 +172,7 @@ if [[ "$PROFILE_IDX" -ge 0 ]]; then
   DEF_TOP_P=$(jq -r ".[$pi].top_p" "$CONFIG_FILE")
   DEF_TOP_K=$(jq -r ".[$pi].top_k" "$CONFIG_FILE")
   DEF_HOST=$(jq -r ".[$pi].host // \"127.0.0.1\"" "$CONFIG_FILE")
+  DEF_CHAT_TEMPLATE_KWARGS=$(jq -r ".[$pi].chat_template_kwargs // empty" "$CONFIG_FILE")
 fi
 
 # ─── Check model file ────────────────────────────────────────────────────────
@@ -187,6 +189,7 @@ CACHE_K="$DEF_CACHE_K" CACHE_V="$DEF_CACHE_V" THREADS="$DEF_THREADS"
 HOST="$DEF_HOST" PORT="$DEF_PORT" PARALLEL="$DEF_PARALLEL"
 BATCH="$DEF_BATCH" UBATCH="$DEF_UBATCH" JINJA="$DEF_JINJA"
 TEMP="$DEF_TEMP" TOP_P="$DEF_TOP_P" TOP_K="$DEF_TOP_K"
+CHAT_TEMPLATE_KWARGS="$DEF_CHAT_TEMPLATE_KWARGS"
 
 if [[ "$MODE" == *"Custom"* ]]; then
 
@@ -291,6 +294,7 @@ CMD+=(
 
 [[ "$FA" == "on" ]] && CMD+=(--flash-attn on)
 [[ "$JINJA" == "on" ]] && CMD+=(--jinja)
+[[ -n "$CHAT_TEMPLATE_KWARGS" ]] && CMD+=(--chat-template-kwargs "$CHAT_TEMPLATE_KWARGS")
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 
@@ -308,6 +312,7 @@ SUMMARY=$(cat <<EOF
   Batch:      ${BATCH}
   Ubatch:     ${UBATCH}
   Jinja:      ${JINJA}
+  Chat kwargs: ${CHAT_TEMPLATE_KWARGS:-none}
   Temp:       ${TEMP}
   Top-P:      ${TOP_P}
   Top-K:      ${TOP_K}

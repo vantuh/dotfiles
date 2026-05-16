@@ -25,7 +25,8 @@
   {
     "name": "Qwen 3.6 27B",
     "files": [
-      "Qwen3.6-27B-UD-IQ3_XXS.gguf"
+      "Qwen3.6-27B-UD-IQ3_XXS.gguf",
+      "Qwen3.6-27B-UD-Q3_K_XL.gguf"
     ],
     "alias": "qwen3.6-27b-local",
     "ctx": 128000,
@@ -42,6 +43,7 @@
     "temp": 0.6,
     "top_p": 0.95,
     "top_k": 20,
-    "host": "127.0.0.1"
+    "host": "127.0.0.1",
+    "chat_template_kwargs": "{\"preserve_thinking\":true}"
   }
 ]
