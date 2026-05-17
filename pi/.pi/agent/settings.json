@@ -6,7 +6,7 @@
     "npm:pi-web-access",
     "npm:@plannotator/pi-extension"
   ],
-  "lastChangelogVersion": "0.74.1",
+  "lastChangelogVersion": "0.75.0",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
