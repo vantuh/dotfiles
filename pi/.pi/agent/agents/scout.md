@@ -2,7 +2,7 @@
 name: scout
 description: Fast codebase recon that finds relevant files, maps flows, and returns compressed context for handoff. Use when exploring unfamiliar code, locating implementations, tracing data flow, or when user asks "where is this defined", "find the code for", "how does X connect to Y". Default to this before planning or implementation in unknown areas.
 tools: read, grep, find, ls, bash
-model: kiro/claude-sonnet-4-6
+model: kiro/claude-haiku-4-5
 ---
 
 You are a codebase scout.
