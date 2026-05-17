@@ -20,7 +20,7 @@ import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import type { Message } from "@earendil-works/pi-ai";
 import { StringEnum } from "@earendil-works/pi-ai";
 import { type ExtensionAPI, getMarkdownTheme, withFileMutationQueue } from "@earendil-works/pi-coding-agent";
-import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
+import { Container, Key, Markdown, matchesKey, Spacer, Text, truncateToWidth } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents, resolveSkillPaths } from "./agents.js";
 
@@ -987,6 +987,98 @@ export default function (pi: ExtensionAPI) {
 
 			const text = result.content[0];
 			return new Text(text?.type === "text" ? text.text : "(no output)", 0, 0);
+		},
+	});
+
+	pi.registerCommand("agents", {
+		description: "Show subagent runs from this session",
+		handler: async (_args, ctx) => {
+			const runs: Array<{ label: string; output: string }> = [];
+
+			for (const entry of ctx.sessionManager.getBranch()) {
+				if (entry.type !== "message") continue;
+				const msg = (entry as any).message;
+				if (msg?.role !== "toolResult" || msg?.toolName !== "subagent") continue;
+
+				const details = msg.details as SubagentDetails | undefined;
+				const contentText = msg.content?.[0]?.type === "text" ? msg.content[0].text : "";
+
+				if (!details?.results?.length) {
+					// Error without results (e.g. "Too many parallel tasks")
+					if (contentText) {
+						runs.push({
+							label: `✗ subagent (error) — ${contentText.slice(0, 50)}`,
+							output: contentText,
+						});
+					}
+					continue;
+				}
+
+				for (const r of details.results) {
+					const icon = r.exitCode === 0 ? "✓" : r.exitCode === -1 ? "⏳" : "✗";
+					const taskPreview = r.task.length > 50 ? r.task.slice(0, 50) + "..." : r.task;
+					const usageStr = r.usage?.cost ? ` $${r.usage.cost.toFixed(4)}` : "";
+					const label = `${icon} ${r.agent} (${r.agentSource})${usageStr} — ${taskPreview}`;
+					const output = getFinalOutput(r.messages || []) || r.stderr || contentText || "(no output)";
+					runs.push({ label, output });
+				}
+			}
+
+			if (runs.length === 0) {
+				ctx.ui.notify("No subagent runs in this session", "info");
+				return;
+			}
+
+			const choice = await ctx.ui.select(
+				`Subagent runs (${runs.length}):`,
+				runs.map((r) => r.label),
+			);
+			if (!choice) return;
+
+			const selected = runs.find((r) => r.label === choice);
+			if (selected) {
+				await ctx.ui.custom(
+					(_tui, theme, _keybindings, done) => {
+						const lines = selected.output.split("\n");
+						let scrollOffset = 0;
+
+						const component = {
+							handleInput(data: string) {
+								if (matchesKey(data, Key.escape) || matchesKey(data, "q")) done(null);
+								else if (matchesKey(data, Key.down) || matchesKey(data, "j")) { scrollOffset++; cachedWidth = undefined; }
+								else if (matchesKey(data, Key.up) || matchesKey(data, "k")) { scrollOffset = Math.max(0, scrollOffset - 1); cachedWidth = undefined; }
+								else if (matchesKey(data, Key.pageDown)) { scrollOffset += 20; cachedWidth = undefined; }
+								else if (matchesKey(data, Key.pageUp)) { scrollOffset = Math.max(0, scrollOffset - 20); cachedWidth = undefined; }
+							},
+							render(width: number): string[] {
+								if (cachedLines && cachedWidth === width) return cachedLines;
+								const innerW = width - 4;
+								const header = theme.fg("accent", ` ${selected.label} `);
+								const footer = theme.fg("dim", " ↑↓/jk scroll • PgUp/PgDn • q/Esc close ");
+								const maxVisible = 40;
+								const safeOffset = Math.min(scrollOffset, Math.max(0, lines.length - maxVisible));
+								scrollOffset = safeOffset;
+								const visible = lines.slice(safeOffset, safeOffset + maxVisible);
+								cachedLines = [
+									header,
+									"",
+									...visible.map((l) => "  " + truncateToWidth(l, innerW)),
+									"",
+									footer,
+								];
+								cachedWidth = width;
+								return cachedLines;
+							},
+						};
+
+						let cachedWidth: number | undefined;
+						let cachedLines: string[] | undefined;
+
+						return component;
+					},
+					{ overlay: true, overlayOptions: { anchor: "center", width: "80%", maxHeight: "80%" } },
+				);
+			}
 		},
 	});
 }
