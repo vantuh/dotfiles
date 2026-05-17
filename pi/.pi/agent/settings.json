@@ -1,9 +1,10 @@
 {
-  "defaultProvider": "local",
-  "defaultModel": "qwen3.6-27b",
+  "defaultProvider": "kiro",
+  "defaultModel": "claude-opus-4-6",
   "packages": [
     "npm:pi-provider-kiro",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:@plannotator/pi-extension"
   ],
   "lastChangelogVersion": "0.74.1",
   "hideThinkingBlock": false,
