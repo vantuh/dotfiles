@@ -4,7 +4,8 @@
   "packages": [
     "npm:pi-provider-kiro",
     "npm:pi-web-access",
-    "npm:@plannotator/pi-extension"
+    "npm:@plannotator/pi-extension",
+    "npm:@tintinweb/pi-subagents"
   ],
   "lastChangelogVersion": "0.75.0",
   "hideThinkingBlock": false,
