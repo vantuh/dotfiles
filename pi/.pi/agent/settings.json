@@ -1,11 +1,11 @@
 {
-  "defaultProvider": "kiro",
-  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "local",
+  "defaultModel": "qwen3.6-27b",
   "packages": [
     "npm:pi-provider-kiro",
     "npm:pi-web-access"
   ],
-  "lastChangelogVersion": "0.74.0",
+  "lastChangelogVersion": "0.74.1",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
@@ -20,8 +20,9 @@
   "enabledModels": [
     "kiro/claude-opus-4-6",
     "kiro/claude-sonnet-4-6",
-    "llama-cpp/Qwen3.6-27B-IQ3_XXS",
     "openai-codex/gpt-5.5",
-    "openai-codex/gpt-5.4"
+    "openai-codex/gpt-5.4",
+    "local/qwen3.6-27b",
+    "local/qwen3.6-27b-mtp"
   ]
 }
