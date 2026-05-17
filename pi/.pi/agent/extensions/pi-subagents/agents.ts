@@ -4,7 +4,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getAgentDir, parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import { getAgentDir, loadSkills, parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import type { Skill } from "@earendil-works/pi-coding-agent";
 
 export type AgentScope = "user" | "project" | "both";
 
@@ -12,6 +13,7 @@ export interface AgentConfig {
 	name: string;
 	description: string;
 	tools?: string[];
+	skills?: string[];
 	model?: string;
 	systemPrompt: string;
 	source: "user" | "project";
@@ -60,10 +62,16 @@ function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig
 			.map((t: string) => t.trim())
 			.filter(Boolean);
 
+		const skills = frontmatter.skills
+			?.split(",")
+			.map((s: string) => s.trim())
+			.filter(Boolean);
+
 		agents.push({
 			name: frontmatter.name,
 			description: frontmatter.description,
 			tools: tools && tools.length > 0 ? tools : undefined,
+			skills: skills && skills.length > 0 ? skills : undefined,
 			model: frontmatter.model,
 			systemPrompt: body,
 			source,
@@ -92,6 +100,22 @@ function findNearestProjectAgentsDir(cwd: string): string | null {
 		if (parentDir === currentDir) return null;
 		currentDir = parentDir;
 	}
+}
+
+export function resolveSkillPaths(skillNames: string[], cwd: string): string[] {
+	const agentDir = getAgentDir();
+	const { skills } = loadSkills({ cwd, agentDir, skillPaths: [], includeDefaults: true });
+	const skillMap = new Map<string, Skill>(skills.map((s) => [s.name, s]));
+
+	const paths: string[] = [];
+	for (const name of skillNames) {
+		const skill = skillMap.get(name);
+		if (skill) {
+			// Use the skill's base directory (for SKILL.md-based skills) or file path
+			paths.push(skill.baseDir !== skill.filePath ? skill.baseDir : skill.filePath);
+		}
+	}
+	return paths;
 }
 
 export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryResult {
