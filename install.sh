@@ -32,16 +32,7 @@ if ! command -v stow &>/dev/null; then
   fi
 fi
 
-# --- Packages to install ---
-COMMON_PACKAGES="zsh tmux starship yazi opencode pi"
-
-if [[ "$PLATFORM" == "macos" ]]; then
-  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
-else
-  PACKAGES="$COMMON_PACKAGES"
-fi
-
-# --- Handle Alacritty on Windows (native, not WSL) ---
+# --- Handle WSL-specific setup ---
 if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
   WINDOWS_USER=$(cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
   ALACRITTY_WIN="/mnt/c/Users/$WINDOWS_USER/AppData/Roaming/alacritty"
@@ -55,7 +46,6 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
     echo ""
   fi
 
-  # Install llama-update script
   echo "Setting up llama-update..."
   mkdir -p "$HOME/.local/bin"
   ln -sf "$DOTFILES_DIR/scripts/llama-update.sh" "$HOME/.local/bin/llama-update"
@@ -64,6 +54,14 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
+COMMON_PACKAGES="zsh tmux starship yazi opencode pi"
+
+if [[ "$PLATFORM" == "macos" ]]; then
+  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
+else
+  PACKAGES="$COMMON_PACKAGES"
+fi
+
 echo "Stowing packages: $PACKAGES"
 echo ""
 
@@ -90,7 +88,23 @@ fi
 # --- Link shared agent skills/instructions ---
 echo ""
 echo "Linking shared agent skills..."
-bash "$DOTFILES_DIR/agents/link.sh"
+
+# ~/.agents → shared skills root (npx skills reads/writes here)
+ln -sfn "$DOTFILES_DIR/agents/.agents" "$HOME/.agents"
+echo "  ~/.agents -> $DOTFILES_DIR/agents/.agents"
+
+# Skills symlinks for each agent
+for dir in "$HOME/.pi/agent" "$HOME/.config/opencode" "$HOME/.claude" "$HOME/.kiro"; do
+  mkdir -p "$dir"
+  ln -sf "$HOME/.agents/skills" "$dir/skills"
+  echo "  $dir/skills -> ~/.agents/skills"
+done
+
+# Shared AGENTS.md for each agent
+for dir in "$HOME/.pi/agent" "$HOME/.config/opencode" "$HOME/.kiro"; do
+  ln -sf "$HOME/.agents/AGENTS.md" "$dir/AGENTS.md"
+  echo "  $dir/AGENTS.md -> ~/.agents/AGENTS.md"
+done
 
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"
