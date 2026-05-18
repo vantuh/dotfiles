@@ -26,5 +26,8 @@
     "openai-codex/gpt-5.4",
     "local/qwen3.6-27b",
     "local/qwen3.6-27b-mtp"
-  ]
+  ],
+  "terminal": {
+    "showTerminalProgress": true
+  }
 }
