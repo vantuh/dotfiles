@@ -7,7 +7,7 @@
     "npm:@plannotator/pi-extension",
     "npm:@tintinweb/pi-subagents"
   ],
-  "lastChangelogVersion": "0.75.0",
+  "lastChangelogVersion": "0.75.3",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
