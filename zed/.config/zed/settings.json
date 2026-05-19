@@ -7,24 +7,19 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
+  "project_panel": {
+    "dock": "left",
+  },
+  "tab_size": 2,
   "search": {
     "include_ignored": false,
   },
   "prettier": {
     "allowed": true,
   },
-  "context_servers": {
-    "mcp-server-gitlab": {
-      "enabled": true,
-      "settings": {
-        "gitlab_personal_access_token": "",
-      },
-    },
-  },
   "edit_predictions": {
     "provider": "copilot",
     "mode": "eager",
-    "enabled_in_text_threads": false,
   },
   "base_keymap": "VSCode",
   "vim_mode": false,
@@ -42,43 +37,6 @@
   // },
   "show_completions_on_input": true,
   "show_completion_documentation": false,
-  "agent": {
-    "tool_permissions": {
-      "default": "allow",
-    },
-    "profiles": {
-      "git-lab": {
-        "name": "GitLab",
-        "tools": {
-          "terminal": true,
-          "thinking": true,
-        },
-        "enable_all_context_servers": false,
-        "context_servers": {
-          "mcp-server-gitlab": {
-            "tools": {
-              "create_branch": true,
-              "create_issue": true,
-              "create_merge_request": true,
-              "create_or_update_file": true,
-              "create_repository": true,
-              "fork_repository": true,
-              "get_file_contents": true,
-              "push_files": true,
-              "search_repositories": true,
-            },
-          },
-        },
-      },
-    },
-    "default_profile": "write",
-    "default_model": {
-      "effort": "high",
-      "enable_thinking": true,
-      "provider": "copilot_chat",
-      "model": "claude-opus-4.6",
-    },
-  },
 
   // SPACING
   "indent_guides": {
@@ -91,28 +49,15 @@
 
   // PANELS
   "git_panel": {
+    "tree_view": true,
     "dock": "right",
   },
   "collaboration_panel": {
+    "dock": "left",
     "button": false,
   },
   "outline_panel": {
+    "dock": "left",
     "button": false,
-  },
-
-  // LSP
-  "lsp": {
-    "terraform-ls": {
-      "initialization_options": {
-        "experimentalFeatures": {
-          "prefillRequiredFields": true,
-        },
-      },
-    },
-    "tailwindcss-language-server": {
-      "settings": {
-        "classAttributes": ["class", "className", "ngClass", "styles"],
-      },
-    },
   },
 }
