@@ -85,6 +85,16 @@ if [[ "$PLATFORM" == "macos" ]]; then
   fi
 fi
 
+# --- Link Pi extensions ---
+# Stow doesn't symlink directories with content, so link extensions manually
+EXTENSIONS_SRC="$DOTFILES_DIR/pi/.pi/agent/extensions"
+EXTENSIONS_DST="$HOME/.pi/agent/extensions"
+if [[ -d "$EXTENSIONS_SRC" ]]; then
+  rm -rf "$EXTENSIONS_DST"
+  ln -sfn "$EXTENSIONS_SRC" "$EXTENSIONS_DST"
+  echo "  ~/.pi/agent/extensions -> $EXTENSIONS_SRC"
+fi
+
 # --- Link shared agent skills/instructions ---
 echo ""
 echo "Linking shared agent skills..."
@@ -105,6 +115,14 @@ for dir in "$HOME/.pi/agent" "$HOME/.config/opencode" "$HOME/.kiro"; do
   ln -sf "$HOME/.agents/AGENTS.md" "$dir/AGENTS.md"
   echo "  $dir/AGENTS.md -> ~/.agents/AGENTS.md"
 done
+
+# Cleanup: skill tools sometimes create a circular symlink inside the skills dir
+# (~/.agents -> dotfiles/agents/.agents, so writes go into the repo)
+CIRCULAR_LINK="$DOTFILES_DIR/agents/.agents/skills/skills"
+if [[ -L "$CIRCULAR_LINK" ]]; then
+  rm -f "$CIRCULAR_LINK"
+  echo "  Removed circular skills/skills symlink"
+fi
 
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"
