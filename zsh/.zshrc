@@ -12,6 +12,7 @@ if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
     "/mnt/c/Users/Ivan/AppData/Local/Programs/Microsoft VS Code/bin"
     "/mnt/c/Program Files/Docker/Docker/resources/bin"
     "/mnt/c/WINDOWS"
+    "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
   )
 fi
 
