@@ -1,8 +1,7 @@
 {
-  "defaultProvider": "kiro",
-  "defaultModel": "claude-opus-4-6",
+  "defaultProvider": "kiro-acp",
+  "defaultModel": "claude-opus-4.6",
   "packages": [
-    "npm:pi-provider-kiro",
     "npm:pi-web-access",
     "npm:@plannotator/pi-extension",
     "npm:pi-mcp-adapter",
@@ -22,14 +21,16 @@
     "bun"
   ],
   "enabledModels": [
-    "kiro/claude-opus-4-6",
-    "kiro/claude-sonnet-4-6",
     "openai-codex/gpt-5.5",
     "openai-codex/gpt-5.4",
     "local/qwen3.6-27b",
-    "local/qwen3.6-27b-mtp"
+    "local/qwen3.6-27b-mtp",
+    "kiro-acp/claude-opus-4.6",
+    "kiro-acp/claude-sonnet-4.6",
+    "kiro-acp/claude-haiku-4.5"
   ],
   "terminal": {
     "showTerminalProgress": true
-  }
+  },
+  "defaultThinkingLevel": "low"
 }
