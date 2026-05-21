@@ -5,10 +5,12 @@
     "npm:pi-provider-kiro",
     "npm:pi-web-access",
     "npm:@plannotator/pi-extension",
-    "npm:@tintinweb/pi-subagents"
+    "npm:pi-mcp-adapter",
+    "npm:pi-subagents",
+    "npm:pi-lens"
   ],
-  "lastChangelogVersion": "0.75.3",
-  "hideThinkingBlock": false,
+  "lastChangelogVersion": "0.75.4",
+  "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
