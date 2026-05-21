@@ -159,13 +159,13 @@ Pi Agent Loop
 
 ## Steps
 
-- [ ] 1. MCP Bridge script (`kiro-acp-bridge.mjs`): standalone Node script для tool relay
-- [ ] 2. ACP Client: spawn kiro-cli, JSON-RPC over stdio, initialize handshake
-- [ ] 3. Agent config generation: custom agent з MCP bridge, `<system_instructions>` meta-prompt
-- [ ] 4. IPC Server: HTTP server в extension для прийому tool calls від bridge
-- [ ] 5. streamSimple handler: Context → ACP prompt, session updates → AssistantMessageEvent
-- [ ] 6. registerProvider: register "kiro-acp" provider з available models
-- [ ] 7. Lifecycle: session_shutdown cleanup, process management, error recovery
+- [x] 1. MCP Bridge script (`kiro-acp-bridge.mjs`): standalone Node script для tool relay
+- [x] 2. ACP Client: spawn kiro-cli, JSON-RPC over stdio, initialize handshake
+- [x] 3. Agent config generation: custom agent з MCP bridge, `<system_instructions>` meta-prompt
+- [x] 4. IPC Server: HTTP server в extension для прийому tool calls від bridge
+- [x] 5. streamSimple handler: Context → ACP prompt, session updates → AssistantMessageEvent
+- [x] 6. registerProvider: register "kiro-acp" provider з available models
+- [x] 7. Lifecycle: session_shutdown cleanup, process management, error recovery
 
 ## Verification
 
