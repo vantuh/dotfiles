@@ -190,3 +190,4 @@ if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
 fi
 
 export PLANNOTATOR_SHARE=disabled
+export PILENS_DATA_DIR=~/.pi-lens/projects
