@@ -62,6 +62,12 @@ else
   PACKAGES="$COMMON_PACKAGES"
 fi
 
+# Remove absolute extensions symlink that conflicts with stow --no-folding
+# (stow sees it as "not owned by stow" and aborts the entire pi package)
+if [[ -L "$HOME/.pi/agent/extensions" ]]; then
+  rm -f "$HOME/.pi/agent/extensions"
+fi
+
 echo "Stowing packages: $PACKAGES"
 echo ""
 
@@ -83,16 +89,6 @@ if [[ "$PLATFORM" == "macos" ]]; then
     ln -sf "$DOTFILES_DIR/alacritty/.config/alacritty/macos.toml" "$ALACRITTY_CFG/alacritty.toml"
     echo "  [alacritty] -> Symlinked macos.toml as alacritty.toml"
   fi
-fi
-
-# --- Link Pi extensions ---
-# Stow doesn't symlink directories with content, so link extensions manually
-EXTENSIONS_SRC="$DOTFILES_DIR/pi/.pi/agent/extensions"
-EXTENSIONS_DST="$HOME/.pi/agent/extensions"
-if [[ -d "$EXTENSIONS_SRC" ]]; then
-  rm -rf "$EXTENSIONS_DST"
-  ln -sfn "$EXTENSIONS_SRC" "$EXTENSIONS_DST"
-  echo "  ~/.pi/agent/extensions -> $EXTENSIONS_SRC"
 fi
 
 # --- Link shared agent skills/instructions ---
