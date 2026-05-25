@@ -16,7 +16,7 @@
           "input": [
             "text"
           ],
-          "contextWindow": 131072,
+          "contextWindow": 100000,
           "maxTokens": 32768,
           "cost": {
             "input": 0,
@@ -26,13 +26,13 @@
           }
         },
         {
-          "id": "qwen3.6-27b-mtp",
-          "name": "Qwen 3.6 27B MTP (local)",
+          "id": "qwen3.6-27b-kxl",
+          "name": "Qwen 3.6 27B K_XL (local)",
           "reasoning": true,
           "input": [
             "text"
           ],
-          "contextWindow": 98304,
+          "contextWindow": 54000,
           "maxTokens": 32768,
           "cost": {
             "input": 0,
