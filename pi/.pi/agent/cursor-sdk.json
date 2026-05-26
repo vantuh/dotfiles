@@ -1,0 +1,6 @@
+{
+  "fastDefaults": {
+    "composer-2": false,
+    "composer-2.5": false
+  }
+}

@@ -1,12 +1,13 @@
 {
-  "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-opus-4.6",
+  "defaultProvider": "cursor",
+  "defaultModel": "composer-2-5",
   "packages": [
     "npm:pi-web-access",
     "npm:@plannotator/pi-extension",
     "disabled-npm:pi-mcp-adapter",
     "npm:pi-subagents",
-    "disabled-npm:pi-lens"
+    "disabled-npm:pi-lens",
+    "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.75.5",
   "hideThinkingBlock": false,
@@ -23,7 +24,8 @@
     "local/qwen3.6-27b-kxl",
     "kiro-acp/claude-opus-4.6",
     "kiro-acp/claude-sonnet-4.6",
-    "kiro-acp/claude-haiku-4.5"
+    "kiro-acp/claude-haiku-4.5",
+    "cursor/composer-2-5"
   ],
   "terminal": {
     "showTerminalProgress": true
