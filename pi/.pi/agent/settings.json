@@ -2,15 +2,38 @@
   "defaultProvider": "cursor",
   "defaultModel": "composer-2-5",
   "packages": [
-    "npm:pi-web-access",
-    "npm:@plannotator/pi-extension",
+    {
+      "source": "npm:pi-web-access",
+      "skills": [
+        "-skills/librarian/SKILL.md"
+      ]
+    },
+    {
+      "source": "npm:@plannotator/pi-extension",
+      "skills": [
+        "-skills/plannotator-setup-goal/SKILL.md",
+        "-skills/plannotator-compound/SKILL.md",
+        "-skills/plannotator-visual-explainer/SKILL.md"
+      ]
+    },
     {
       "source": "npm:pi-mcp-adapter",
       "extensions": [
         "-index.ts"
       ]
     },
-    "npm:pi-subagents",
+    {
+      "source": "npm:pi-subagents",
+      "prompts": [
+        "-prompts/gather-context-and-clarify.md",
+        "-prompts/parallel-cleanup.md",
+        "-prompts/parallel-context-build.md",
+        "-prompts/parallel-handoff-plan.md",
+        "-prompts/parallel-research.md",
+        "-prompts/review-loop.md",
+        "+prompts/parallel-review.md"
+      ]
+    },
     {
       "source": "npm:pi-lens",
       "extensions": [
