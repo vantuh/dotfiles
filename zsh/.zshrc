@@ -1,15 +1,21 @@
-# Homebrew + /usr/local/bin first — avoid slow /usr/bin/git shim on macOS
 if [[ "$OSTYPE" == "darwin"* ]]; then
+  typeset -g DOTFILES_PLATFORM=macos DOTFILES_USER=vantuh
+else
+  typeset -g DOTFILES_PLATFORM=wsl DOTFILES_USER=Ivan
+fi
+
+# Homebrew + /usr/local/bin first — avoid slow /usr/bin/git shim on macOS
+if [[ "$DOTFILES_PLATFORM" == macos ]]; then
   export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-elif [[ "$OSTYPE" == "linux-gnu"* ]] && [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+elif [[ "$DOTFILES_PLATFORM" == wsl ]] && [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
 # WSL: strip slow Windows paths (9P filesystem), keep only useful ones
-if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
+if [[ "$DOTFILES_PLATFORM" == wsl ]]; then
   path=( ${path:#/mnt/c/*} )
   path+=(
-    "/mnt/c/Users/Ivan/AppData/Local/Programs/Microsoft VS Code/bin"
+    "/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Programs/Microsoft VS Code/bin"
     "/mnt/c/Program Files/Docker/Docker/resources/bin"
     "/mnt/c/WINDOWS"
     "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
@@ -20,7 +26,7 @@ fi
 
 export POWERLINE_NERD_FONTS=1
 
-if [[ "$OSTYPE" == "linux-gnu"* ]] && command -v keychain &>/dev/null; then
+if [[ "$DOTFILES_PLATFORM" != macos ]] && command -v keychain &>/dev/null; then
   eval "$(keychain --eval --quiet github 2>/dev/null)"
 fi
 
@@ -49,7 +55,7 @@ alias ncu="npx npm-check-updates -i"
 alias lg="lazygit"
 alias ld="lazydocker"
 alias tf="terraform"
-alias dotfix="cd ~/dotfiles && ./install.sh"
+alias dotfix="cd ~/dotfiles && bash ./install.sh"
 
 # Brew wrapper — auto-sync Brewfile on install/uninstall
 function brew() {
@@ -96,11 +102,8 @@ zinit wait lucid for \
     OMZL::clipboard.zsh \
     OMZL::termsupport.zsh \
     OMZP::git \
-    OMZP::npm
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  zinit wait lucid for OMZP::brew
-fi
+    OMZP::npm \
+    OMZP::brew
 
 # Syntax highlighting, autosuggestions, completions (turbo)
 zinit wait lucid for \
@@ -118,7 +121,8 @@ zinit light jqlang/jq
 zinit ice wait lucid from"gh-r" as"program"
 zinit light jesseduffield/lazygit
 
-# fzf
+# fzf — load after turbo plugins so key-bindings aren't lost during zicdreplay
+zinit ice wait'0b' lucid atload'_dotfiles_fzf_bindkeys'
 zinit lucid for \
   https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
   https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
@@ -157,7 +161,7 @@ export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # --- Platform-specific ---
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$DOTFILES_PLATFORM" == macos ]]; then
   export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
   export PATH="$HOME/.gem/ruby/3.4.0/bin:$PATH"
   export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH"
@@ -168,10 +172,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   fi
 
   export PNPM_HOME="$HOME/Library/pnpm"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+else
   export PNPM_HOME="$HOME/.local/share/pnpm"
-
-  alias obsidian="/opt/Obsidian/obsidian"
+  export LLAMA_CPP_PATH=~/.local/bin/llama-cpp
+  export PLANNOTATOR_BROWSER=explorer.exe
 fi
 
 # pnpm PATH
@@ -182,11 +186,16 @@ esac
 
 eval "$(zoxide init zsh)"
 
-# llama.cpp (WSL only)
-if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]]; then
-  export LLAMA_CPP_PATH=~/.local/bin/llama-cpp
-  export PLANNOTATOR_BROWSER=explorer.exe
-fi
-
 export PLANNOTATOR_SHARE=disabled
 export PILENS_DATA_DIR=~/.pi-lens/projects
+
+# fzf Ctrl+R / Ctrl+T — re-apply after async zinit loads (and if fzf was missing at first parse)
+_dotfiles_fzf_bindkeys() {
+  command -v fzf &>/dev/null || return 1
+  (( ${+functions[fzf-history-widget]} )) || return 1
+  bindkey -M emacs '^R' fzf-history-widget
+  bindkey -M viins '^R' fzf-history-widget
+  bindkey -M vicmd '^R' fzf-history-widget
+  (( ${+functions[fzf-file-widget]} )) && bindkey -M emacs '^T' fzf-file-widget
+}
+_dotfiles_fzf_bindkeys
