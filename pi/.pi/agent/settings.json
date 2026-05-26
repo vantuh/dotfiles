@@ -17,9 +17,6 @@
   },
   "theme": "dark",
   "quietStartup": false,
-  "npmCommand": [
-    "bun"
-  ],
   "enabledModels": [
     "openai-codex/gpt-5.5",
     "local/qwen3.6-27b",

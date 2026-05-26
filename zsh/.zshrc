@@ -50,7 +50,6 @@ alias lg="lazygit"
 alias ld="lazydocker"
 alias tf="terraform"
 alias dotfix="cd ~/dotfiles && ./install.sh"
-alias pi="bun $HOME/.bun/install/global/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
 
 # Brew wrapper — auto-sync Brewfile on install/uninstall
 function brew() {
