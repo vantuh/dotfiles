@@ -4,9 +4,23 @@
   "packages": [
     "npm:pi-web-access",
     "npm:@plannotator/pi-extension",
-    "disabled-npm:pi-mcp-adapter",
+    {
+      "source": "npm:pi-mcp-adapter",
+      "extensions": [
+        "-index.ts"
+      ]
+    },
     "npm:pi-subagents",
-    "disabled-npm:pi-lens",
+    {
+      "source": "npm:pi-lens",
+      "extensions": [
+        "-index.ts"
+      ],
+      "skills": [
+        "-skills/ast-grep/SKILL.md",
+        "-skills/lsp-navigation/SKILL.md"
+      ]
+    },
     "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.75.5",
@@ -33,5 +47,8 @@
   "defaultThinkingLevel": "low",
   "subagents": {
     "disableBuiltins": true
-  }
+  },
+  "extensions": [
+    "-extensions/kiro-region-fix.ts"
+  ]
 }
