@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-opus-4.6",
+  "defaultProvider": "cursor",
+  "defaultModel": "composer-2-5",
   "packages": [
     {
       "source": "npm:pi-web-access",
@@ -46,7 +46,7 @@
     },
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "0.75.5",
+  "lastChangelogVersion": "0.76.0",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
