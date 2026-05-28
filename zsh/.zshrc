@@ -199,3 +199,14 @@ _dotfiles_fzf_bindkeys() {
   (( ${+functions[fzf-file-widget]} )) && bindkey -M emacs '^T' fzf-file-widget
 }
 _dotfiles_fzf_bindkeys
+
+ab-connect() {
+  local port_file="/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Google/Chrome/User Data/DevToolsActivePort"
+  if [ ! -f "$port_file" ]; then
+    echo "Chrome not running with remote debugging. Enable it at chrome://inspect/#remote-debugging" >&2
+    return 1
+  fi
+  local port=$(sed -n '1p' "$port_file")
+  local ws_path=$(sed -n '2p' "$port_file")
+  agent-browser connect "ws://127.0.0.1:${port}${ws_path}"
+}
