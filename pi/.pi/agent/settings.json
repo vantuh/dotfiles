@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "cursor",
-  "defaultModel": "composer-2-5",
+  "defaultProvider": "kiro-acp",
+  "defaultModel": "claude-opus-4.6",
   "packages": [
     {
       "source": "npm:pi-web-access",
@@ -21,6 +21,9 @@
       "extensions": [
         "-index.ts"
       ]
+    },
+    {
+      "source": "extensions/kiro-subagents-bridge"
     },
     {
       "source": "npm:pi-subagents",

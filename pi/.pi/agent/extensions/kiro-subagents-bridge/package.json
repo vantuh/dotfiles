@@ -1,0 +1,8 @@
+{
+  "name": "kiro-subagents-bridge",
+  "private": true,
+  "type": "module",
+  "pi": {
+    "extensions": ["./preload.ts", "./index.ts"]
+  }
+}
