@@ -46,7 +46,7 @@
     },
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "0.76.0",
+  "lastChangelogVersion": "0.77.0",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
