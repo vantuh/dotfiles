@@ -10,7 +10,7 @@ import {
 	findNearestKiroRoot,
 	getGlobalKiroAgentsDir,
 	getKiroGlobalOutDir,
-	getKiroRepoOutDir,
+	getProjectSyncOutDir,
 	getProjectKiroAgentsDir,
 } from "./paths.ts";
 
@@ -154,7 +154,7 @@ function buildAgentReport(
 	const jsonDir = path.dirname(sourcePath);
 	const name = agent.name.trim();
 	const syncedDir =
-		scope === "global" ? getKiroGlobalOutDir() : kiroRoot ? getKiroRepoOutDir(kiroRoot) : null;
+		scope === "global" ? getKiroGlobalOutDir() : kiroRoot ? getProjectSyncOutDir(kiroRoot) : null;
 	const syncedMdPath = syncedDir ? path.join(syncedDir, `${name}.md`) : null;
 	let syncedMdBytes: number | null = null;
 	if (syncedMdPath && fs.existsSync(syncedMdPath)) {
@@ -242,7 +242,7 @@ export function gatherKiroContextForCwd(cwd: string, filterName?: string): KiroC
 		globalAgentsDir: globalDir,
 		projectAgentsDir: projectDir,
 		syncedGlobalDir: getKiroGlobalOutDir(),
-		syncedProjectDir: kiroRoot ? getKiroRepoOutDir(kiroRoot) : null,
+		syncedProjectDir: kiroRoot ? getProjectSyncOutDir(kiroRoot) : null,
 		visibleAgents,
 	};
 }
@@ -323,7 +323,7 @@ export function formatKiroContextReport(report: KiroContextSessionReport): strin
 	lines.push(`Synced: ${report.syncedGlobalDir}/ · ${report.syncedProjectDir}/`);
 	lines.push("");
 	lines.push(
-		"How it works: bridge inlines prompt + file:// resources into kiro-active/global/ and kiro-by-repo/<id>/ at sync.",
+		"How it works: bridge inlines prompt + file:// resources into kiro-active/global/ and kiro-active/<project>/ at sync.",
 	);
 	lines.push(
 		"When you run `kiro.<name>`, pi-subagents loads that markdown as the system prompt, plus AGENTS.md chain from cwd.",

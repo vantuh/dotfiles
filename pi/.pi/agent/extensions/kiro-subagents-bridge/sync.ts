@@ -9,7 +9,7 @@ import {
 	findNearestKiroRoot,
 	getGlobalKiroAgentsDir,
 	getKiroGlobalOutDir,
-	getKiroRepoOutDir,
+	getProjectSyncOutDir,
 	getProjectKiroAgentsDir,
 } from "./paths.ts";
 
@@ -53,30 +53,12 @@ function listJsonFiles(dir: string): string[] {
 	}
 }
 
-function emptyDir(dir: string): void {
-	ensureDir(dir);
-	for (const entry of fs.readdirSync(dir)) {
-		const full = path.join(dir, entry);
-		fs.rmSync(full, { recursive: true, force: true });
-	}
-}
-
-function writeScopeManifest(kiroRoot: string): void {
-	const projectDir = getKiroRepoOutDir(kiroRoot);
-	ensureDir(projectDir);
-	const manifestPath = path.join(projectDir, ".scope.json");
-	fs.writeFileSync(
-		manifestPath,
-		`${JSON.stringify({ kiroRoot, syncedAt: new Date().toISOString() }, null, 2)}\n`,
-		"utf-8",
-	);
-}
-
 function syncAgentSlice(
 	agents: Map<string, AgentEntry>,
 	outDir: string,
 	kiroRoot: string | null,
 	scope: "global" | "project",
+	projectBasename?: string,
 ): SliceResult {
 	ensureDir(outDir);
 
@@ -90,7 +72,7 @@ function syncAgentSlice(
 		const fileName = `${localName}.md`;
 		expectedFiles.add(fileName);
 		const outPath = path.join(outDir, fileName);
-		const markdown = kiroAgentToMarkdown(config, sourcePath, kiroRoot);
+		const markdown = kiroAgentToMarkdown(config, sourcePath, kiroRoot, projectBasename);
 		const hash = sha256(markdown);
 		const hashPath = `${outPath}.sha256`;
 
@@ -117,13 +99,13 @@ function syncAgentSlice(
 				sourcePath,
 			});
 		}
-		names.push(`kiro.${localName}`);
+		const pkg = projectBasename ? `kiro-${projectBasename}` : "kiro";
+		names.push(`${pkg}.${localName}`);
 	}
 
 	let removed = 0;
 	if (fs.existsSync(outDir)) {
 		for (const entry of fs.readdirSync(outDir)) {
-			if (entry === ".scope.json") continue;
 			if (!entry.endsWith(".md")) continue;
 			if (expectedFiles.has(entry)) continue;
 			const full = path.join(outDir, entry);
@@ -191,6 +173,8 @@ export function syncKiroAgentsForCwd(cwd: string): SyncResult {
 	const kiroRoot = findNearestKiroRoot(cwd);
 	const projectDir = kiroRoot ? getProjectKiroAgentsDir(kiroRoot) : null;
 	const projectJsonFiles = projectDir ? listJsonFiles(projectDir) : [];
+	const projectOutDir = kiroRoot ? getProjectSyncOutDir(kiroRoot) : null;
+	const projectBasename = kiroRoot ? path.basename(kiroRoot) : undefined;
 
 	log("sync start", {
 		cwd,
@@ -200,7 +184,7 @@ export function syncKiroAgentsForCwd(cwd: string): SyncResult {
 		projectJsonFiles,
 		kiroRoot,
 		globalOut: getKiroGlobalOutDir(),
-		projectOut: kiroRoot ? getKiroRepoOutDir(kiroRoot) : null,
+		projectOut: projectOutDir,
 	});
 
 	const globalAgents = readKiroAgentsFromDir(globalDir);
@@ -226,19 +210,23 @@ export function syncKiroAgentsForCwd(cwd: string): SyncResult {
 	const globalSlice = syncAgentSlice(globalToWrite, getKiroGlobalOutDir(), null, "global");
 
 	let projectSlice: SliceResult = { written: 0, unchanged: 0, removed: 0, names: [] };
-	if (kiroRoot) {
-		const repoOutDir = getKiroRepoOutDir(kiroRoot);
+	if (kiroRoot && projectOutDir) {
 		if (projectAgents.size > 0) {
-			projectSlice = syncAgentSlice(projectAgents, repoOutDir, kiroRoot, "project");
-			writeScopeManifest(kiroRoot);
-			log("project scope active", { kiroRoot, repoOutDir, agentCount: projectAgents.size });
-		} else {
-			emptyDir(repoOutDir);
-			if (projectJsonFiles.length > 0) {
-				log("project agents parse failed", { projectDir, projectJsonFiles });
-			} else {
-				log("project scope empty", { kiroRoot, repoOutDir });
+			projectSlice = syncAgentSlice(projectAgents, projectOutDir, kiroRoot, "project", projectBasename);
+			log("project scope active", { kiroRoot, projectOutDir, agentCount: projectAgents.size });
+		} else if (projectJsonFiles.length === 0) {
+			// Only clear when source is intentionally empty
+			if (fs.existsSync(projectOutDir)) {
+				for (const entry of fs.readdirSync(projectOutDir)) {
+					fs.rmSync(path.join(projectOutDir, entry), { force: true });
+				}
 			}
+			log("project scope empty", { kiroRoot, projectOutDir });
+		} else {
+			log("project agents parse failed — preserving existing synced state", {
+				projectDir,
+				projectJsonFiles,
+			});
 		}
 	} else {
 		log("no kiro project root for cwd", { cwd });

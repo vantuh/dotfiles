@@ -23,6 +23,10 @@ export function resolveFileUri(uri: string, jsonDir: string, kiroRoot: string | 
 	const raw = uri.slice("file://".length).replace(/^\.\//, "");
 	if (!raw) return null;
 	if (path.isAbsolute(raw)) return raw;
+	// For glob patterns, prefer kiroRoot since existence checks won't work
+	if (raw.includes("*")) {
+		return path.resolve(kiroRoot ?? jsonDir, raw);
+	}
 	const candidates = [path.resolve(jsonDir, raw)];
 	if (kiroRoot) candidates.push(path.resolve(kiroRoot, raw));
 	for (const candidate of candidates) {
@@ -53,9 +57,15 @@ export function expandResourceGlob(
 		return fs.existsSync(resolved) ? [resolved] : [];
 	}
 
-	const dir = path.dirname(resolved);
-	const base = path.basename(resolved);
-	if (!fs.existsSync(dir)) return [];
+	// Split at the first glob segment to find the walk root
+	const segments = resolved.split(path.sep);
+	const firstGlobIdx = segments.findIndex((s) => s.includes("*"));
+	const walkRoot = firstGlobIdx > 0 ? segments.slice(0, firstGlobIdx).join(path.sep) : path.dirname(resolved);
+	// Extract extension filter from the last segment (e.g., "*.md" → ".md")
+	const lastSegment = segments[segments.length - 1];
+	const extFilter = lastSegment.startsWith("*") && lastSegment.includes(".") ? lastSegment.slice(lastSegment.indexOf(".")) : null;
+
+	if (!fs.existsSync(walkRoot)) return [];
 
 	const files: string[] = [];
 	const walk = (currentDir: string, depth: number) => {
@@ -70,15 +80,16 @@ export function expandResourceGlob(
 			if (files.length >= MAX_RESOURCE_FILES) break;
 			const full = path.join(currentDir, entry.name);
 			if (entry.isDirectory()) {
-				if (base.includes("**") || entry.name !== "node_modules") walk(full, depth + 1);
+				if (entry.name === "node_modules" || entry.name === ".git") continue;
+				walk(full, depth + 1);
 				continue;
 			}
 			if (!entry.isFile()) continue;
-			if (base.includes("**") && base.endsWith(".md") && !entry.name.endsWith(".md")) continue;
+			if (extFilter && !entry.name.endsWith(extFilter)) continue;
 			files.push(full);
 		}
 	};
-	walk(dir, 0);
+	walk(walkRoot, 0);
 	return files.slice(0, MAX_RESOURCE_FILES);
 }
 
@@ -110,16 +121,18 @@ export function kiroAgentToMarkdown(
 	agent: KiroAgentJson,
 	sourcePath: string,
 	kiroRoot: string | null,
+	projectBasename?: string,
 ): string {
 	const jsonDir = path.dirname(sourcePath);
 	const name = agent.name.trim();
 	const description =
 		agent.description?.trim() ||
 		`Kiro agent imported from ${path.basename(sourcePath)}`;
+	const packageName = projectBasename ? `kiro-${projectBasename}` : "kiro";
 
 	const lines: string[] = ["---"];
 	lines.push(`name: ${escapeYamlScalar(name)}`);
-	lines.push("package: kiro");
+	lines.push(`package: ${packageName}`);
 	lines.push(`description: ${escapeYamlScalar(description)}`);
 
 	const mcpOnly = requiresKiroMcp(agent);

@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "pi": {
-    "extensions": ["./preload.ts", "./index.ts"]
+    "extensions": ["./index.ts"]
   }
 }

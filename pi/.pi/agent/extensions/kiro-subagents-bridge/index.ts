@@ -1,7 +1,9 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import * as fs from "node:fs";
 
 import { formatKiroContextReport, gatherKiroContextForCwd } from "./context-report.ts";
 import { log, LOG_FILE } from "./logging.ts";
+import { findNearestKiroRoot, getProjectSyncOutDir } from "./paths.ts";
 import { syncKiroAgentsForCwd } from "./sync.ts";
 
 function runSync(cwd: string, reason = "session_start"): void {
@@ -35,7 +37,7 @@ function runSync(cwd: string, reason = "session_start"): void {
 				? "project: (none in .kiro/agents)"
 				: "project: (not in a .kiro repo)";
 	console.log(
-		`[kiro-subagents-bridge] ${parts.join(", ")} → global: kiro-active/global/; project: kiro-by-repo/ (${globalPart}; ${projectPart})`,
+		`[kiro-subagents-bridge] ${parts.join(", ")} → kiro-active/ (${globalPart}; ${projectPart})`,
 	);
 }
 
@@ -50,6 +52,22 @@ export default function (pi: ExtensionAPI) {
 			const message = error instanceof Error ? error.message : String(error);
 			log("sync failed", { cwd: ctx.cwd, error: message });
 			console.error(`[kiro-subagents-bridge] sync failed: ${message} (see ${LOG_FILE})`);
+		}
+	});
+
+	pi.on("session_shutdown", (event, ctx) => {
+		if (event.reason !== "quit") return;
+		const kiroRoot = findNearestKiroRoot(ctx.cwd);
+		if (!kiroRoot) return;
+		const projectOutDir = getProjectSyncOutDir(kiroRoot);
+		try {
+			if (fs.existsSync(projectOutDir)) {
+				fs.rmSync(projectOutDir, { recursive: true, force: true });
+				log("project agents cleaned up", { reason: event.reason, kiroRoot, projectOutDir });
+			}
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			log("cleanup failed", { kiroRoot, projectOutDir, error: message });
 		}
 	});
 

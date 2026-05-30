@@ -1,29 +1,25 @@
 # kiro-subagents-bridge
 
-Loads company **Kiro CLI agents** (`*.json`) into **pi-subagents** without modifying git repos or patching the pi-subagents package.
+Loads company **Kiro CLI agents** (`*.json`) into **pi-subagents** without modifying git repos.
 
 ## Behavior
 
-**No background watchers.** Sync once per `session_start`. **No files in git repos** (no `.pi/agents/kiro` symlinks).
+**No background watchers.** Sync once per `session_start`. Cleanup on `session_shutdown` (quit).
 
 ### Global agents
 
 - Source: `~/.kiro/agents/*.json`
-- Cache: `~/.pi/agent/agents/kiro-active/global/*.md`
+- Output: `~/.pi/agent/agents/kiro-active/global/*.md`
 - pi-subagents **user** scope (every session)
+- Package: `kiro` → runtime name `kiro.<agent-name>`
 
-### Project agents (per repo, parallel Pi safe)
+### Project agents (per repo)
 
 - Source: `{kiroRoot}/.kiro/agents/*.json`
-- Cache: `~/.pi/agent/kiro-by-repo/<repo-id>/*.md` (outside `agents/`, so other repos never see them)
-- At discovery time, `preload.ts` wraps pi-subagents `discoverAgents()` and injects only the cache for the **current** `kiroRoot` (from cwd)
-- pi-subagents treats them as **project** scope when cwd is under that repo
-
-Two Pi sessions in two different repos: separate cache dirs, separate discovery — no overwrite.
-
-### Package load order
-
-Registered as a **local pi package** in `settings.json` **before** `npm:pi-subagents`, so `preload.ts` patches discovery before the subagents extension starts.
+- Output: `~/.pi/agent/agents/kiro-active/<project-basename>/*.md`
+- pi-subagents discovers them as user scope (inside `agents/` recursive scan)
+- Package: `kiro-<project-basename>` → runtime name `kiro-<basename>.<agent-name>`
+- **Cleaned up on session quit** so agents from one project don't linger in another
 
 ## Setup
 
@@ -42,10 +38,10 @@ cd ~/dotfiles && stow pi
 
 ```bash
 tail -f /tmp/kiro-subagents-bridge-debug.log
-# expect: discover patch installed
+# expect: extension loaded, sync complete, project scope active
 ```
 
-In a `.kiro` repo: subagent list shows `kiro.*` for global + this repo only.
+In a `.kiro` repo: subagent list shows `kiro.*` (global) + `kiro-<project>.*` (project).
 
 ```
 /kiro-context

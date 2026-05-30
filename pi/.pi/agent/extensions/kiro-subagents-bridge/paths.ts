@@ -1,4 +1,3 @@
-import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -33,21 +32,10 @@ export function getKiroGlobalOutDir(): string {
 	return path.join(getKiroActiveAgentsDir(), "global");
 }
 
-/** Per-repo cache outside `agents/` so parallel Pi sessions do not overwrite each other. */
-export function getKiroByRepoRootDir(): string {
-	return path.join(getAgentDir(), "kiro-by-repo");
-}
-
-/** Stable id for a Kiro project root (directory name under `kiro-by-repo/`). */
-export function kiroRepoId(kiroRoot: string): string {
-	const hash = crypto.createHash("sha256").update(path.resolve(kiroRoot)).digest("hex").slice(0, 12);
-	const base = path.basename(kiroRoot).replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "repo";
-	return `${base}-${hash}`;
-}
-
-/** Synced markdown for one Kiro project root. */
-export function getKiroRepoOutDir(kiroRoot: string): string {
-	return path.join(getKiroByRepoRootDir(), kiroRepoId(kiroRoot));
+/** Project Kiro agents — synced into kiro-active/<basename>/ so pi-subagents discovers them as user scope. */
+export function getProjectSyncOutDir(kiroRoot: string): string {
+	const basename = path.basename(kiroRoot).replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "project";
+	return path.join(getKiroActiveAgentsDir(), basename);
 }
 
 export function getGlobalKiroAgentsDir(): string {
