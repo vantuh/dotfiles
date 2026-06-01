@@ -121,11 +121,12 @@ zinit light jqlang/jq
 zinit ice wait lucid from"gh-r" as"program"
 zinit light jesseduffield/lazygit
 
-# fzf — load after turbo plugins so key-bindings aren't lost during zicdreplay
-zinit ice wait'0b' lucid atload'_dotfiles_fzf_bindkeys'
-zinit lucid for \
-  https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh \
-  https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
+# fzf — source directly so Ctrl+R works on first prompt
+_fzf_shell=${FZF_BASE:-~/.local/share/zinit/plugins/fzf}/shell
+[[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && _fzf_shell=/usr/share/doc/fzf/examples
+source $_fzf_shell/key-bindings.zsh 2>/dev/null
+source $_fzf_shell/completion.zsh 2>/dev/null
+unset _fzf_shell
 
 # NVM (lazy)
 export NVM_COMPLETION=true
@@ -192,17 +193,6 @@ eval "$(zoxide init zsh)"
 
 export PLANNOTATOR_SHARE=disabled
 export PILENS_DATA_DIR=~/.pi-lens/projects
-
-# fzf Ctrl+R / Ctrl+T — re-apply after async zinit loads (and if fzf was missing at first parse)
-_dotfiles_fzf_bindkeys() {
-  command -v fzf &>/dev/null || return 1
-  (( ${+functions[fzf-history-widget]} )) || return 1
-  bindkey -M emacs '^R' fzf-history-widget
-  bindkey -M viins '^R' fzf-history-widget
-  bindkey -M vicmd '^R' fzf-history-widget
-  (( ${+functions[fzf-file-widget]} )) && bindkey -M emacs '^T' fzf-file-widget
-}
-_dotfiles_fzf_bindkeys
 
 ab-connect() {
   local port_file="/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Google/Chrome/User Data/DevToolsActivePort"
