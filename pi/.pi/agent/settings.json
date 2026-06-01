@@ -1,6 +1,6 @@
 {
   "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-opus-4.6",
+  "defaultModel": "claude-sonnet-4.6",
   "packages": [
     {
       "source": "npm:pi-web-access",
@@ -62,7 +62,7 @@
     "openai-codex/gpt-5.5",
     "local/qwen3.6-27b",
     "local/qwen3.6-27b-kxl",
-    "kiro-acp/claude-opus-4.6",
+    "kiro-acp/claude-opus-4.8",
     "kiro-acp/claude-sonnet-4.6",
     "kiro-acp/claude-haiku-4.5",
     "cursor/composer-2-5"
