@@ -47,7 +47,8 @@
         "-skills/lsp-navigation/SKILL.md"
       ]
     },
-    "npm:pi-cursor-sdk"
+    "npm:pi-cursor-sdk",
+    "npm:context-mode"
   ],
   "lastChangelogVersion": "0.78.0",
   "hideThinkingBlock": false,
