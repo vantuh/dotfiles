@@ -47,7 +47,8 @@
         "-skills/lsp-navigation/SKILL.md"
       ]
     },
-    "npm:pi-cursor-sdk"
+    "npm:pi-cursor-sdk",
+    "npm:@juicesharp/rpiv-ask-user-question"
   ],
   "lastChangelogVersion": "0.78.0",
   "hideThinkingBlock": false,
