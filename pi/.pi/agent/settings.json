@@ -47,8 +47,7 @@
         "-skills/lsp-navigation/SKILL.md"
       ]
     },
-    "npm:pi-cursor-sdk",
-    "npm:context-mode"
+    "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.78.0",
   "hideThinkingBlock": false,
@@ -71,7 +70,7 @@
   "terminal": {
     "showTerminalProgress": true
   },
-  "defaultThinkingLevel": "low",
+  "defaultThinkingLevel": "high",
   "subagents": {
     "disableBuiltins": true
   },
