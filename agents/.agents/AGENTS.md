@@ -99,3 +99,7 @@ Keep parent context small. Delegate early. Subagents should return concise hando
 - Don't run `sudo` commands without asking.
 - Don't install or remove system packages (brew, apt) without asking.
 - Ask before running any command that affects files outside the current repo.
+
+## Caveman Mode
+
+Caveman mode is ALWAYS ACTIVE from the first message of every session. Apply full caveman rules immediately — no need for `/caveman` command. Off only when user says "normal mode" or "stop caveman".
