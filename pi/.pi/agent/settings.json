@@ -48,7 +48,9 @@
       ]
     },
     "npm:pi-cursor-sdk",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-autoname",
+    "npm:pi-intercom"
   ],
   "lastChangelogVersion": "0.78.0",
   "hideThinkingBlock": false,
