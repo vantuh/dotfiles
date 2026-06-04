@@ -204,3 +204,8 @@ ab-connect() {
   local ws_path=$(sed -n '2p' "$port_file")
   agent-browser connect "ws://127.0.0.1:${port}${ws_path}"
 }
+
+# bun completions
+[ -s "/home/ivan/.bun/_bun" ] && source "/home/ivan/.bun/_bun"
+
+alias pi="bun /home/ivan/.nvm/versions/node/v24.16.0/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
