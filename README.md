@@ -1,3 +1,4 @@
+¶README.md#5A2B
 # dotfiles
 
 Cross-platform dotfiles (macOS + Windows/WSL) managed with [GNU Stow](https://www.gnu.org/software/stow/).
@@ -13,7 +14,8 @@ Cross-platform dotfiles (macOS + Windows/WSL) managed with [GNU Stow](https://ww
 | yazi       | Yazi file manager config          | ✓     | ✓   |
 | opencode   | OpenCode config + TUI theme       | ✓     | ✓   |
 | pi         | Pi coding agent config            | ✓     | ✓   |
-| agents     | Shared AI agent skills & instructions (symlinked to Pi, OpenCode, Kiro) | ✓ | ✓ |
+| omp        | Oh My Pi (OMP) agent config       | ✓     | ✓   |
+| agents     | Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro) | ✓ | ✓ |
 | karabiner  | Karabiner-Elements key remapping  | ✓     |     |
 | zed        | Zed editor settings + keymap      | ✓     |     |
 

@@ -1,0 +1,20 @@
+lastChangelogVersion: 15.9.1
+symbolPreset: nerd
+theme: 
+  dark: dark-dracula
+  light: dark-dracula
+setupVersion: 1
+modelRoles: 
+  default: cursor/composer-2.5
+  plan: kiro-acp/claude-opus-4.8
+  task: kiro-acp/claude-sonnet-4.6
+  smol: kiro-acp/claude-haiku-4.5
+statusLine: 
+  preset: default
+  separator: powerline-thin
+  sessionAccent: true
+display: 
+  shimmer: classic
+  showTokenUsage: true
+disabledExtensions: 
+  []
