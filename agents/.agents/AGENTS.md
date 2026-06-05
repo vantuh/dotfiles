@@ -74,23 +74,16 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Don't install or remove system packages (brew, apt) without asking.
 - Ask before running any command that affects files outside the current repo.
 
-## Subagents workflow
+## Tool and subagent use
 
-Use subagents only when explicitly requested by the user, or when the task is clearly broad/risky and delegation would materially improve
-quality.
+Prefer direct tools when the target is known: read known files, search known patterns, edit known locations.
 
-Before delegating, briefly state why a subagent is useful. If the benefit is not obvious, ask first.
+Use subagents when the task is large, unfamiliar, multi-file, or likely to require several rounds of exploration/research/review. For broad codebase exploration that would take more than 3 read/grep/find/ls queries, use a scout subagent. For external docs or web research that would take more than 3 searches/queries, use a researcher subagent. Otherwise use direct tools.
 
-Good uses:
-- unfamiliar codebase reconnaissance → `scout`
-- external/recent docs research → `researcher`
-- non-trivial plan review → `oracle` or `reviewer`
-- multi-file implementation after an approved plan → `worker`, then `reviewer`
+Use subagents to parallelize independent investigations or keep large raw results out of the main context. If you delegate research/exploration, do not repeat the same searches yourself; synthesize the returned findings instead. Make delegated prompts self-contained: goal, context, what is already known, expected output, and constraints.
 
-Do not use subagents for:
-- trivial edits
-- single-file obvious fixes
-- answers that can be produced from loaded context
-- delegation just to follow a workflow
+Do not use subagents for obvious single-file edits, direct lookups, or work already handled by another subagent.
 
-Default: do the work directly. Delegate only when value is clear.
+Never delegate understanding. Use subagents to gather context, research, plan, or review; the parent agent must synthesize results, decide next steps, and own the final answer. If delegating implementation, provide exact files, constraints, and acceptance criteria rather than “fix based on findings.”
+
+Before delegating, state briefly why delegation is useful and which agent you will use. For borderline cases, ask first.
