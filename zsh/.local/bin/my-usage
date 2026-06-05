@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+set -u
+
+section() {
+  printf '\n\033[1;36m== %s ==\033[0m\n' "$1"
+}
+
+skip() {
+  printf 'skip: %s\n' "$1"
+}
+
+run_codex_usage() {
+  section "Codex"
+
+  if ! command -v codex >/dev/null 2>&1; then
+    skip "codex not installed"
+    return 0
+  fi
+
+  if command -v codex-limit >/dev/null 2>&1; then
+    codex-limit && return 0
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    printf 'codex found, but node not found; cannot query codex app-server\n'
+    return 0
+  fi
+
+  node <<'NODE'
+const { spawn } = require('node:child_process');
+
+function formatRemaining(resetsAt) {
+  const remaining = Math.max(0, resetsAt - Math.floor(Date.now() / 1000));
+  const hours = Math.floor(remaining / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  return hours >= 24 ? `${Math.floor(hours / 24)}d${hours % 24}h` : `${hours}h${minutes}m`;
+}
+
+function formatReset(resetsAt) {
+  return new Date(resetsAt * 1000).toISOString().slice(0, 16).replace('T', ' ');
+}
+
+function labelWindow(minutes) {
+  if (minutes >= 10000) return 'Weekly';
+  if (minutes >= 1440) return 'Daily';
+  if (minutes >= 240) return 'Burst';
+  return `${minutes}m`;
+}
+
+function bar(percent, width = 20) {
+  const value = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const filled = Math.round((value / 100) * width);
+  return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${value}%`;
+}
+
+function printMetric(name, percent, detail = '') {
+  console.log(`${name.padEnd(8)} ${bar(percent)}${detail ? `  ${detail}` : ''}`);
+}
+
+const proc = spawn('codex', ['app-server'], { stdio: ['pipe', 'pipe', 'pipe'] });
+let stdout = '';
+let stderr = '';
+let nextId = 0;
+const pending = new Map();
+
+const timer = setTimeout(() => {
+  proc.kill();
+  console.error('codex usage failed: timeout waiting for `codex app-server`');
+  process.exit(1);
+}, 15000);
+
+proc.on('error', (error) => {
+  clearTimeout(timer);
+  console.error(`codex usage failed: ${error.message}`);
+  process.exit(1);
+});
+
+proc.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+proc.stdout.on('data', (chunk) => {
+  stdout += chunk.toString();
+  let newline;
+  while ((newline = stdout.indexOf('\n')) !== -1) {
+    const line = stdout.slice(0, newline).trim();
+    stdout = stdout.slice(newline + 1);
+    if (!line) continue;
+    try {
+      const message = JSON.parse(line);
+      const callback = pending.get(message.id);
+      if (!callback) continue;
+      pending.delete(message.id);
+      callback(message);
+    } catch {}
+  }
+});
+
+function rpc(method, params = {}) {
+  return new Promise((resolve, reject) => {
+    const id = ++nextId;
+    pending.set(id, (message) => {
+      if (message.error) reject(new Error(message.error.message));
+      else resolve(message.result);
+    });
+    proc.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method, params }) + '\n');
+  });
+}
+
+(async () => {
+  try {
+    await rpc('initialize', { clientInfo: { name: 'my-usage', version: '1.0.0' } });
+    const result = await rpc('account/rateLimits/read');
+    clearTimeout(timer);
+    proc.kill();
+
+    const quota = result.rateLimits;
+    console.log(`Plan: ${quota.planType ?? 'unknown'}`);
+    for (const window of [quota.secondary, quota.primary].filter(Boolean)) {
+      const name = labelWindow(window.windowDurationMins);
+      console.log(`${name.padEnd(8)} used ${Math.round(window.usedPercent)}% of ${window.windowDurationMins}m window`);
+      printMetric(name, window.usedPercent, `resets ${formatReset(window.resetsAt)} (${formatRemaining(window.resetsAt)})`);
+    }
+  } catch (error) {
+    clearTimeout(timer);
+    proc.kill();
+    console.error(`codex usage failed: ${error.message}${stderr ? `\n${stderr}` : ''}`);
+    process.exit(1);
+  }
+})();
+NODE
+}
+
+run_kiro_usage() {
+  section "Kiro"
+
+  local output=""
+  if command -v kiro-cli >/dev/null 2>&1; then
+    output="$(kiro-cli chat --no-interactive '/usage' 2>&1)" || { printf 'kiro-cli installed, but /usage did not work\n'; return 0; }
+  elif command -v kiro >/dev/null 2>&1; then
+    output="$(kiro chat --no-interactive '/usage' 2>&1)" || { printf 'kiro installed, but /usage did not work\n'; return 0; }
+  else
+    skip "kiro-cli not installed"
+    return 0
+  fi
+
+  KIRO_USAGE_TEXT="$output" node <<'NODE'
+const text = process.env.KIRO_USAGE_TEXT || '';
+function bar(percent, width = 20) {
+  const value = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const filled = Math.round((value / 100) * width);
+  return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${value}%`;
+}
+function printMetric(name, percent, detail = '') {
+  console.log(`${name.padEnd(8)} ${bar(percent)}${detail ? `  ${detail}` : ''}`);
+}
+const clean = text.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, '');
+const header = clean.match(/Estimated Usage \| resets on ([^|]+) \|\s*(.+)/);
+const credits = clean.match(/Credits \(([^)]+)\)/);
+const percent = clean.match(/([0-9]+(?:\.[0-9]+)?)%/);
+if (header) console.log(`Plan: ${header[2].trim()}`);
+if (credits) console.log(`Credits  ${credits[1]}`);
+printMetric('Credits', percent ? Number(percent[1]) : 0, header ? `resets ${header[1].trim()}` : '');
+NODE
+}
+
+run_cursor_usage() {
+  section "Cursor"
+
+  local token="${CURSOR_SESSION_TOKEN:-}"
+  local token_file="${CURSOR_SESSION_TOKEN_FILE:-$HOME/.config/my-usage/cursor-token}"
+
+  if [[ -z "$token" && -f "$token_file" ]]; then
+    token="$(tr -d '[:space:]' < "$token_file")"
+  fi
+
+  # Accept either raw token, "WorkosCursorSessionToken=...", or full cookie header.
+  token="${token#WorkosCursorSessionToken=}"
+  token="${token%%;*}"
+
+  if [[ -z "$token" ]]; then
+    printf 'skip: cursor session token missing\n'
+    printf 'Open https://cursor.com/dashboard/usage, copy WorkosCursorSessionToken cookie, then:\n'
+    printf '  mkdir -p ~/.config/my-usage\n'
+    printf '  printf %%s "TOKEN_OR_WorkosCursorSessionToken=TOKEN" > ~/.config/my-usage/cursor-token\n'
+    printf '  chmod 600 ~/.config/my-usage/cursor-token\n'
+    return 0
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    printf 'skip: curl not installed\n'
+    return 0
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    printf 'skip: node not installed\n'
+    return 0
+  fi
+
+  local response status body
+  response="$(curl -sS -w '\n%{http_code}' 'https://cursor.com/api/usage-summary' \
+    -H "Cookie: WorkosCursorSessionToken=$token" 2>/dev/null)"
+  status="${response##*$'\n'}"
+  body="${response%$'\n'*}"
+
+  if [[ "$status" != 2* ]]; then
+    printf 'cursor usage failed: HTTP %s. Update Cursor session token.\n' "$status"
+    printf 'Make sure you copied the cookie from https://cursor.com while logged in: WorkosCursorSessionToken only, not a Cursor CLI token.\n'
+    return 0
+  fi
+
+  CURSOR_USAGE_JSON="$body" node <<'NODE'
+const data = JSON.parse(process.env.CURSOR_USAGE_JSON || '{}');
+const fmtDate = (value) => value ? new Date(value).toISOString().slice(0, 10) : '?';
+const fmtCount = (value) => typeof value === 'number' ? String(Math.round(value)) : 'n/a';
+const money = (cents) => typeof cents === 'number' ? `$${(cents / 100).toFixed(2)}` : 'n/a';
+function bar(percent, width = 20) {
+  const value = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  const filled = Math.round((value / 100) * width);
+  return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${value}%`;
+}
+function printMetric(name, percent, detail = '') {
+  console.log(`${name.padEnd(8)} ${bar(percent)}${detail ? `  ${detail}` : ''}`);
+}
+
+const plan = data.individualUsage?.plan || {};
+const breakdown = plan.breakdown || {};
+const individualOnDemand = data.individualUsage?.onDemand || {};
+const teamOnDemand = data.teamUsage?.onDemand || {};
+
+console.log(`Plan: ${data.membershipType || 'unknown'}`);
+console.log(`Cycle: ${fmtDate(data.billingCycleStart)} → ${fmtDate(data.billingCycleEnd)}`);
+printMetric('Total', plan.totalPercentUsed, `allowance ${fmtCount(breakdown.total)}`);
+printMetric('Auto', plan.autoPercentUsed, `included+bonus ${fmtCount(breakdown.included)}+${fmtCount(breakdown.bonus)}`);
+printMetric('API', plan.apiPercentUsed, `${fmtCount(plan.used)} / ${fmtCount(plan.limit)} cap`);
+
+if (individualOnDemand.enabled || individualOnDemand.used) {
+  const used = individualOnDemand.used ?? 0;
+  const limit = individualOnDemand.limit;
+  const remaining = individualOnDemand.remaining;
+  console.log(`OnDemand ${fmtCount(used)}${limit == null ? ' / unlimited' : ` / ${fmtCount(limit)}`}${remaining != null ? `, ${fmtCount(remaining)} left` : ''}`);
+}
+
+if (teamOnDemand.enabled || teamOnDemand.used) {
+  const used = teamOnDemand.used ?? 0;
+  const limit = teamOnDemand.limit;
+  const remaining = teamOnDemand.remaining;
+  console.log(`Spend    ${money(used)}${limit ? ` / ${money(limit)}` : ' / unlimited'}${remaining != null ? `, ${money(remaining)} left` : ''}`);
+}
+NODE
+}
+
+
+run_codex_usage || true
+run_kiro_usage || true
+run_cursor_usage || true
