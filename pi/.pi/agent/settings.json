@@ -8,7 +8,8 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoname",
     "npm:pi-intercom",
-    "npm:@plannotator/pi-extension"
+    "npm:@plannotator/pi-extension",
+    "npm:pi-hashline-readmap"
   ],
   "lastChangelogVersion": "0.78.1",
   "hideThinkingBlock": false,
