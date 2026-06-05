@@ -2,57 +2,15 @@
   "defaultProvider": "kiro-acp",
   "defaultModel": "claude-sonnet-4.6",
   "packages": [
-    {
-      "source": "npm:pi-web-access",
-      "skills": [
-        "-skills/librarian/SKILL.md"
-      ]
-    },
-    {
-      "source": "npm:@plannotator/pi-extension",
-      "skills": [
-        "-skills/plannotator-setup-goal/SKILL.md",
-        "-skills/plannotator-compound/SKILL.md",
-        "-skills/plannotator-visual-explainer/SKILL.md"
-      ]
-    },
-    {
-      "source": "npm:pi-mcp-adapter",
-      "extensions": [
-        "-index.ts"
-      ]
-    },
-    {
-      "source": "extensions/kiro-subagents-bridge"
-    },
-    {
-      "source": "npm:pi-subagents",
-      "prompts": [
-        "-prompts/gather-context-and-clarify.md",
-        "-prompts/parallel-cleanup.md",
-        "-prompts/parallel-context-build.md",
-        "-prompts/parallel-handoff-plan.md",
-        "-prompts/parallel-research.md",
-        "-prompts/review-loop.md",
-        "+prompts/parallel-review.md"
-      ]
-    },
-    {
-      "source": "npm:pi-lens",
-      "extensions": [
-        "-index.ts"
-      ],
-      "skills": [
-        "-skills/ast-grep/SKILL.md",
-        "-skills/lsp-navigation/SKILL.md"
-      ]
-    },
+    "npm:pi-subagents",
+    "npm:pi-web-access",
     "npm:pi-cursor-sdk",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoname",
-    "npm:pi-intercom"
+    "npm:pi-intercom",
+    "npm:@plannotator/pi-extension"
   ],
-  "lastChangelogVersion": "0.78.0",
+  "lastChangelogVersion": "0.78.1",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
@@ -76,8 +34,5 @@
   "defaultThinkingLevel": "high",
   "subagents": {
     "disableBuiltins": true
-  },
-  "extensions": [
-    "-extensions/kiro-region-fix.ts"
-  ]
+  }
 }
