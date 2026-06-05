@@ -1,19 +1,17 @@
 /**
- * Tokens Per Second — live tok/s + ttft to status key "tok/s".
+ * Tokens Per Second — live tok/s to status key "tok/s".
  * Aggregates across the full agent run and reports summary at end.
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
-	let requestTime = 0;
 	let firstTokenTime = 0;
 	let deltaCount = 0;
 	let totalOutputTokens = 0;
 	let totalStreamMs = 0;
 
 	pi.on("agent_start", async (_event, ctx) => {
-		requestTime = 0;
 		firstTokenTime = 0;
 		deltaCount = 0;
 		totalOutputTokens = 0;
@@ -22,7 +20,6 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.on("before_provider_request", async () => {
-		requestTime = Date.now();
 		firstTokenTime = 0;
 		deltaCount = 0;
 	});
@@ -41,9 +38,8 @@ export default function (pi: ExtensionAPI) {
 		const official = event.message.usage?.output;
 		const tokens = official && official > 0 ? official : deltaCount;
 		const tps = Math.round(tokens / genTime);
-		const ttft = ((firstTokenTime - requestTime) / 1000).toFixed(1);
 		const theme = ctx.ui.theme;
-		ctx.ui.setStatus("tok/s", `${theme.fg("accent", `${tps} tok/s`)} ${theme.fg("dim", `· ttft ${ttft}s`)}`);
+		ctx.ui.setStatus("tok/s", theme.fg("accent", `${tps} tok/s`));
 	});
 
 	pi.on("message_end", async (event) => {
