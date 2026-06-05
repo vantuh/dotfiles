@@ -65,42 +65,6 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Subagents workflow
-
-Use subagents proactively. Default to delegating unless the task is clearly a single-file, single-step change.
-
-**Always use subagents when:**
-
-- Working with unfamiliar code or locating implementation details (→ `scout`)
-- Task touches 3+ files or modules (→ `planner`, then `worker`, then `reviewer`)
-- Need external docs, APIs, changelogs, or recent package behavior (→ `researcher`)
-- After non-trivial implementation (→ `reviewer`)
-
-**Skip subagents only when:**
-
-- Single-file edit with obvious fix
-- Simple question answerable from context already loaded
-- Trivial rename, typo fix, or config change
-
-For multi-file tasks, prefer:
-`scout → planner → worker → reviewer`
-
-Keep parent context small. Delegate early. Subagents should return concise handoff summaries, not large file dumps.
-
-<pi-intercom>
-Coordinate with other local pi sessions on related codebases. Use `/skill:pi-intercom` for patterns.
-
-**When:** Same codebase (parallel work), reference codebase (consulting patterns), related repos (shared libraries).
-
-**Not when:** Unrelated codebases, trivial questions, or when you can proceed independently.
-
-**Principle:** Prefer `send` for notifications; `ask` only when blocked waiting for input.
-</pi-intercom>
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
 ## Safety Rules
 
 - Never run destructive git commands (`reset --hard`, `push --force`, `clean -f`, `branch -D`) without asking.
@@ -110,6 +74,23 @@ Coordinate with other local pi sessions on related codebases. Use `/skill:pi-int
 - Don't install or remove system packages (brew, apt) without asking.
 - Ask before running any command that affects files outside the current repo.
 
-## Caveman Mode
+## Subagents workflow
 
-Caveman mode is ALWAYS ACTIVE from the first message of every session. Apply full caveman rules immediately — no need for `/caveman` command. Off only when user says "normal mode" or "stop caveman".
+Use subagents only when explicitly requested by the user, or when the task is clearly broad/risky and delegation would materially improve
+quality.
+
+Before delegating, briefly state why a subagent is useful. If the benefit is not obvious, ask first.
+
+Good uses:
+- unfamiliar codebase reconnaissance → `scout`
+- external/recent docs research → `researcher`
+- non-trivial plan review → `oracle` or `reviewer`
+- multi-file implementation after an approved plan → `worker`, then `reviewer`
+
+Do not use subagents for:
+- trivial edits
+- single-file obvious fixes
+- answers that can be produced from loaded context
+- delegation just to follow a workflow
+
+Default: do the work directly. Delegate only when value is clear.
