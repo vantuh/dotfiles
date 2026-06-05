@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# llama-update.sh — Download latest llama.cpp release (CUDA 13.1) for Windows
+# llama-update.sh — Download latest llama.cpp release (CUDA 13.3) for Windows
 #
 # Usage:
 #   ./llama-update.sh                        # download latest
@@ -10,7 +10,7 @@ set -Eeuo pipefail
 #   ./llama-update.sh --dry-run
 
 INSTALL_DIR="${INSTALL_DIR:-/mnt/c/Users/Ivan/llama-bin}"
-CUDA_VER="13.1"
+CUDA_VER="13.3"
 TARGETS="llama-server llama-bench llama-cli llama-mtmd-cli"
 
 PINNED_BUILD=""
@@ -87,11 +87,11 @@ fi
 
 BIN_ZIP=$(echo "$RELEASE_JSON" | jq -r \
   ".assets[] | select(.name | test(\"bin-win-cuda-${CUDA_VER}-x64\")) | .browser_download_url" \
-  | grep -v cudart | head -1)
+  | grep -v cudart | head -1 || true)
 
 DLL_ZIP=$(echo "$RELEASE_JSON" | jq -r \
   ".assets[] | select(.name | test(\"cudart-llama-bin-win-cuda-${CUDA_VER}-x64\")) | .browser_download_url" \
-  | head -1)
+  | head -1 || true)
 
 [[ -z "$BIN_ZIP" ]] && err "Could not find CUDA ${CUDA_VER} binary zip in release ${BUILD_TAG}"
 [[ -z "$DLL_ZIP" ]] && err "Could not find CUDA ${CUDA_VER} DLL zip in release ${BUILD_TAG}"
