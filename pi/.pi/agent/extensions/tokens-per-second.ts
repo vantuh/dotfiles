@@ -37,7 +37,13 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus("tok/s", theme.fg("accent", `${tps} tok/s`));
 	});
 
-	pi.on("agent_end", async (_event, ctx) => {
-		ctx.ui.setStatus("tok/s", undefined);
+	pi.on("message_end", async (event, ctx) => {
+		if (event.message.role !== "assistant" || !firstTokenTime) return;
+		const genTime = (Date.now() - firstTokenTime) / 1000;
+		if (genTime < 0.1) return;
+		const output = event.message.usage?.output;
+		const tokens = output && output > 0 ? output : deltaCount;
+		const tps = Math.round(tokens / genTime);
+		ctx.ui.setStatus("tok/s", ctx.ui.theme.fg("accent", `${tps} tok/s`));
 	});
 }
