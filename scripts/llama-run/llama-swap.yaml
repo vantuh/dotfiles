@@ -52,3 +52,37 @@ models:
     ttl: 300
     aliases:
       - "qwen3.6-27b-kxl-local"
+
+  "gemma-4-12b":
+    cmd: |
+      ${llama_server}
+      --model ${models_dir}/gemma-4-12b-it-Q6_K.gguf
+      --ctx-size 200000
+      -ngl 99
+      --cache-type-k q8_0
+      --cache-type-v q8_0
+      --batch-size 2048
+      --ubatch-size 512
+      --temp 0.6
+      ${common_args}
+    name: "Gemma 4 12B"
+    ttl: 300
+    aliases:
+      - "gemma-4-12b-local"
+
+  "omnicoder-9b":
+    cmd: |
+      ${llama_server}
+      --model ${models_dir}/omnicoder-9b-q8_0.gguf
+      --ctx-size 200000
+      -ngl 99
+      --cache-type-k q8_0
+      --cache-type-v q8_0
+      --batch-size 2048
+      --ubatch-size 512
+      --temp 0.6
+      ${common_args}
+    name: "OmniCoder 9B"
+    ttl: 300
+    aliases:
+      - "omnicoder-9b-local"

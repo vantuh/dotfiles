@@ -26,7 +26,8 @@
     "kiro-acp/claude-opus-4.8",
     "kiro-acp/claude-sonnet-4.6",
     "kiro-acp/claude-haiku-4.5",
-    "cursor/composer-2-5"
+    "cursor/composer-2-5",
+    "local/gemma-4-12b"
   ],
   "terminal": {
     "showTerminalProgress": true
