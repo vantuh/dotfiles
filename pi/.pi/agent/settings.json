@@ -34,5 +34,7 @@
   "defaultThinkingLevel": "high",
   "subagents": {
     "disableBuiltins": true
-  }
+  },
+  "showHardwareCursor": true,
+  "collapseChangelog": true
 }
