@@ -1,6 +1,5 @@
 /**
  * Tokens Per Second — live tok/s to status key "tok/s".
- * Aggregates across the full agent run and reports summary at end.
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -8,14 +7,10 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 export default function (pi: ExtensionAPI) {
 	let firstTokenTime = 0;
 	let deltaCount = 0;
-	let totalOutputTokens = 0;
-	let totalStreamMs = 0;
 
 	pi.on("agent_start", async (_event, ctx) => {
 		firstTokenTime = 0;
 		deltaCount = 0;
-		totalOutputTokens = 0;
-		totalStreamMs = 0;
 		ctx.ui.setStatus("tok/s", ctx.ui.theme.fg("dim", "⏱ generating..."));
 	});
 
@@ -42,27 +37,7 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus("tok/s", theme.fg("accent", `${tps} tok/s`));
 	});
 
-	pi.on("message_end", async (event) => {
-		if (event.message.role !== "assistant" || !firstTokenTime) return;
-
-		const output = event.message.usage?.output ?? 0;
-		const streamMs = Date.now() - firstTokenTime;
-
-		if (output > 0) totalOutputTokens += output;
-		else totalOutputTokens += deltaCount;
-		totalStreamMs += streamMs;
-	});
-
 	pi.on("agent_end", async (_event, ctx) => {
-		const elapsed = totalStreamMs / 1000;
-		const theme = ctx.ui.theme;
-
-		if (elapsed < 0.1 || totalOutputTokens <= 0) {
-			ctx.ui.setStatus("tok/s", undefined);
-			return;
-		}
-
-		const tps = Math.round(totalOutputTokens / elapsed);
-		ctx.ui.setStatus("tok/s", `${theme.fg("accent", `${tps} tok/s`)} ${theme.fg("dim", `· ${totalOutputTokens} tok in ${elapsed.toFixed(1)}s`)}`);
+		ctx.ui.setStatus("tok/s", undefined);
 	});
 }
