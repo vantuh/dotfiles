@@ -46,13 +46,15 @@ export default function (pi: ExtensionAPI) {
 
 	pi.on("session_start", (_event, ctx) => {
 		log("session_start", { cwd: ctx.cwd });
-		try {
-			runSync(ctx.cwd, "session_start");
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			log("sync failed", { cwd: ctx.cwd, error: message });
-			console.error(`[kiro-subagents-bridge] sync failed: ${message} (see ${LOG_FILE})`);
-		}
+		setImmediate(() => {
+			try {
+				runSync(ctx.cwd, "session_start");
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				log("sync failed", { cwd: ctx.cwd, error: message });
+				console.error(`[kiro-subagents-bridge] sync failed: ${message} (see ${LOG_FILE})`);
+			}
+		});
 	});
 
 	pi.on("session_shutdown", (event, ctx) => {
