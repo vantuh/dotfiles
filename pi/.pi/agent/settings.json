@@ -8,8 +8,7 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoname",
     "npm:@plannotator/pi-extension",
-    "npm:pi-hashline-readmap",
-    "npm:pi-powerline-footer"
+    "npm:pi-hashline-readmap"
   ],
   "lastChangelogVersion": "0.78.1",
   "hideThinkingBlock": false,
@@ -33,15 +32,10 @@
   "terminal": {
     "showTerminalProgress": true
   },
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "minimal",
   "subagents": {
     "disableBuiltins": true
   },
   "showHardwareCursor": true,
-  "collapseChangelog": true,
-  "powerline": {
-    "preset": "default",
-    "fixedEditor": false,
-    "mouseScroll": false
-  }
+  "collapseChangelog": true
 }
