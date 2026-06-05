@@ -8,7 +8,8 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-autoname",
     "npm:@plannotator/pi-extension",
-    "npm:pi-hashline-readmap"
+    "npm:pi-hashline-readmap",
+    "npm:pi-powerline-footer"
   ],
   "lastChangelogVersion": "0.78.1",
   "hideThinkingBlock": false,
@@ -18,7 +19,7 @@
     "keepRecentTokens": 16000
   },
   "theme": "dark",
-  "quietStartup": false,
+  "quietStartup": true,
   "enabledModels": [
     "openai-codex/gpt-5.5",
     "local/qwen3.6-27b",
@@ -37,5 +38,10 @@
     "disableBuiltins": true
   },
   "showHardwareCursor": true,
-  "collapseChangelog": true
+  "collapseChangelog": true,
+  "powerline": {
+    "preset": "default",
+    "fixedEditor": false,
+    "mouseScroll": false
+  }
 }
