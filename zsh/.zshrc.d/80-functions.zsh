@@ -20,3 +20,15 @@ ab-connect() {
   local ws_path=$(sed -n '2p' "$port_file")
   agent-browser connect "ws://127.0.0.1:${port}${ws_path}"
 }
+
+
+llama-swap-start() {
+  cd ~/dotfiles
+  llama-swap --config ./scripts/llama-run/llama-swap.yaml --listen localhost:8080
+}
+
+dotfix() {
+  cd ~/dotfiles
+  git pull
+  bash ./install.sh
+}
