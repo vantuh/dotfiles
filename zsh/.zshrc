@@ -41,14 +41,6 @@ alias ld="lazydocker"
 alias tf="terraform"
 alias dotfix="cd ~/dotfiles && git pull && bash ./install.sh"
 
-# Brew wrapper — auto-sync Brewfile on install/uninstall
-function brew() {
-  command brew "$@"
-  if [[ "$1" == "install" || "$1" == "uninstall" || "$1" == "remove" ]]; then
-    command brew bundle dump --force --file=~/dotfiles/Brewfile
-  fi
-}
-
 ### Zinit installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
     print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
