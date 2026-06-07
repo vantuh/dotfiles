@@ -91,11 +91,11 @@ models:
     cmd: |
       ${llama_server}
       --model ${models_dir}/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
-      --ctx-size 98304
-      -ngl 99
+      --ctx-size 196608
+      -ngl 27
       --cache-type-k q8_0
       --cache-type-v q8_0
-      --batch-size 2048
+      --batch-size 1024
       --ubatch-size 512
       --temp 1.0
       --top-p 0.95

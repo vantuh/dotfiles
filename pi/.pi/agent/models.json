@@ -73,7 +73,7 @@
           "name": "Gemma 4 26B A4B QAT (local)",
           "reasoning": true,
           "input": ["text"],
-          "contextWindow": 98304,
+          "contextWindow": 196608,
           "maxTokens": 32768,
           "compat": {
             "supportsDeveloperRole": false
