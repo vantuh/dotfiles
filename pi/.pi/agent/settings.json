@@ -33,7 +33,7 @@
   "terminal": {
     "showTerminalProgress": true
   },
-  "defaultThinkingLevel": "minimal",
+  "defaultThinkingLevel": "high",
   "subagents": {
     "disableBuiltins": true
   },
