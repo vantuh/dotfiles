@@ -1,0 +1,7 @@
+# Optional local overrides.
+#
+# To use, copy this file to ~/.zshrc.d/99-local.zsh on a machine and keep it
+# untracked. Do not put secrets here unless the file is outside this repo.
+#
+# Example:
+# export SOME_LOCAL_SETTING=value

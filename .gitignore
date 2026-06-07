@@ -18,6 +18,8 @@ node_modules/
 !.env.example
 .tokens
 **/.tokens
+zsh/.zshrc.d/99-local.zsh
+zsh/.zcompdump*
 secrets/
 credentials*
 *.pem
