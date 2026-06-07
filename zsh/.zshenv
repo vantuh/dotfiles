@@ -8,7 +8,24 @@ else
   typeset -g DOTFILES_PLATFORM=wsl DOTFILES_USER=Ivan
 fi
 
-# Homebrew + /usr/local/bin first
+# Environment
+export LANG=en_US.UTF-8
+export LC_TIME=uk_UA.UTF-8
+export EDITOR='zed'
+
+# Tool env
+export NVM_COMPLETION=true
+export NVM_SYMLINK_CURRENT="true"
+export NVM_LAZY_LOAD=true
+export BUN_INSTALL="$HOME/.bun"
+
+if [[ "$DOTFILES_PLATFORM" == macos ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
+
+# PATH: Homebrew first
 if [[ "$DOTFILES_PLATFORM" == macos ]]; then
   export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 elif [[ "$DOTFILES_PLATFORM" == wsl ]]; then
@@ -20,33 +37,12 @@ elif [[ "$DOTFILES_PLATFORM" == wsl ]]; then
   export INFOPATH="/home/linuxbrew/.linuxbrew/share/info${INFOPATH+:$INFOPATH}"
 fi
 
-# Environment
-export LANG=en_US.UTF-8
-export LC_TIME=uk_UA.UTF-8
-export EDITOR='zed'
-
-# NVM
-export NVM_COMPLETION=true
-export NVM_SYMLINK_CURRENT="true"
-export NVM_LAZY_LOAD=true
+# PATH: tool bins
 export PATH="$HOME/.nvm/current/bin:$PATH"
-
-# Bun
-export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-
-# Opencode
 export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
-# Platform-specific vars
-if [[ "$DOTFILES_PLATFORM" == macos ]]; then
-  export PNPM_HOME="$HOME/Library/pnpm"
-else
-  export PNPM_HOME="$HOME/.local/share/pnpm"
-fi
-
-# PNPM PATH
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
