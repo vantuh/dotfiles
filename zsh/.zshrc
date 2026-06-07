@@ -1,21 +1,9 @@
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  typeset -g DOTFILES_PLATFORM=macos DOTFILES_USER=vantuh
-else
-  typeset -g DOTFILES_PLATFORM=wsl DOTFILES_USER=Ivan
-fi
-
-# Homebrew + /usr/local/bin first — avoid slow /usr/bin/git shim on macOS
-if [[ "$DOTFILES_PLATFORM" == macos ]]; then
-  export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-elif [[ "$DOTFILES_PLATFORM" == wsl ]] && [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-fi
-
 # WSL: strip slow Windows paths (9P filesystem), keep only useful ones
 if [[ "$DOTFILES_PLATFORM" == wsl ]]; then
   path=( ${path:#/mnt/c/*} )
   path+=(
     "/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Programs/Microsoft VS Code/bin"
+    "/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Programs/Zed/bin"
     "/mnt/c/Program Files/Docker/Docker/resources/bin"
     "/mnt/c/WINDOWS"
     "/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0"
@@ -31,10 +19,6 @@ if [[ "$DOTFILES_PLATFORM" != macos ]] && command -v keychain &>/dev/null; then
 fi
 
 fpath=(${^fpath}(N))
-
-# User configuration
-export LANG=en_US.UTF-8
-export LC_TIME=uk_UA.UTF-8
 
 # History
 HISTSIZE=10000
@@ -55,7 +39,7 @@ alias ncu="npx npm-check-updates -i"
 alias lg="lazygit"
 alias ld="lazydocker"
 alias tf="terraform"
-alias dotfix="cd ~/dotfiles && bash ./install.sh"
+alias dotfix="cd ~/dotfiles && git pull && bash ./install.sh"
 
 # Brew wrapper — auto-sync Brewfile on install/uninstall
 function brew() {
@@ -107,17 +91,16 @@ zinit wait lucid for \
 
 # Syntax highlighting, autosuggestions, completions (turbo)
 zinit wait lucid for \
-  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
+    atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
     zdharma-continuum/fast-syntax-highlighting \
-  blockf \
+    blockf \
     zsh-users/zsh-completions \
-  atload"!_zsh_autosuggest_start" \
+    atload"!_zsh_autosuggest_start" \
     zsh-users/zsh-autosuggestions
 
 # Tools via zinit (turbo)
 zinit ice wait lucid from"gh-r" as"program" mv"jq-* -> jq"
 zinit light jqlang/jq
-
 zinit ice wait lucid from"gh-r" as"program"
 zinit light jesseduffield/lazygit
 
@@ -128,19 +111,12 @@ source $_fzf_shell/key-bindings.zsh 2>/dev/null
 source $_fzf_shell/completion.zsh 2>/dev/null
 unset _fzf_shell
 
-# NVM (lazy)
-export NVM_COMPLETION=true
-export NVM_SYMLINK_CURRENT="true"
-export NVM_LAZY_LOAD=true
 zinit wait lucid light-mode for lukechilds/zsh-nvm
-export PATH="$HOME/.nvm/current/bin:$PATH"
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# Bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
-# Word navigation (Ctrl+arrows)
+# Word navigation (Ctrl-arrows)
 bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word
 
@@ -151,7 +127,6 @@ zstyle ':completion:*' accept-exact 'yes'
 zstyle ':completion:*:descriptions' format '%B-- %d --%b'
 
 # Yazi
-export EDITOR='code'
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	yazi "$@" --cwd-file="$tmp"
@@ -160,10 +135,6 @@ function y() {
 	fi
 	rm -f -- "$tmp"
 }
-
-# opencode
-export PATH="$HOME/.opencode/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
 
 # --- Platform-specific ---
 if [[ "$DOTFILES_PLATFORM" == macos ]]; then
@@ -175,19 +146,10 @@ if [[ "$DOTFILES_PLATFORM" == macos ]]; then
   if [[ -d "$HOME/.docker/completions" ]]; then
     fpath=("$HOME/.docker/completions" $fpath)
   fi
-
-  export PNPM_HOME="$HOME/Library/pnpm"
 else
-  export PNPM_HOME="$HOME/.local/share/pnpm"
   export LLAMA_CPP_PATH=~/.local/bin/llama-cpp
   export PLANNOTATOR_BROWSER=explorer.exe
 fi
-
-# pnpm PATH
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
 
 eval "$(zoxide init zsh)"
 
@@ -204,8 +166,5 @@ ab-connect() {
   local ws_path=$(sed -n '2p' "$port_file")
   agent-browser connect "ws://127.0.0.1:${port}${ws_path}"
 }
-
-# bun completions
-[ -s "/home/ivan/.bun/_bun" ] && source "/home/ivan/.bun/_bun"
 
 alias pi="bun /home/ivan/.nvm/versions/node/v24.16.0/lib/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
