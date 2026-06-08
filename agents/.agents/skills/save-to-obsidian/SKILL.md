@@ -15,10 +15,10 @@ Create a structured job-log note in the user's Obsidian vault summarizing the cu
 
 **Platform detection:** Before writing, determine the platform by checking `uname` or the OS environment:
 
-| Platform | Vault path |
-|----------|-----------|
-| **macOS** (darwin) | `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/vantuh/` |
-| **WSL / Linux** | `~/obsidian-backup/` |
+| Platform           | Vault path                                                                 |
+| ------------------ | -------------------------------------------------------------------------- |
+| **macOS** (darwin) | `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-backup/` |
+| **WSL / Linux**    | `C:\Users\Ivan\iCloudDrive\iCloud~md~obsidian\obsidian-backup`             |
 
 Notes folder inside vault: `Sessions/`
 
@@ -30,7 +30,7 @@ Detect platform first, then construct the full path for notes accordingly.
 
 2. **Ensure folder exists**: Create `Sessions/` folder if it doesn't exist yet.
 
-2. **Analyze session**: Review the entire conversation history. Identify:
+3. **Analyze session**: Review the entire conversation history. Identify:
    - What project/directory was being worked on
    - What tasks were performed
    - What problems were solved
@@ -39,26 +39,26 @@ Detect platform first, then construct the full path for notes accordingly.
    - What commands were run and their outcomes
    - Any notable findings or insights
 
-3. **Generate title**: Create a concise, descriptive title that captures the essence of the session. Format: action-oriented, e.g. "Fix auth middleware token validation", "Set up CI pipeline for monorepo", "Refactor database connection pooling".
+4. **Generate title**: Create a concise, descriptive title that captures the essence of the session. Format: action-oriented, e.g. "Fix auth middleware token validation", "Set up CI pipeline for monorepo", "Refactor database connection pooling".
 
-4. **Generate filename**: Use format `YYYY-MM-DD_<slug>.md` where `<slug>` is the title in kebab-case. Use current date. Example: `2025-04-30_fix-auth-middleware-token-validation.md`
+5. **Generate filename**: Use format `YYYY-MM-DD_<slug>.md` where `<slug>` is the title in kebab-case. Use current date. Example: `2025-04-30_fix-auth-middleware-token-validation.md`
 
-5. **Check for existing note**: Look in `Sessions/` for a file with today's date prefix (`YYYY-MM-DD_`) that matches the current session's topic. If found — **update** the existing note instead of creating a new one. Merge new information into existing sections (append new bullets to "What Was Done", update "Summary" to reflect full session, add new files to "Files Changed", etc.). Keep the original title unless the session scope changed significantly.
+6. **Check for existing note**: Look in `Sessions/` for a file with today's date prefix (`YYYY-MM-DD_`) that matches the current session's topic. If found — **update** the existing note instead of creating a new one. Merge new information into existing sections (append new bullets to "What Was Done", update "Summary" to reflect full session, add new files to "Files Changed", etc.). Keep the original title unless the session scope changed significantly.
 
-6. **Create or update the note** using the template below.
+7. **Create or update the note** using the template below.
 
-7. **Confirm** to user: show the title, path, and whether it was created or updated.
+8. **Confirm** to user: show the title, path, and whether it was created or updated.
 
 ## Note Template
 
 ```markdown
 ---
-date: {{YYYY-MM-DD}}
-time: {{HH:MM}}
-project: {{project name or directory}}
+date: { { YYYY-MM-DD } }
+time: { { HH:MM } }
+project: { { project name or directory } }
 tags:
   - session-log
-  - {{relevant-tag}}
+  - { { relevant-tag } }
 ---
 
 # {{Title}}
