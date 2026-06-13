@@ -1,23 +1,24 @@
 ¶README.md#5A2B
+
 # dotfiles
 
 Cross-platform dotfiles (macOS + Windows/WSL) managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Packages
 
-| Package    | Contents                          | macOS | WSL |
-|------------|-----------------------------------|:-----:|:---:|
-| alacritty  | Alacritty terminal config         | ✓     | ✓*  |
-| zsh        | Zsh config with Zinit plugins     | ✓     | ✓   |
-| tmux       | Tmux config                       | ✓     | ✓   |
-| starship   | Starship prompt theme             | ✓     | ✓   |
-| yazi       | Yazi file manager config          | ✓     | ✓   |
-| opencode   | OpenCode config + TUI theme       | ✓     | ✓   |
-| pi         | Pi coding agent config            | ✓     | ✓   |
-| omp        | Oh My Pi (OMP) agent config       | ✓     | ✓   |
-| agents     | Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro) | ✓ | ✓ |
-| karabiner  | Karabiner-Elements key remapping  | ✓     |     |
-| zed        | Zed editor settings + keymap      | ✓     |     |
+| Package   | Contents                                                                     | macOS | WSL |
+| --------- | ---------------------------------------------------------------------------- | :---: | :-: |
+| alacritty | Alacritty terminal config                                                    |   ✓   | ✓\* |
+| zsh       | Zsh config with Zinit plugins                                                |   ✓   |  ✓  |
+| tmux      | Tmux config                                                                  |   ✓   |  ✓  |
+| starship  | Starship prompt theme                                                        |   ✓   |  ✓  |
+| yazi      | Yazi file manager config                                                     |   ✓   |  ✓  |
+| opencode  | OpenCode config + TUI theme                                                  |   ✓   |  ✓  |
+| pi        | Pi coding agent config                                                       |   ✓   |  ✓  |
+| omp       | Oh My Pi (OMP) agent config                                                  |   ✓   |  ✓  |
+| agents    | Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro) |   ✓   |  ✓  |
+| karabiner | Karabiner-Elements key remapping                                             |   ✓   |     |
+| zed       | Zed editor settings + keymap                                                 |   ✓   |     |
 
 \* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
 
@@ -45,7 +46,7 @@ For Windows/WSL-specific setup steps, see [docs/windows.md](docs/windows.md).
 
 ## Shared Agent Skills
 
-The `agents/` directory is the single source of truth for AI agent skills and instructions shared across multiple agents (Pi, OpenCode, Kiro). Instead of duplicating skills in each agent's config, `install.sh` runs `agents/link.sh` which creates symlinks from each agent's expected location to the canonical source.
+The `agents/` directory is the single source of truth for AI agent skills and instructions shared across multiple agents (Pi, Kiro). Instead of duplicating skills in each agent's config, `install.sh` runs `agents/link.sh` which creates symlinks from each agent's expected location to the canonical source.
 
 ```
 agents/
@@ -65,7 +66,7 @@ To update skills from GitHub sources: `./agents/update-skills.sh`
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi opencode alacritty karabiner zed
+stow -D zsh tmux starship yazi alacritty karabiner zed
 ```
 
 ## Manual stow usage
