@@ -5,8 +5,6 @@
     "npm:pi-subagents",
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
-    "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-autoname",
     "npm:@plannotator/pi-extension",
     "npm:pi-hashline-readmap"
   ],
@@ -37,6 +35,6 @@
   "subagents": {
     "disableBuiltins": true
   },
-  "showHardwareCursor": false,
+  "showHardwareCursor": true,
   "collapseChangelog": true
 }
