@@ -99,6 +99,8 @@
     "diff_stats": true,
     "tree_view": true,
     "dock": "right",
+    "file_icons": true,
+    "folder_icons": true,
   },
   "collaboration_panel": {
     "dock": "left",
