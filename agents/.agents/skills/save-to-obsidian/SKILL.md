@@ -15,10 +15,10 @@ Create a structured job-log note in the user's Obsidian vault summarizing the cu
 
 **Platform detection:** Before writing, determine the platform by checking `uname` or the OS environment:
 
-| Platform           | Vault path                                                                 |
-| ------------------ | -------------------------------------------------------------------------- |
-| **macOS** (darwin) | `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-backup/` |
-| **WSL / Linux**    | `C:\Users\Ivan\iCloudDrive\iCloud~md~obsidian\obsidian-backup`             |
+| Platform           | Vault path                             |
+| ------------------ | -------------------------------------- |
+| **macOS** (darwin) | `~/projects/personal/obsidian-backup/` |
+| **WSL / Linux**    | `C:\Users\Ivan\\obsidian-backup`       |
 
 Notes folder inside vault: `Sessions/`
 
