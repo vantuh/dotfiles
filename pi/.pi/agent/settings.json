@@ -15,7 +15,7 @@
     "reserveTokens": 8192,
     "keepRecentTokens": 16000
   },
-  "theme": "dark",
+  "theme": "dracula",
   "quietStartup": true,
   "enabledModels": [
     "openai-codex/gpt-5.5",
