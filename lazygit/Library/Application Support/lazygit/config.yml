@@ -1,3 +1,10 @@
 git:
   pagers:
     - pager: delta --side-by-side --line-numbers --paging=never
+customCommands:
+  - key: "<c-g>"
+    context: "files"
+    description: "Generate commit message with pi AI"
+    command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && GIT_EDITOR='zed --wait' git commit -e -F /tmp/pi-commit.txt"
+    output: terminal
+    loadingText: "Generating commit message..."
