@@ -20,3 +20,14 @@ dotfix() {
   git pull
   bash ./install.sh
 }
+
+tss() {
+  local session
+  session=$(tmux list-sessions -F '#S' | fzf) || return
+
+  if [ -n "$TMUX" ]; then
+    tmux switch-client -t "$session"
+  else
+    tmux attach -t "$session"
+  fi
+}
