@@ -1,15 +1,14 @@
 {
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
+  "defaultProvider": "kiro-acp",
+  "defaultModel": "claude-sonnet-4.6",
   "packages": [
     "npm:pi-subagents",
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
     "npm:@plannotator/pi-extension",
-    "npm:pi-hashline-readmap",
     "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.79.3",
+  "lastChangelogVersion": "0.79.6",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
