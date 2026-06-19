@@ -97,7 +97,7 @@ fi
 COMMON_PACKAGES="zsh tmux starship yazi pi omp"
 
 if [[ "$PLATFORM" == "macos" ]]; then
-  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
+  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed lazygit"
 else
   PACKAGES="$COMMON_PACKAGES"
 fi
