@@ -10,18 +10,6 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-ab-connect() {
-  local port_file="/mnt/c/Users/${DOTFILES_USER}/AppData/Local/Google/Chrome/User Data/DevToolsActivePort"
-  if [ ! -f "$port_file" ]; then
-    echo "Chrome not running with remote debugging. Enable it at chrome://inspect/#remote-debugging" >&2
-    return 1
-  fi
-  local port=$(sed -n '1p' "$port_file")
-  local ws_path=$(sed -n '2p' "$port_file")
-  agent-browser connect "ws://127.0.0.1:${port}${ws_path}"
-}
-
-
 llama-swap-start() {
   cd ~/dotfiles
   llama-swap --config ./scripts/llama-run/llama-swap.yaml --listen localhost:8080
