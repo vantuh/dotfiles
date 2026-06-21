@@ -97,7 +97,7 @@ fi
 COMMON_PACKAGES="zsh tmux starship yazi pi omp"
 
 if [[ "$PLATFORM" == "macos" ]]; then
-  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed lazygit"
+  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
 else
   PACKAGES="$COMMON_PACKAGES"
 fi
@@ -123,6 +123,17 @@ for pkg in $PACKAGES; do
     echo "  [$pkg] skipped (directory not found)"
   fi
 done
+
+# --- lazygit config symlink ---
+LAZYGIT_SRC="$DOTFILES_DIR/lazygit/config.yml"
+if [[ "$PLATFORM" == "macos" ]]; then
+  LAZYGIT_DST="$HOME/Library/Application Support/lazygit/config.yml"
+else
+  LAZYGIT_DST="$HOME/.config/lazygit/config.yml"
+fi
+mkdir -p "$(dirname "$LAZYGIT_DST")"
+ln -sf "$LAZYGIT_SRC" "$LAZYGIT_DST"
+echo "  [lazygit] -> $LAZYGIT_DST"
 
 # --- Post-stow: Alacritty platform config on macOS ---
 if [[ "$PLATFORM" == "macos" ]]; then
