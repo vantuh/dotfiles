@@ -1,26 +1,32 @@
-¶README.md#5A2B
-
 # dotfiles
 
-Cross-platform dotfiles (macOS + Windows/WSL) managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Packages
 
-| Package   | Contents                                                                     | macOS | WSL |
-| --------- | ---------------------------------------------------------------------------- | :---: | :-: |
-| alacritty | Alacritty terminal config                                                    |   ✓   | ✓\* |
-| zsh       | Zsh config with Zinit plugins                                                |   ✓   |  ✓  |
-| tmux      | Tmux config                                                                  |   ✓   |  ✓  |
-| starship  | Starship prompt theme                                                        |   ✓   |  ✓  |
-| yazi      | Yazi file manager config                                                     |   ✓   |  ✓  |
-| opencode  | OpenCode config + TUI theme                                                  |   ✓   |  ✓  |
-| pi        | Pi coding agent config                                                       |   ✓   |  ✓  |
-| omp       | Oh My Pi (OMP) agent config                                                  |   ✓   |  ✓  |
-| agents    | Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro) |   ✓   |  ✓  |
-| karabiner | Karabiner-Elements key remapping                                             |   ✓   |     |
-| zed       | Zed editor settings + keymap                                                 |   ✓   |     |
+### Stow packages (symlinked to `$HOME`)
+
+| Package   | Contents                          | macOS | WSL |
+| --------- | --------------------------------- | :---: | :-: |
+| zsh       | Zsh config with Zinit plugins     |   ✓   |  ✓  |
+| tmux      | Tmux config                       |   ✓   |  ✓  |
+| starship  | Starship prompt theme             |   ✓   |  ✓  |
+| yazi      | Yazi file manager config          |   ✓   |  ✓  |
+| pi        | Pi coding agent config            |   ✓   |  ✓  |
+| alacritty | Alacritty terminal config         |   ✓   | ✓\* |
+| karabiner | Karabiner-Elements key remapping  |   ✓   |     |
+| zed       | Zed editor settings + keymap      |   ✓   |     |
 
 \* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
+
+### Other packages (manually symlinked by `install.sh`)
+
+| Package     | Contents                                         |
+| ----------- | ------------------------------------------------ |
+| agents      | Shared AI agent skills & instructions            |
+| lazygit     | Lazygit config                                   |
+| scripts     | Utility scripts (llama runner, pi commit helper) |
+| fan_control | Fan Control app config (Linux/Windows)           |
 
 ## Prerequisites
 
@@ -38,35 +44,33 @@ brew bundle
 chsh -s $(which zsh)
 ```
 
-The `install.sh` script auto-detects the platform (macOS / WSL) and stows the appropriate packages. On WSL it also copies `alacritty.toml` to the Windows-native config path.
+`install.sh` auto-detects the platform (macOS / WSL), stows the appropriate packages, symlinks lazygit config, and wires up shared agent skills. On WSL it also copies `alacritty.toml` to the Windows-native config path.
 
 Restart your terminal after install. Zinit will auto-install all plugins on first launch.
 
-For Windows/WSL-specific setup steps, see [docs/windows.md](docs/windows.md).
-
 ## Shared Agent Skills
 
-The `agents/` directory is the single source of truth for AI agent skills and instructions shared across multiple agents (Pi, Kiro). Instead of duplicating skills in each agent's config, `install.sh` runs `agents/link.sh` which creates symlinks from each agent's expected location to the canonical source.
+The `agents/` directory is the single source of truth for AI agent skills and instructions shared across Pi, OMP, OpenCode, Kiro, and Claude.
 
 ```
 agents/
-  skills/           # shared SKILL.md files
-  instructions/      # shared instruction files
-  links.json         # manifest: skill → [target paths]
-  link.sh            # creates symlinks from links.json
-  skills.json        # GitHub sources for skill updates
-  update-skills.sh   # fetch latest skills from GitHub
+  .agents/          # symlinked to ~/.agents (shared skills root)
+    AGENTS.md       # shared agent instructions
+    skills/         # shared SKILL.md files
+  .pi/
+    skills/         # pi-specific skill symlinks
+  skills-lock.json  # pinned skill versions
 ```
 
-To add a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add target paths to `agents/links.json`.
+`install.sh` creates `~/.agents → dotfiles/agents/.agents`, then symlinks each agent's `skills/` and `AGENTS.md` into `~/.agents`. This means skill writes from any agent flow back into the repo automatically.
 
-To update skills from GitHub sources: `./agents/update-skills.sh`
+To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` and add symlinks for each target agent in `install.sh`.
 
 ## Uninstall
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi alacritty karabiner zed
+stow -D zsh tmux starship yazi pi alacritty karabiner zed
 ```
 
 ## Manual stow usage
