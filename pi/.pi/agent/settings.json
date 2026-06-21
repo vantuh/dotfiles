@@ -16,7 +16,6 @@
     "keepRecentTokens": 16000
   },
   "theme": "dracula",
-  "quietStartup": true,
   "enabledModels": [
     "openai-codex/gpt-5.5",
     "local/qwen3.6-27b",
@@ -28,9 +27,6 @@
     "local/gemma-4-12b",
     "local/gemma-4-26b"
   ],
-  "terminal": {
-    "showTerminalProgress": false
-  },
   "defaultThinkingLevel": "high",
   "subagents": {
     "disableBuiltins": true
