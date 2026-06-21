@@ -94,7 +94,7 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
-COMMON_PACKAGES="zsh tmux starship yazi pi omp"
+COMMON_PACKAGES="zsh tmux starship yazi pi"
 
 if [[ "$PLATFORM" == "macos" ]]; then
   PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
@@ -104,7 +104,7 @@ fi
 
 # Remove absolute extensions symlink that conflicts with stow --no-folding
 # (stow sees it as "not owned by stow" and aborts the entire pi/omp package)
-for agent_ext in "$HOME/.pi/agent/extensions" "$HOME/.omp/agent/extensions"; do
+for agent_ext in "$HOME/.pi/agent/extensions"; do
   if [[ -L "$agent_ext" ]]; then
     rm -f "$agent_ext"
   fi
@@ -117,7 +117,7 @@ for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
     STOW_OPTS="--restow"
-    [[ "$pkg" == "pi" || "$pkg" == "omp" ]] && STOW_OPTS="$STOW_OPTS --no-folding"
+    [[ "$pkg" == "pi" ]] && STOW_OPTS="$STOW_OPTS --no-folding"
     stow -d "$DOTFILES_DIR" -t "$HOME" $STOW_OPTS "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
   else
     echo "  [$pkg] skipped (directory not found)"
@@ -153,14 +153,14 @@ ln -sfn "$DOTFILES_DIR/agents/.agents" "$HOME/.agents"
 echo "  ~/.agents -> $DOTFILES_DIR/agents/.agents"
 
 # Skills symlinks for each agent
-for dir in "$HOME/.pi/agent" "$HOME/.omp/agent" "$HOME/.config/opencode" "$HOME/.claude" "$HOME/.kiro"; do
+for dir in "$HOME/.pi/agent" "$HOME/.config/opencode" "$HOME/.claude" "$HOME/.kiro"; do
   mkdir -p "$dir"
   ln -sf "$HOME/.agents/skills" "$dir/skills"
   echo "  $dir/skills -> ~/.agents/skills"
 done
 
 # Shared AGENTS.md for each agent
-for dir in "$HOME/.pi/agent" "$HOME/.omp/agent" "$HOME/.config/opencode" "$HOME/.kiro"; do
+for dir in "$HOME/.pi/agent" "$HOME/.config/opencode" "$HOME/.kiro"; do
   ln -sf "$HOME/.agents/AGENTS.md" "$dir/AGENTS.md"
   echo "  $dir/AGENTS.md -> ~/.agents/AGENTS.md"
 done
