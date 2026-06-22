@@ -1,11 +1,10 @@
 #!/bin/bash
 # Generate commit message using pi AI from staged diff
-DIFF=$(git diff --staged)
-if [ -z "$DIFF" ]; then
+git diff --staged > /tmp/pi-diff-input.txt
+if [ ! -s /tmp/pi-diff-input.txt ]; then
   echo "No staged changes"
   exit 1
 fi
-
 pi --print --no-session --no-tools --no-extensions -e ~/.pi/agent/extensions/kiro-acp/index.ts --model kiro-acp/claude-haiku-4.5 \
   --system-prompt "Write commit messages terse and exact. Conventional Commits format. No fluff. Why over what.
 
@@ -18,5 +17,4 @@ Rules:
 - Wrap body at 72 chars, bullets - not *
 - Never include: 'This commit does X', 'I', 'we', 'now', AI attribution, emoji
 - Output ONLY the commit message, no explanation, no markdown code block." \
-  "Generate commit message for this diff:
-$DIFF"
+  "Generate commit message for this diff:" @/tmp/pi-diff-input.txt
