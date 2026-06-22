@@ -6,7 +6,7 @@ if [ -z "$DIFF" ]; then
   exit 1
 fi
 
-pi --print --no-session --no-tools --model kiro-acp/claude-haiku-4.5 \
+pi --print --no-session --no-tools --no-extensions -e ~/.pi/agent/extensions/kiro-acp/index.ts --model kiro-acp/claude-haiku-4.5 \
   --system-prompt "Write commit messages terse and exact. Conventional Commits format. No fluff. Why over what.
 
 Rules:
