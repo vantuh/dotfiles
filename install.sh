@@ -94,7 +94,7 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
-COMMON_PACKAGES="zsh tmux starship yazi pi"
+COMMON_PACKAGES="zsh tmux starship yazi pi herdr"
 
 if [[ "$PLATFORM" == "macos" ]]; then
   PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
