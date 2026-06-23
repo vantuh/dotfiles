@@ -92,7 +92,7 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
       WSL_DISTRO="${WSL_DISTRO_NAME:-Ubuntu}"
       WT_SRC_PATH="${DOTFILES_DIR#/}/windows-terminal/settings.json"
       WT_WSL_PATH="\\\\wsl.localhost\\$WSL_DISTRO\\${WT_SRC_PATH//\//\\}"
-      WT_LINK=$(wslpath -w "${WT_LOCAL_STATE}/settings.json")
+      WT_LINK=$(wslpath -w "$WT_LOCAL_STATE")\\settings.json
       if "$POWERSHELL_EXE" -NoProfile -ExecutionPolicy Bypass -Command "
         \$link = '$WT_LINK'
         \$target = '$WT_WSL_PATH'
