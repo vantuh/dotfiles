@@ -84,6 +84,31 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
       cp "$DOTFILES_DIR/zed/.config/zed/keymap.json" "$ZED_WIN/keymap.json"
     fi
     echo ""
+
+    echo "Detected WSL. Setting up Windows Terminal..."
+    WT_PACKAGES_DIR="/mnt/c/Users/$WINDOWS_USER/AppData/Local/Packages"
+    WT_LOCAL_STATE=$(find "$WT_PACKAGES_DIR" -maxdepth 2 -name "LocalState" -path "*WindowsTerminal*" 2>/dev/null | head -1)
+    if [[ -n "$WT_LOCAL_STATE" ]]; then
+      WSL_DISTRO="${WSL_DISTRO_NAME:-Ubuntu}"
+      WT_SRC_PATH="${DOTFILES_DIR#/}/windows-terminal/settings.json"
+      WT_WSL_PATH="\\\\wsl.localhost\\$WSL_DISTRO\\${WT_SRC_PATH//\//\\}"
+      WT_LINK=$(wslpath -w "${WT_LOCAL_STATE}/settings.json")
+      if "$POWERSHELL_EXE" -NoProfile -ExecutionPolicy Bypass -Command "
+        \$link = '$WT_LINK'
+        \$target = '$WT_WSL_PATH'
+        \$existing = Get-Item -LiteralPath \$link -Force -ErrorAction SilentlyContinue
+        if (\$existing) { Remove-Item -LiteralPath \$link -Force }
+        New-Item -ItemType SymbolicLink -Path \$link -Target \$target | Out-Null
+      "; then
+        echo "  -> Symlinked Windows Terminal settings.json"
+      else
+        cp "$DOTFILES_DIR/windows-terminal/settings.json" "$WT_LOCAL_STATE/settings.json"
+        echo "  -> Copied Windows Terminal settings.json (symlink failed)"
+      fi
+    else
+      echo "  !! Windows Terminal not found, skipping"
+    fi
+    echo ""
   fi
 
   echo "Setting up llama-update..."
@@ -112,6 +137,9 @@ done
 
 echo "Stowing packages: $PACKAGES"
 echo ""
+
+# Remove files that block stow
+rm -f "$HOME/.zcompdump" "$HOME/.zcompdump".*
 
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
