@@ -1,0 +1,15 @@
+#!/bin/bash
+# WSL notify-send → Windows Toast notification
+SUMMARY="${1:-Notification}"
+BODY="${2:-}"
+powershell.exe -WindowStyle Hidden -Command "
+  \$app = 'Herdr'
+  \$t = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
+  \$xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(
+    [Windows.UI.Notifications.ToastTemplateType]::ToastText02
+  )
+  \$xml.SelectSingleNode('//text[@id=1]').InnerText = '$SUMMARY'
+  \$xml.SelectSingleNode('//text[@id=2]').InnerText = '$BODY'
+  \$toast = [Windows.UI.Notifications.ToastNotification]::new(\$xml)
+  [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(\$app).Show(\$toast)
+" &>/dev/null
