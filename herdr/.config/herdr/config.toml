@@ -1,0 +1,32 @@
+onboarding = false
+
+[theme]
+name = "dracula"
+
+[session]
+resume_agents_on_restore = true
+
+[keys]
+prefix = "ctrl+a"
+
+settings = ""
+workspace_picker = "prefix+s"
+
+rename_tab = "prefix+comma"
+
+previous_tab = "shift+left"
+next_tab = "shift+right"
+
+focus_pane_left = "alt+left"
+focus_pane_right = "alt+right"
+focus_pane_up = "alt+up"
+focus_pane_down = "alt+down"
+
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+
+[keys.indexed]
+tabs = "alt"
+
+[ui]
+show_agent_labels_on_pane_borders = true
