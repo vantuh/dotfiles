@@ -1,6 +1,7 @@
 git:
   pagers:
-    - pager: delta --side-by-side --line-numbers --paging=never
+    - colorArg: always
+      pager: hunk pager --mode split
 customCommands:
   - key: "<c-g>"
     context: "files"
