@@ -8,7 +8,7 @@
     "npm:@plannotator/pi-extension",
     "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.79.10",
+  "lastChangelogVersion": "0.80.2",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
