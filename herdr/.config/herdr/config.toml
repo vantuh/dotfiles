@@ -30,7 +30,7 @@ tabs = "alt"
 
 [ui]
 show_agent_labels_on_pane_borders = true
-agent_panel_scope = "current"
+agent_panel_scope = "all"
 
 [ui.toast]
 delivery = "system"

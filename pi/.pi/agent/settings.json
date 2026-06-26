@@ -2,7 +2,13 @@
   "defaultProvider": "kiro-acp",
   "defaultModel": "claude-sonnet-4.6",
   "packages": [
-    "npm:pi-subagents",
+    {
+      "source": "npm:pi-subagents",
+      "prompts": [
+        "+prompts/parallel-review.md",
+        "-prompts/review-loop.md"
+      ]
+    },
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
     "npm:@plannotator/pi-extension",
