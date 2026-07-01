@@ -1,6 +1,6 @@
 {
   "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-sonnet-4.6",
+  "defaultModel": "claude-sonnet-5",
   "packages": [
     {
       "source": "npm:pi-subagents",
@@ -14,7 +14,7 @@
     "npm:@plannotator/pi-extension",
     "npm:pi-mcp-adapter"
   ],
-  "lastChangelogVersion": "0.80.2",
+  "lastChangelogVersion": "0.80.3",
   "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
@@ -31,7 +31,8 @@
     "kiro-acp/claude-haiku-4.5",
     "cursor/composer-2-5",
     "local/gemma-4-12b",
-    "local/gemma-4-26b"
+    "local/gemma-4-26b",
+    "kiro-acp/claude-sonnet-5"
   ],
   "defaultThinkingLevel": "high",
   "subagents": {
