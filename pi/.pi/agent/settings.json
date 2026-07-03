@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-sonnet-5",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
   "packages": [
     {
       "source": "npm:pi-subagents",
