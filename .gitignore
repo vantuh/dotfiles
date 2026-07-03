@@ -36,6 +36,10 @@ id_rsa*
 **/.pi/sessions/
 agents/.pi/
 
+# herdr runtime state (only config.toml is versioned)
+herdr/.config/herdr/session.json
+herdr/.config/herdr/*.sock
+
 # Generated Kiro ACP bridge agent config
 .kiro/agents/pi-kiro-*.json
 

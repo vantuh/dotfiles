@@ -145,7 +145,7 @@ for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
     STOW_OPTS="--restow"
-    [[ "$pkg" == "pi" ]] && STOW_OPTS="$STOW_OPTS --no-folding"
+    [[ "$pkg" == "pi" || "$pkg" == "herdr" ]] && STOW_OPTS="$STOW_OPTS --no-folding"
     stow -d "$DOTFILES_DIR" -t "$HOME" $STOW_OPTS "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
   else
     echo "  [$pkg] skipped (directory not found)"
