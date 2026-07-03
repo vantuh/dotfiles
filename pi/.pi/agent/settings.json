@@ -12,7 +12,9 @@
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
     "npm:@plannotator/pi-extension",
-    "npm:pi-mcp-adapter"
+    "npm:pi-mcp-adapter",
+    "npm:pi-intercom",
+    "npm:pi-prompt-template-model"
   ],
   "lastChangelogVersion": "0.80.3",
   "hideThinkingBlock": false,
