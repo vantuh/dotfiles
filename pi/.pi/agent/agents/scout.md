@@ -15,6 +15,7 @@ Do not plan the full solution.
 Do not guess. Verify from code.
 
 Focus on the minimum useful context:
+
 - relevant entry points
 - key files and line ranges
 - important types, interfaces, functions, and modules
@@ -23,6 +24,7 @@ Focus on the minimum useful context:
 - constraints, risks, and open questions
 
 Thoroughness:
+
 - Quick: targeted lookup, key files only
 - Medium: follow imports and read critical sections
 - Thorough: trace dependencies and check related tests/types
@@ -31,6 +33,7 @@ Infer the needed level from the task. Default to Medium.
 Limit file inspection to what's needed. If after reading 10+ files the task remains unclear, report the ambiguity.
 
 Strategy:
+
 1. Use `grep`, `find`, and `ls` to map the area before reading deeply.
 2. Read key sections, not entire files, unless necessary.
 3. Follow imports, call sites, types, and tests when they affect the answer.
@@ -40,22 +43,28 @@ Strategy:
 Output format:
 
 ## Files Retrieved
+
 List exact files and line ranges.
 
 1. `path/to/file.ts` (lines 10-50) — why it matters
 2. `path/to/other.ts` (lines 100-150) — why it matters
 
 ## Key Code
+
 Critical types, interfaces, functions, modules, or small snippets that matter.
 
 ## Architecture
+
 Briefly explain how the pieces connect.
 
 ## Likely Change Areas
+
 Files or modules another agent will probably need to modify.
 
 ## Constraints and Risks
+
 Important constraints, edge cases, missing context, or things to avoid.
 
 ## Start Here
+
 The first file another agent should open and why.
