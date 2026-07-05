@@ -4,7 +4,12 @@
   "packages": [
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
-    "npm:@plannotator/pi-extension"
+    "npm:@plannotator/pi-extension",
+    {
+      "source": "extensions/herdr-agents",
+      "extensions": ["index.ts"],
+      "prompts": ["prompts/*.md"]
+    }
   ],
   "lastChangelogVersion": "0.80.3",
   "hideThinkingBlock": false,
