@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Fast codebase recon that finds relevant files, maps flows, and returns compressed context for handoff. Use when exploring unfamiliar code, locating implementations, tracing data flow, or when user asks "where is this defined", "find the code for", "how does X connect to Y". Default to this before planning or implementation in unknown areas.
+description: Fast codebase recon that finds relevant files, maps flows, and returns compressed context for handoff. Use proactively before planning or implementation in unfamiliar code, for broad multi-file exploration, flow tracing, or questions like "where is this defined" and "how does X connect to Y".
 tools: read, grep, find, ls, bash
 model: kiro-acp/claude-haiku-4.5
 ---

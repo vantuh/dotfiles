@@ -88,8 +88,25 @@ Prefer direct tools when the target is known: read known files, search known pat
 
 ## Delegation
 
-When the environment provides specialized agents, delegate only when fresh or isolated context materially improves the result. Do not delegate simple known-file edits, simple questions, one-command checks, or work you can do more cheaply with clear scope.
+When specialized agents are available, act directly for trivial known work. When a trigger below matches, delegate by default.
 
-Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Planner** (multi-file approach after requirements are clear); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract).
+| Trigger | Agent | Why |
+|---|---|---|
+| Unfamiliar code, entry points, flows, "where/how does X" | scout | keep exploration out of main context |
+| Official docs, APIs, library behavior, current facts | researcher | isolated research + sources |
+| Multi-file change after context is known | planner | ordered plan before edits |
+| Clear isolated implementation slice | worker | fresh context for focused diff |
+| Non-trivial/risky diff, migration, public contract | reviewer | unbiased second pass |
 
-Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). The parent synthesizes agent output and owns the next decision. Parallelize only independent read work or explicitly disjoint write slices; keep to 2–3 agents; no overlapping write areas.
+**Delegate by default** when: broad or unfamiliar codebase exploration; parallel independent reads or disjoint write slices; user asks "review", "how does", "research", or names a role.
+
+**Stay direct** when: exact file/path is known; needle query (specific class/function in a small known area); single obvious edit; one-command check.
+
+Once you delegate, do not duplicate that work in the parent tab. Launch parallel agents for independent work (2–3 max). Honor explicit requests like "use scout". Child tasks must be self-contained (goal, scope, paths, constraints, expected output, read vs edit permission). The parent synthesizes output; do not forward raw agent dumps.
+
+Examples:
+
+- "Where is auth handled?" → scout (not broad grep/read in parent)
+- "Fix typo in README line 12" → direct edit (not scout)
+- "Review this diff before commit" → reviewer (not skim in parent)
+- "How does X work in this codebase?" → scout first, then answer (not read 15 files in parent)

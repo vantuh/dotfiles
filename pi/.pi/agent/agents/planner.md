@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Creates concrete implementation plans from requirements and code context. Outputs numbered steps with exact file paths, changes, and validation criteria. Use before multi-file changes, refactoring, or when the approach isn't obvious. Triggers on "how should I implement", "break this down", "what's the plan for".
+description: Creates concrete implementation plans from requirements and code context. Use proactively after scout/research when a change spans multiple files or needs an implementation plan. Triggers on "how should I implement", "break this down", "what's the plan for".
 tools: read, grep, find, ls
 model: kiro-acp/claude-opus-4.8
 ---
