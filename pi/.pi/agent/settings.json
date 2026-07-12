@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
+  "defaultProvider": "cursor",
+  "defaultModel": "composer-2-5",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-cursor-sdk"
@@ -14,15 +14,14 @@
   },
   "theme": "dracula",
   "enabledModels": [
-    "openai-codex/gpt-5.5",
     "local/qwen3.6-27b",
-    "local/qwen3.6-27b-kxl",
     "kiro-acp/claude-opus-4.8",
     "kiro-acp/claude-haiku-4.5",
     "cursor/composer-2-5",
-    "local/gemma-4-12b",
-    "local/gemma-4-26b",
-    "kiro-acp/claude-sonnet-5"
+    "kiro-acp/claude-sonnet-5",
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra"
   ],
   "defaultThinkingLevel": "high",
   "subagents": {
