@@ -85,3 +85,11 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Tool use
 
 Prefer direct tools when the target is known: read known files, search known patterns, edit known locations.
+
+## Delegation
+
+When the environment provides specialized agents, delegate only when fresh or isolated context materially improves the result. Do not delegate simple known-file edits, simple questions, one-command checks, or work you can do more cheaply with clear scope.
+
+Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Planner** (multi-file approach after requirements are clear); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract).
+
+Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). The parent synthesizes agent output and owns the next decision. Parallelize only independent read work or explicitly disjoint write slices; keep to 2–3 agents; no overlapping write areas.
