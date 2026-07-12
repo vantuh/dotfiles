@@ -1,11 +1,19 @@
 ---
 name: herdr
-description: "Control herdr from inside it. Manage workspaces and tabs, split panes, spawn agents, read output, and wait for state changes — all via CLI commands that talk to the running herdr instance over a local unix socket. Use when running inside herdr (HERDR_ENV=1)."
+description: "Control Herdr terminal workspaces, tabs, panes, processes, output, and waits via CLI. Use for terminal or multiplexer operations when running inside Herdr (HERDR_ENV=1), not routine AI-agent delegation."
 ---
 
 # herdr — agent skill
 
 before using this skill, check that `HERDR_ENV=1`. if it is not set to `1`, say you are not running inside a herdr-managed pane and stop. do not inspect or control the focused herdr pane from outside herdr.
+
+## boundary with agent delegation
+
+use the `herdr_agent` delegation tool for routine worker, scout, researcher, planner, and reviewer spawning, waiting, and tab reuse. use the provider-exposed tool name shown in the available tools if it is namespaced.
+
+do not load this skill merely to delegate to one of those agents. if the user asks to open an agent without a task, use the delegation tool immediately with a minimal standby task, persistent lifecycle, and no wait.
+
+use this skill for lower-level terminal and multiplexer operations that the delegation tool does not cover: managing arbitrary tabs and panes, running servers or commands, reading terminal output, and explicit manual coordination.
 
 you are running inside herdr, a terminal-native agent multiplexer. herdr gives you workspaces, tabs, and panes — each pane is a real terminal with its own shell, agent, server, or log stream — and you can control all of it from the cli.
 
@@ -16,8 +24,7 @@ this means you can:
 - split panes and run commands in them
 - start servers, watch logs, and run tests in sibling panes
 - wait for specific output before continuing
-- wait for another agent to finish
-- spawn more agent instances
+- wait for a manually managed agent pane to finish
 
 the `herdr` binary is available in your PATH. its workspace, tab, pane, and wait commands talk to the running herdr instance over a local unix socket.
 
@@ -269,16 +276,9 @@ herdr wait output 1-3 --match "ready" --timeout 30000
 herdr pane read 1-3 --source recent-unwrapped --lines 40
 ```
 
-### spawn a new agent and give it a task
+### coordinate with a manually managed agent pane
 
-```bash
-herdr pane split 1-2 --direction right --no-focus
-herdr pane run 1-3 "claude"
-herdr wait output 1-3 --match ">" --timeout 15000
-herdr pane run 1-3 "review the test coverage in src/api/"
-```
-
-### coordinate with another agent
+use this only for an existing pane outside the `herdr_agent` delegation workflow, or when the user explicitly requests low-level pane control.
 
 ```bash
 herdr wait agent-status 1-1 --status done --timeout 120000
