@@ -11,7 +11,7 @@ fi
 # Environment
 export LANG=en_US.UTF-8
 export LC_TIME=uk_UA.UTF-8
-export EDITOR='zed'
+export EDITOR='code'
 
 # Tool env
 export NVM_COMPLETION=true

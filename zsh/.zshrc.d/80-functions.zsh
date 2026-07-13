@@ -35,6 +35,7 @@ tss() {
 herdr-setup() {
   local panes current_tab workspace_id
   local lazygit_resp lazygit_pane
+  local hunk_review_resp hunk_review_pane
   local tests_resp tests_pane
 
   panes="$(herdr pane list)" || return
@@ -46,6 +47,10 @@ herdr-setup() {
   lazygit_resp="$(herdr tab create --workspace "$workspace_id" --label "lazygit" --no-focus)" || return
   lazygit_pane="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])' <<< "$lazygit_resp")" || return
   herdr pane run "$lazygit_pane" "lg" || return
+
+  hunk_review_resp="$(herdr tab create --workspace "$workspace_id" --label "hunk_review" --no-focus)" || return
+  hunk_review_pane="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])' <<< "$hunk_review_resp")" || return
+  herdr pane run "$hunk_review_pane" "hunk diff --watch" || return
 
   tests_resp="$(herdr tab create --workspace "$workspace_id" --label "tests" --no-focus)" || return
   tests_pane="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])' <<< "$tests_resp")" || return
