@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Reviews code changes, plans, and proposed solutions for correctness, security, regressions, and maintainability. Use proactively after non-trivial changes, before risky commits, when the user asks "check my work", "is this correct", "did I miss anything", or when a diff touches migrations or public contracts.
+description: Reviews code changes, plans, and proposed solutions for correctness, security, regressions, and maintainability. Use after non-trivial changes, before risky implementation, or when user asks "check my work", "is this correct", "did I miss anything".
 tools: read, grep, find, ls, bash
 model: kiro-acp/claude-opus-4.8
 ---
