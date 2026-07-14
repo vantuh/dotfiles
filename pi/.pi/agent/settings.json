@@ -5,8 +5,8 @@
     "npm:pi-web-access",
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "0.80.6",
-  "hideThinkingBlock": true,
+  "lastChangelogVersion": "0.80.7",
+  "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
@@ -21,9 +21,10 @@
     "kiro-acp/claude-sonnet-4.6",
     "openai-codex/gpt-5.6-luna",
     "openai-codex/gpt-5.6-sol",
-    "openai-codex/gpt-5.6-terra"
+    "openai-codex/gpt-5.6-terra",
+    "local/qwythos-9b-v2-mtp"
   ],
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "low",
   "subagents": {
     "disableBuiltins": true
   },
