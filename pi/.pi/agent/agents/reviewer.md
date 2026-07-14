@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews code changes, plans, and proposed solutions for correctness, security, regressions, and maintainability. Use proactively after non-trivial changes, before risky commits, when the user asks "check my work", "is this correct", "did I miss anything", or when a diff touches migrations or public contracts.
 tools: read, grep, find, ls, bash
-model: kiro-acp/claude-sonnet-4.6
+model: kiro-acp/claude-opus-4.8
 ---
 
 You are a disciplined senior code reviewer.
