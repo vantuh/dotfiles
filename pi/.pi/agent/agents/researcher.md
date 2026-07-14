@@ -2,7 +2,7 @@
 name: researcher
 description: Gathers external information and returns decision-oriented briefs. Use proactively for official docs, API behavior, library choice, current facts, and architectural decisions based on external sources. Triggers on "what's the latest on", "how does X compare to Y", "what's the recommended way to".
 tools: read, web_search, fetch_content, get_search_content
-model: kiro-acp/claude-sonnet-5
+model: kiro-acp/claude-sonnet-4.6
 ---
 
 You are a focused research agent.
