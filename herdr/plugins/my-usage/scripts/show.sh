@@ -7,30 +7,45 @@ source "$root/scripts/env.sh"
 setup_plugin_path
 
 my_usage_pid=""
+esc_watcher_pid=""
 
 stop_my_usage() {
-  if [[ -z "$my_usage_pid" ]] || ! kill -0 "$my_usage_pid" 2>/dev/null; then
-    return
+  if [[ -n "$esc_watcher_pid" ]] && kill -0 "$esc_watcher_pid" 2>/dev/null; then
+    kill "$esc_watcher_pid" 2>/dev/null || true
+    wait "$esc_watcher_pid" 2>/dev/null || true
+    esc_watcher_pid=""
   fi
-  kill -INT "$my_usage_pid" 2>/dev/null || true
-  wait "$my_usage_pid" 2>/dev/null || true
-  my_usage_pid=""
+  if [[ -n "$my_usage_pid" ]] && kill -0 "$my_usage_pid" 2>/dev/null; then
+    kill -INT "$my_usage_pid" 2>/dev/null || true
+    wait "$my_usage_pid" 2>/dev/null || true
+    my_usage_pid=""
+  fi
 }
 
 trap stop_my_usage EXIT
 
-wait_for_esc_while_running() {
-  local key
-  while kill -0 "$my_usage_pid" 2>/dev/null; do
-    if IFS= read -rsn1 -t 0.1 key < /dev/tty 2>/dev/null; then
-      if [[ "$key" == $'\e' ]]; then
-        printf '\n(cancelled)\n'
-        stop_my_usage
-        trap - EXIT
-        exit 130
+is_lone_escape() {
+  local next=""
+  if IFS= read -rsn1 -t 0.03 next < /dev/tty 2>/dev/null && [[ -n "$next" ]]; then
+    return 1
+  fi
+  return 0
+}
+
+start_esc_watcher() {
+  (
+    sleep 0.2
+    while kill -0 "$my_usage_pid" 2>/dev/null; do
+      local key=""
+      if IFS= read -rsn1 -t 0.2 key < /dev/tty 2>/dev/null; then
+        if [[ "$key" == $'\e' ]] && is_lone_escape; then
+          kill -INT "$my_usage_pid" 2>/dev/null || true
+          exit 0
+        fi
       fi
-    fi
-  done
+    done
+  ) &
+  esc_watcher_pid=$!
 }
 
 wait_for_dismiss() {
@@ -40,10 +55,16 @@ wait_for_dismiss() {
     return
   fi
 
-  local key
+  local key=""
   while true; do
-    IFS= read -rsn1 key < /dev/tty || break
-    if [[ -z "$key" || "$key" == $'\e' ]]; then
+    if ! IFS= read -rsn1 key < /dev/tty 2>/dev/null; then
+      sleep 0.2
+      continue
+    fi
+    if [[ -z "$key" ]]; then
+      break
+    fi
+    if [[ "$key" == $'\e' ]] && is_lone_escape; then
       break
     fi
   done
@@ -59,15 +80,24 @@ my_usage_pid="$(start_my_usage)" || {
   exit 1
 }
 printf 'Press Esc to cancel.\n' >&2
-
-wait_for_esc_while_running
+start_esc_watcher
 
 set +e
 wait "$my_usage_pid"
 exit_code=$?
 set -e
 my_usage_pid=""
+if [[ -n "$esc_watcher_pid" ]]; then
+  kill "$esc_watcher_pid" 2>/dev/null || true
+  wait "$esc_watcher_pid" 2>/dev/null || true
+  esc_watcher_pid=""
+fi
 trap - EXIT
+
+if [[ $exit_code -eq 130 ]]; then
+  printf '\n(cancelled)\n'
+  exit 130
+fi
 
 if [[ $exit_code -ne 0 ]]; then
   sleep 3

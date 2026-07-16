@@ -33,25 +33,11 @@ show_agent_labels_on_pane_borders = true
 agent_panel_scope = "all"
 prompt_new_tab_name = false
 
-[ui.sidebar.spaces]
-row_gap = 0
-rows = [
-  ["state_icon", "workspace"],
-  ["branch", "git_status"],
-  ["$usage"],
-]
-
 [[keys.command]]
 key = "prefix+u"
 type = "plugin_action"
 command = "vantuh.my-usage.show"
 description = "show codex/kiro/cursor usage"
-
-[[keys.command]]
-key = "prefix+shift+u"
-type = "plugin_action"
-command = "vantuh.my-usage.refresh"
-description = "refresh usage in sidebar"
 
 [ui.toast]
 delivery = "system"
