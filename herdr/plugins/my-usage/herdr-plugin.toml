@@ -1,0 +1,26 @@
+id = "vantuh.my-usage"
+name = "My Usage"
+version = "0.2.0"
+min_herdr_version = "0.7.4"
+description = "Codex, Kiro, and Cursor usage via my-usage"
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "show"
+title = "Show usage"
+contexts = ["workspace"]
+command = ["bash", "scripts/open-popup.sh"]
+
+[[actions]]
+id = "refresh"
+title = "Refresh usage in sidebar"
+contexts = ["workspace"]
+command = ["node", "scripts/refresh.mjs"]
+
+[[panes]]
+id = "usage"
+title = "Usage"
+placement = "popup"
+width = "92%"
+height = 28
+command = ["bash", "scripts/show.sh"]

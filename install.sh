@@ -203,3 +203,15 @@ fi
 
 echo ""
 echo "Done! Restart your shell or run: source ~/.zshrc"
+
+# --- Herdr plugins ---
+HERDR_USAGE_PLUGIN="$DOTFILES_DIR/herdr/plugins/my-usage"
+if [[ -d "$HERDR_USAGE_PLUGIN" ]] && command -v herdr &>/dev/null; then
+  echo ""
+  echo "Linking Herdr plugins..."
+  if herdr plugin link "$HERDR_USAGE_PLUGIN" >/dev/null 2>&1; then
+    echo "  vantuh.my-usage -> $HERDR_USAGE_PLUGIN"
+  else
+    echo "  vantuh.my-usage skipped (link failed; run: herdr plugin link $HERDR_USAGE_PLUGIN)"
+  fi
+fi
