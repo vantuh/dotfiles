@@ -32,16 +32,7 @@ resolve_my_usage_bin() {
 }
 
 run_my_usage() {
-  local bin shell
+  local bin
   bin="$(resolve_my_usage_bin)" || return 1
-  shell="${SHELL:-/bin/zsh}"
-  "$shell" -lic "$bin"
-}
-
-start_my_usage() {
-  local bin shell
-  bin="$(resolve_my_usage_bin)" || return 1
-  shell="${SHELL:-/bin/zsh}"
-  "$shell" -lic "$bin" &
-  printf '%s' $!
+  "$bin"
 }
