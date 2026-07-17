@@ -33,6 +33,12 @@ show_agent_labels_on_pane_borders = true
 agent_panel_scope = "all"
 prompt_new_tab_name = false
 
+[ui.sidebar.spaces]
+row_gap = 1
+
+[ui.sidebar.agents]
+row_gap = 1
+
 [[keys.command]]
 key = "prefix+u"
 type = "plugin_action"
