@@ -22,9 +22,10 @@
     "openai-codex/gpt-5.6-luna",
     "openai-codex/gpt-5.6-sol",
     "openai-codex/gpt-5.6-terra",
-    "local/qwythos-9b-v2-mtp"
+    "local/qwythos-9b-v2-mtp",
+    "cursor/grok-4.5"
   ],
-  "defaultThinkingLevel": "low",
+  "defaultThinkingLevel": "medium",
   "subagents": {
     "disableBuiltins": true
   },
