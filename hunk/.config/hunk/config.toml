@@ -1,2 +1,4 @@
+mode="split"
 theme = "dracula"
 agent_notes = true
+wrap_lines = true
