@@ -8,6 +8,11 @@ return {
             hidden = true, -- show dotfiles (e.g. .config)
             ignored = false, -- keep gitignored hidden (.DS_Store, .env, …)
           },
+          -- Space Space / <leader>ff
+          files = {
+            hidden = true,
+            ignored = false,
+          },
         },
       },
     },
