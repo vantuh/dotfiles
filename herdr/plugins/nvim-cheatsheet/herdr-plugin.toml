@@ -1,0 +1,20 @@
+id = "vantuh.nvim-cheatsheet"
+name = "Nvim Cheatsheet"
+version = "0.1.0"
+min_herdr_version = "0.7.4"
+description = "Show Neovim/LazyVim COMMANDS.md cheatsheet in a popup"
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "show"
+title = "Show nvim cheatsheet"
+contexts = ["workspace"]
+command = ["bash", "scripts/open-popup.sh"]
+
+[[panes]]
+id = "cheatsheet"
+title = "Nvim Commands"
+placement = "popup"
+width = "80%"
+height = "85%"
+command = ["bash", "scripts/show.sh"]

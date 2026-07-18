@@ -45,5 +45,11 @@ type = "plugin_action"
 command = "vantuh.my-usage.show"
 description = "show codex/kiro/cursor usage"
 
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "vantuh.nvim-cheatsheet.show"
+description = "show nvim/lazyvim cheatsheet"
+
 [ui.toast]
 delivery = "system"
