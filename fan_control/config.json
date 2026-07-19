@@ -323,8 +323,10 @@
         "NickName": "AIO VRM Fan",
         "Identifier": "/lpc/it8696e/control/4",
         "IsHidden": false,
-        "Enable": false,
-        "SelectedFanCurve": null,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "AIO VRM Fixed"
+        },
         "SelectedOffset": 0,
         "PairedFanSensor": {
           "Identifier": "/lpc/it8696e/fan/4"
@@ -404,8 +406,10 @@
         "NickName": "AIO Pump",
         "Identifier": "/lpc/it8696e/control/5",
         "IsHidden": false,
-        "Enable": false,
-        "SelectedFanCurve": null,
+        "Enable": true,
+        "SelectedFanCurve": {
+          "Name": "AIO Pump Fixed"
+        },
         "SelectedOffset": 0,
         "PairedFanSensor": {
           "Identifier": "/lpc/it8696e/fan/5"
@@ -791,6 +795,18 @@
         "IsHidden": false,
         "CommandMode": 0,
         "Percent": 0
+      },
+      {
+        "Name": "AIO Pump Fixed",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "Percent": 60
+      },
+      {
+        "Name": "AIO VRM Fixed",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "Percent": 30
       }
     ],
     "FanSensors": [
