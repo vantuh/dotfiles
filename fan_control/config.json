@@ -91,7 +91,7 @@
         "IsHidden": false,
         "Enable": true,
         "SelectedFanCurve": {
-          "Name": "CPU"
+          "Name": "Rear exhaust"
         },
         "SelectedOffset": 0,
         "PairedFanSensor": {
@@ -712,33 +712,7 @@
         }
       },
       {
-        "Name": "CPU",
-        "IsHidden": false,
-        "CommandMode": 0,
-        "SelectedTempSource": {
-          "Identifier": "/amdcpu/0/temperature/2"
-        },
-        "Points": [
-          "45,20",
-          "60,25",
-          "70,35",
-          "78,50",
-          "85,75",
-          "92,100"
-        ],
-        "MaximumTemperature": 120,
-        "MinimumTemperature": 20,
-        "MaximumCommand": 100,
-        "HysteresisConfig": {
-          "ResponseTimeUp": 5,
-          "ResponseTimeDown": 14,
-          "HysteresisValueUp": 3,
-          "HysteresisValueDown": 4,
-          "IgnoreHysteresisAtLimits": false
-        }
-      },
-      {
-        "Name": "Top exhaust",
+        "Name": "Rear exhaust",
         "IsHidden": false,
         "CommandMode": 0,
         "SelectedTempSource": {
@@ -746,19 +720,18 @@
         },
         "Points": [
           "40,10",
-          "55,12",
-          "68,15",
-          "75,30",
-          "82,50",
-          "88,70",
-          "95,100"
+          "60,12",
+          "70,15",
+          "78,25",
+          "85,40",
+          "92,60"
         ],
         "MaximumTemperature": 120,
         "MinimumTemperature": 20,
         "MaximumCommand": 100,
         "HysteresisConfig": {
           "ResponseTimeUp": 9,
-          "ResponseTimeDown": 18,
+          "ResponseTimeDown": 20,
           "HysteresisValueUp": 3,
           "HysteresisValueDown": 5,
           "IgnoreHysteresisAtLimits": false
@@ -791,12 +764,6 @@
         }
       },
       {
-        "Name": "stop",
-        "IsHidden": false,
-        "CommandMode": 0,
-        "Percent": 0
-      },
-      {
         "Name": "AIO Pump Fixed",
         "IsHidden": false,
         "CommandMode": 0,
@@ -816,7 +783,7 @@
           "Identifier": "/amdcpu/0/temperature/2"
         },
         "Points": [
-          "44.98096538531723,19.966222222222214",
+          "45,19.966222222222214",
           "59.95695974729582,19.966222222222214",
           "70,25",
           "78,35",
@@ -834,6 +801,12 @@
           "HysteresisValueDown": 5,
           "IgnoreHysteresisAtLimits": true
         }
+      },
+      {
+        "Name": "Stop",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "Percent": 0
       }
     ],
     "FanSensors": [
