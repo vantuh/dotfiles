@@ -663,24 +663,6 @@
             "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
           }
         ]
-      },
-      {
-        "NickName": "Case MAX",
-        "Identifier": "Mix/Case MAX",
-        "IsHidden": false,
-        "AllowMissingSensor": false,
-        "SelectedMixFunction": 1,
-        "SelectedSensors": [
-          {
-            "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
-          },
-          {
-            "Identifier": "/lpc/it8696e/temperature/4"
-          },
-          {
-            "Identifier": "/amdcpu/0/temperature/2"
-          }
-        ]
       }
     ],
     "FanCurves": [
@@ -742,7 +724,7 @@
         "IsHidden": false,
         "CommandMode": 0,
         "SelectedTempSource": {
-          "Identifier": "Mix/Case MAX"
+          "Identifier": "NVApiWrapper/0-GB203-A/sensor/0"
         },
         "Points": [
           "35,10",
