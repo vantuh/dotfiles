@@ -1,5 +1,5 @@
 {
-  "__VERSION__": "271",
+  "__VERSION__": "262",
   "FanControl": {
     "Controls": [
       {
@@ -25,63 +25,51 @@
         "Calibration": [
           [
             0,
-            606,
-            false
+            606
           ],
           [
             1,
-            607,
-            false
+            607
           ],
           [
             10,
-            736,
-            false
+            736
           ],
           [
             20,
-            993,
-            false
+            993
           ],
           [
             30,
-            1241,
-            false
+            1241
           ],
           [
             40,
-            1493,
-            false
+            1493
           ],
           [
             50,
-            1740,
-            false
+            1740
           ],
           [
             60,
-            1997,
-            false
+            1997
           ],
           [
             70,
-            2254,
-            false
+            2254
           ],
           [
             80,
-            2509,
-            false
+            2509
           ],
           [
             90,
-            2752,
-            false
+            2752
           ],
           [
             100,
-            2935,
-            false
+            2935
           ]
         ]
       },
@@ -108,58 +96,47 @@
         "Calibration": [
           [
             1,
-            0,
-            false
+            0
           ],
           [
             10,
-            619,
-            false
+            619
           ],
           [
             20,
-            896,
-            false
+            896
           ],
           [
             30,
-            1152,
-            false
+            1152
           ],
           [
             40,
-            1422,
-            false
+            1422
           ],
           [
             50,
-            1684,
-            false
+            1684
           ],
           [
             60,
-            1948,
-            false
+            1948
           ],
           [
             70,
-            2213,
-            false
+            2213
           ],
           [
             80,
-            2475,
-            false
+            2475
           ],
           [
             90,
-            2738,
-            false
+            2738
           ],
           [
             100,
-            3013,
-            false
+            3013
           ]
         ]
       },
@@ -186,58 +163,47 @@
         "Calibration": [
           [
             1,
-            0,
-            false
+            0
           ],
           [
             10,
-            619,
-            false
+            619
           ],
           [
             20,
-            908,
-            false
+            908
           ],
           [
             30,
-            1160,
-            false
+            1160
           ],
           [
             40,
-            1425,
-            false
+            1425
           ],
           [
             50,
-            1691,
-            false
+            1691
           ],
           [
             60,
-            1959,
-            false
+            1959
           ],
           [
             70,
-            2217,
-            false
+            2217
           ],
           [
             80,
-            2479,
-            false
+            2479
           ],
           [
             90,
-            2736,
-            false
+            2736
           ],
           [
             100,
-            2789,
-            false
+            2789
           ]
         ]
       },
@@ -264,58 +230,47 @@
         "Calibration": [
           [
             1,
-            0,
-            false
+            0
           ],
           [
             10,
-            586,
-            false
+            586
           ],
           [
             20,
-            862,
-            false
+            862
           ],
           [
             30,
-            1130,
-            false
+            1130
           ],
           [
             40,
-            1399,
-            false
+            1399
           ],
           [
             50,
-            1660,
-            false
+            1660
           ],
           [
             60,
-            1934,
-            false
+            1934
           ],
           [
             70,
-            2200,
-            false
+            2200
           ],
           [
             80,
-            2475,
-            false
+            2475
           ],
           [
             90,
-            2733,
-            false
+            2733
           ],
           [
             100,
-            3000,
-            false
+            3000
           ]
         ]
       },
@@ -340,63 +295,51 @@
         "Calibration": [
           [
             0,
-            406,
-            false
+            406
           ],
           [
             1,
-            430,
-            false
+            430
           ],
           [
             10,
-            625,
-            false
+            625
           ],
           [
             20,
-            844,
-            false
+            844
           ],
           [
             30,
-            1056,
-            false
+            1056
           ],
           [
             40,
-            1273,
-            false
+            1273
           ],
           [
             50,
-            1483,
-            false
+            1483
           ],
           [
             60,
-            1704,
-            false
+            1704
           ],
           [
             70,
-            1911,
-            false
+            1911
           ],
           [
             80,
-            2123,
-            false
+            2123
           ],
           [
             90,
-            2326,
-            false
+            2326
           ],
           [
             100,
-            2576,
-            false
+            2576
           ]
         ]
       },
@@ -421,63 +364,51 @@
         "Calibration": [
           [
             0,
-            747,
-            false
+            747
           ],
           [
             1,
-            772,
-            false
+            772
           ],
           [
             10,
-            997,
-            false
+            997
           ],
           [
             20,
-            1248,
-            false
+            1248
           ],
           [
             30,
-            1525,
-            false
+            1525
           ],
           [
             40,
-            1776,
-            false
+            1776
           ],
           [
             50,
-            2029,
-            false
+            2029
           ],
           [
             60,
-            2290,
-            false
+            2290
           ],
           [
             70,
-            2804,
-            false
+            2804
           ],
           [
             80,
-            2810,
-            false
+            2810
           ],
           [
             90,
-            2810,
-            false
+            2810
           ],
           [
             100,
-            2812,
-            false
+            2812
           ]
         ]
       },
@@ -502,63 +433,51 @@
         "Calibration": [
           [
             0,
-            0,
-            false
+            0
           ],
           [
             1,
-            698,
-            false
+            698
           ],
           [
             10,
-            698,
-            false
+            698
           ],
           [
             20,
-            698,
-            false
+            698
           ],
           [
             30,
-            698,
-            false
+            698
           ],
           [
             40,
-            1036,
-            false
+            1036
           ],
           [
             50,
-            1387,
-            false
+            1387
           ],
           [
             60,
-            1728,
-            false
+            1728
           ],
           [
             70,
-            2076,
-            false
+            2076
           ],
           [
             80,
-            2421,
-            false
+            2421
           ],
           [
             90,
-            2762,
-            false
+            2762
           ],
           [
             100,
-            3104,
-            false
+            3104
           ]
         ]
       },
@@ -583,63 +502,51 @@
         "Calibration": [
           [
             0,
-            0,
-            false
+            0
           ],
           [
             1,
-            696,
-            false
+            696
           ],
           [
             10,
-            696,
-            false
+            696
           ],
           [
             20,
-            696,
-            false
+            696
           ],
           [
             30,
-            696,
-            false
+            696
           ],
           [
             40,
-            1036,
-            false
+            1036
           ],
           [
             50,
-            1390,
-            false
+            1390
           ],
           [
             60,
-            1734,
-            false
+            1734
           ],
           [
             70,
-            2083,
-            false
+            2083
           ],
           [
             80,
-            2425,
-            false
+            2425
           ],
           [
             90,
-            2783,
-            false
+            2783
           ],
           [
             100,
-            3093,
-            false
+            3093
           ]
         ]
       }
@@ -797,12 +704,12 @@
       {
         "Identifier": "/lpc/it8696e/fan/0",
         "IsHidden": false,
-        "NickName": "Top AIO Radiator"
+        "NickName": "CPU"
       },
       {
         "Identifier": "/lpc/it8696e/fan/1",
         "IsHidden": false,
-        "NickName": "Rear exhaust"
+        "NickName": "Top AIO Radiator"
       },
       {
         "Identifier": "/lpc/it8696e/fan/2",
@@ -827,7 +734,7 @@
       {
         "Identifier": "/lpc/it8696e/fan/4",
         "IsHidden": false,
-        "NickName": "AIO VRM Fan"
+        "NickName": "AIO VRAM Fan"
       },
       {
         "Identifier": "/lpc/it8696e/fan/5",
@@ -835,7 +742,48 @@
         "NickName": "AIO Pump"
       }
     ],
-    "TemperatureSensors": []
+    "TemperatureSensors": [
+      {
+        "Identifier": "/amdcpu/0/temperature/2",
+        "IsHidden": false,
+        "NickName": "Core (Tctl/Tdie)"
+      },
+      {
+        "Identifier": "/amdcpu/0/temperature/3",
+        "IsHidden": false,
+        "NickName": "CCD1 (Tdie)"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/0",
+        "IsHidden": false,
+        "NickName": "Temperature #1"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/1",
+        "IsHidden": false,
+        "NickName": "Temperature #2"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/2",
+        "IsHidden": false,
+        "NickName": "Temperature #3"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/3",
+        "IsHidden": false,
+        "NickName": "Temperature #4"
+      },
+      {
+        "Identifier": "/lpc/it8696e/temperature/4",
+        "IsHidden": false,
+        "NickName": "Temperature #5"
+      },
+      {
+        "Identifier": "NVApiWrapper/0-GB203-A/sensor/0",
+        "IsHidden": false,
+        "NickName": "GPU"
+      }
+    ]
   },
   "Sensors": {
     "AdlxWrapperSettings": {
@@ -864,7 +812,7 @@
   "MainWindow": {
     "Fahrenheit": false,
     "HideCalibration": false,
-    "HideFanSpeedCards": false,
+    "HideFanSpeedCards": true,
     "HorizontalUIOrientation": false,
     "PrimaryColor": "#FF607D8B",
     "SecondaryColor": "#FFAEEA00",
