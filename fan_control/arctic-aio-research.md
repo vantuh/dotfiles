@@ -1,6 +1,8 @@
 # ARCTIC Liquid Freezer III Pro 360 — fan control research
 
-Updated: 2026-07-18
+Updated: 2026-07-19
+
+> **Implementation status:** the ARCTIC Liquid Freezer III Pro 360 is installed and has replaced both the be quiet! Pure Rock Pro 3 LX CPU tower and the three separate top-exhaust fans. The current mapping, final initial curves, acoustic decisions, and OCCT results are documented in [`arctic-aio-setup-log-2026-07-19.md`](arctic-aio-setup-log-2026-07-19.md). That setup log and [`config.json`](config.json) supersede the preliminary recommendations below where they differ.
 
 ## Context
 
@@ -41,9 +43,9 @@ Sources:
 - [Installation manual](https://support.arctic.de/liquid-freezer-III-pro-360)
 - [Documentation](https://support.arctic.de/liquid-freezer-III-pro-360/docs)
 
-## Why the current FanControl configuration is stale
+## Previous FanControl configuration (historical)
 
-The existing [`config.json`](config.json) still describes the previous setup:
+Before assisted setup and recalibration, [`config.json`](config.json) described the previous cooling layout:
 
 - `CPU` (`/lpc/it8696e/control/0`) is calibrated for the Pure Rock Pro fans, maximum approximately 2039 RPM;
 - `Top exhaust` (`/lpc/it8696e/control/1`) is calibrated for the previous top/rear P12 Pro group, maximum approximately 3027 RPM;
@@ -52,7 +54,7 @@ The existing [`config.json`](config.json) still describes the previous setup:
 - paired RPM sensors may now point to the wrong devices;
 - the old `Top exhaust` group no longer represents the physical layout.
 
-Do not reuse the old calibration for the radiator, pump, or VRM fan.
+Those old calibrations were not reused. The current channels are identified, renamed, paired, and recalibrated; see the setup log for the resulting mapping.
 
 ## Target FanControl layout
 
