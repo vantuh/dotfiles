@@ -8,7 +8,7 @@
         "IsHidden": false,
         "Enable": true,
         "SelectedFanCurve": {
-          "Name": "CPU"
+          "Name": "AIO Radiator"
         },
         "SelectedOffset": 0,
         "PairedFanSensor": {
@@ -17,8 +17,8 @@
         "SelectedStart": 0,
         "SelectedStop": 0,
         "MinimumPercent": 0,
-        "SelectedCommandStepUp": 8,
-        "SelectedCommandStepDown": 8,
+        "SelectedCommandStepUp": 5,
+        "SelectedCommandStepDown": 3,
         "ManualControlValue": 50,
         "ManualControl": false,
         "ForceApply": false,
@@ -807,6 +807,33 @@
         "IsHidden": false,
         "CommandMode": 0,
         "Percent": 30
+      },
+      {
+        "Name": "AIO Radiator",
+        "IsHidden": false,
+        "CommandMode": 0,
+        "SelectedTempSource": {
+          "Identifier": "/amdcpu/0/temperature/2"
+        },
+        "Points": [
+          "44.98096538531723,19.966222222222214",
+          "59.95695974729582,19.966222222222214",
+          "70,25",
+          "78,35",
+          "85,50",
+          "90,70",
+          "94,100"
+        ],
+        "MaximumTemperature": 120,
+        "MinimumTemperature": 20,
+        "MaximumCommand": 100,
+        "HysteresisConfig": {
+          "ResponseTimeUp": 6,
+          "ResponseTimeDown": 20,
+          "HysteresisValueUp": 3,
+          "HysteresisValueDown": 5,
+          "IgnoreHysteresisAtLimits": true
+        }
       }
     ],
     "FanSensors": [
