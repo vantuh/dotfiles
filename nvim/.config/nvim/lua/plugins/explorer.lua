@@ -18,13 +18,46 @@ local function close_preview(picker)
   previews[picker] = nil
 end
 
+local function directory_lines(path)
+  local entries = {}
+  local truncated = false
+  local ok = pcall(function()
+    for name, kind in vim.fs.dir(path) do
+      if #entries == 500 then
+        truncated = true
+        break
+      end
+      entries[#entries + 1] = { name = name, kind = kind }
+    end
+  end)
+  if not ok then
+    return { "Unable to read directory: " .. path }
+  end
+
+  table.sort(entries, function(a, b)
+    if (a.kind == "directory") ~= (b.kind == "directory") then
+      return a.kind == "directory"
+    end
+    return a.name:lower() < b.name:lower()
+  end)
+
+  local lines = vim.tbl_map(function(entry)
+    local directory = entry.kind == "directory"
+    return (directory and "󰉋  " or "󰈔  ") .. entry.name .. (directory and "/" or "")
+  end, entries)
+  if truncated then
+    lines[#lines + 1] = "… more entries omitted"
+  end
+  return #lines > 0 and lines or { "(empty directory)" }
+end
+
 local function preview_lines(path)
   local stat = vim.uv.fs_stat(path)
   if not stat then
     return { "File not found: " .. path }
   end
   if stat.type == "directory" then
-    return { "Directory: " .. path }
+    return directory_lines(path)
   end
   if stat.size > 1024 * 1024 then
     return { "File is too large to preview (> 1 MB)" }
