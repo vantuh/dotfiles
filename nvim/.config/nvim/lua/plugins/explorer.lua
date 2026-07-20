@@ -18,6 +18,11 @@ local function close_preview(picker)
   previews[picker] = nil
 end
 
+local function add_file(picker)
+  hide_preview(picker)
+  require("snacks.explorer.actions").actions.explorer_add(picker)
+end
+
 local function directory_lines(path)
   local entries = {}
   local truncated = false
@@ -136,7 +141,7 @@ local function update_preview(picker, item)
       enter = false,
       focusable = false,
       minimal = false,
-      zindex = 60,
+      zindex = 40,
       wo = {
         cursorline = false,
         number = true,
@@ -169,11 +174,15 @@ return {
               preset = "sidebar",
               preview = false,
             },
+            actions = {
+              add_file = add_file,
+            },
             on_change = update_preview,
             on_close = close_preview,
             win = {
               list = {
                 keys = {
+                  ["a"] = "add_file",
                   ["P"] = false,
                 },
               },
