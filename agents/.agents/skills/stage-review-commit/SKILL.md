@@ -4,9 +4,9 @@ description: >
   Run an interactive human-review gate for a large dirty Git tree: stage one logical slice, let the
   user inspect it side by side, commit only after explicit approval, then stage the next slice. Use
   whenever the user wants to review staged changes before every commit, separate mixed changes
-  within the same file, or says “stage one step at a time”, “підніми перший крок”, “поревʼюю і скажу
-  коміть”, “розклади diff для review”, or “стейдж по логічних змінах”. Prefer this over
-  split-to-commits when human review between commits—not automatic splitting—is the primary goal.
+  within the same file, stage one step at a time, or inspect and approve each logical commit in
+  sequence. Prefer this over split-to-commits when human review between commits—not automatic
+  splitting—is the primary goal.
 compatibility: Requires Git and a repository with an existing HEAD commit. Hunk integration is optional.
 ---
 
@@ -41,16 +41,20 @@ conflicts, untracked files, and overlapping edits make that approach fragile.
 
 ## 1. Detect a resumable session
 
-Resolve the repository root and absolute Git directory:
+Resolve the repository root and external temporary state directory:
 
 ```bash
 ROOT=$(git rev-parse --show-toplevel)
 GIT_DIR=$(git rev-parse --absolute-git-dir)
+STATE_ROOT="${TMPDIR:-/tmp}/pi-stage-review-commit"
+REPO_ID=$(printf '%s' "$GIT_DIR" | git hash-object --stdin)
+REPO_STATE_DIR="$STATE_ROOT/$REPO_ID"
 ```
 
-If `$GIT_DIR/pi-stage-review/current` exists, read the referenced session's
-`state.md`, then compare it with `git status --short`, `git diff --cached --stat`,
-and `git log --oneline -3`.
+Session metadata must stay outside the repository and its `.git` directory. If
+`$REPO_STATE_DIR/current` exists, read the referenced session's `state.md`, then
+compare it with `git status --short`, `git diff --cached --stat`, and
+`git log --oneline -3`.
 
 - If they agree, summarize the current candidate and resume at the review gate.
 - If HEAD/index/worktree drifted, do not guess. Explain the mismatch and ask
@@ -125,8 +129,14 @@ Record the printed session directory and backup ref in the response. The script:
 
 - stores tracked staged/unstaged state as a stash commit referenced under
   `refs/backup/pi-stage-review/...` without changing the worktree;
-- archives non-ignored untracked files under `.git/pi-stage-review/...`;
-- records original HEAD/status and creates the resumable session pointer.
+- archives non-ignored untracked files under
+  `${TMPDIR:-/tmp}/pi-stage-review-commit/...`;
+- records original HEAD/status and creates the resumable session pointer there.
+
+Temporary state can be purged by the operating system. It supports the active
+review session but is not a durable backup. The tracked backup ref remains in
+Git because it must keep the backup commit reachable; it is not a tracked file
+and never appears in `git status` or commit content.
 
 If the script fails, stop. Do not alter the index. It intentionally rejects
 repositories without an existing HEAD commit. Its snapshot does not preserve
@@ -210,7 +220,7 @@ Checks: git diff --cached --check ✓
 Backup: refs/backup/pi-stage-review/...
 
 Review the Staged Changes in your IDE/Hunk.
-Commands: “коміть”, “перероби stage: …”, “покажи залишок”, or “стоп”.
+Commands: `commit`, `adjust stage: ...`, `show remaining`, or `pause`.
 ```
 
 ### Side-by-side review with Hunk
@@ -240,13 +250,13 @@ stable while the user reviews it.
 
 ## 8. Interpret review commands narrowly
 
-- **“коміть” / “commit”** — approve exactly the currently staged candidate.
-- **“перероби stage: ...”** — adjust only the candidate, revalidate, reload the
+- **`commit`** — approve exactly the currently staged candidate.
+- **`adjust stage: ...`** — adjust only the candidate, revalidate, reload the
   review, and wait again.
-- **“покажи залишок”** — inspect remaining unstaged work without modifying the
+- **`show remaining`** — inspect remaining unstaged work without modifying the
   candidate.
-- **“стоп” / “pause”** — leave the current candidate staged, report session and
-  backup locations, and make no further changes.
+- **`pause`** — leave the current candidate staged, report session and backup
+  locations, and make no further changes.
 - Ambiguous feedback is not commit approval. Ask a focused question.
 
 Inline review comments do not automatically authorize edits. Summarize proposed

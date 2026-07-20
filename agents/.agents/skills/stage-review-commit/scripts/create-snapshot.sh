@@ -12,12 +12,15 @@ if ! git -C "$root" rev-parse --verify HEAD >/dev/null 2>&1; then
 fi
 
 git_dir=$(git -C "$root" rev-parse --absolute-git-dir)
+state_root="${TMPDIR:-/tmp}/pi-stage-review-commit"
+repo_id=$(printf '%s' "$git_dir" | git -C "$root" hash-object --stdin)
+repo_state_dir="$state_root/$repo_id"
 stamp=$(date -u '+%Y%m%dT%H%M%SZ')
 session_id="${stamp}-$$"
-session_dir="$git_dir/pi-stage-review/$session_id"
+session_dir="$repo_state_dir/$session_id"
 backup_ref="refs/backup/pi-stage-review/$session_id/tracked"
-current_file="$git_dir/pi-stage-review/current"
-sessions_log="$git_dir/pi-stage-review/sessions.log"
+current_file="$repo_state_dir/current"
+sessions_log="$repo_state_dir/sessions.log"
 previous_session='none'
 
 if [[ -f "$current_file" ]]; then
@@ -83,6 +86,7 @@ if [[ "$previous_session" != 'none' ]]; then
 fi
 
 printf 'session_id=%s\n' "$session_id"
+printf 'state_root=%s\n' "$state_root"
 printf 'session_dir=%s\n' "$session_dir"
 printf 'backup_ref=%s\n' "$backup_ref"
 printf 'untracked_archive=%s\n' "$untracked_archive"

@@ -9,10 +9,13 @@ get explicit user approval before applying anything.
 ```bash
 ROOT=$(git rev-parse --show-toplevel)
 GIT_DIR=$(git rev-parse --absolute-git-dir)
-SESSION_ID=$(cat "$GIT_DIR/pi-stage-review/current")
-SESSION_DIR="$GIT_DIR/pi-stage-review/$SESSION_ID"
+STATE_ROOT="${TMPDIR:-/tmp}/pi-stage-review-commit"
+REPO_ID=$(printf '%s' "$GIT_DIR" | git hash-object --stdin)
+REPO_STATE_DIR="$STATE_ROOT/$REPO_ID"
+SESSION_ID=$(cat "$REPO_STATE_DIR/current")
+SESSION_DIR="$REPO_STATE_DIR/$SESSION_ID"
 
-cat "$GIT_DIR/pi-stage-review/sessions.log"
+cat "$REPO_STATE_DIR/sessions.log"
 cat "$SESSION_DIR/state.md"
 cat "$SESSION_DIR/original-status.txt"
 cat "$SESSION_DIR/original-head.txt"
@@ -123,6 +126,8 @@ after any recovery or candidate change.
 
 ## Backup retention
 
-Keep `refs/backup/pi-stage-review/...` and `.git/pi-stage-review/...` until the
-user confirms the commit sequence and final checks. Removing backups is a
-separate cleanup action requiring an explicit request.
+Keep `refs/backup/pi-stage-review/...` and the external temporary session
+directory until the user confirms the commit sequence and final checks. The
+operating system may purge temporary files, so this state is not a durable
+backup. Removing remaining backups is a separate cleanup action requiring an
+explicit request.
