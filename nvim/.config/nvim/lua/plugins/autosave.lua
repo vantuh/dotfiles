@@ -3,7 +3,7 @@ return {
     "okuuva/auto-save.nvim",
     event = { "InsertLeave", "TextChanged" },
     opts = {
-      debounce_delay = 1000,
+      debounce_delay = 500,
     },
   },
 }
