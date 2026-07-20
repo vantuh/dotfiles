@@ -192,6 +192,10 @@ return {
           files = {
             hidden = true,
             ignored = false,
+            matcher = {
+              frecency = true,
+              sort_empty = true,
+            },
           },
         },
       },
