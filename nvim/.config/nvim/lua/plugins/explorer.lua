@@ -91,7 +91,15 @@ local function update_preview(picker, item)
       height = 0.7,
       border = "rounded",
       title_pos = "center",
-      backdrop = false,
+      backdrop = {
+        blend = 60,
+        win = {
+          relative = "win",
+          win = picker.main,
+          width = 0,
+          height = 0,
+        },
+      },
       enter = false,
       focusable = false,
       minimal = false,
