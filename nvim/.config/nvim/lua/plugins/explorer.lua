@@ -1,4 +1,5 @@
 local previews = setmetatable({}, { __mode = "k" })
+local preview_icons_ns = vim.api.nvim_create_namespace("snacks_explorer_preview_icons")
 
 local function hide_preview(picker)
   local preview = previews[picker]
@@ -46,14 +47,18 @@ local function directory_lines(path)
     return a.name:lower() < b.name:lower()
   end)
 
-  local lines = vim.tbl_map(function(entry)
+  local lines = {}
+  local highlights = {}
+  for _, entry in ipairs(entries) do
     local directory = entry.kind == "directory"
-    return (directory and "󰉋  " or "󰈔  ") .. entry.name .. (directory and "/" or "")
-  end, entries)
+    local icon, hl = Snacks.util.icon(entry.name, directory and "directory" or "file")
+    lines[#lines + 1] = icon .. "  " .. entry.name .. (directory and "/" or "")
+    highlights[#highlights + 1] = { line = #lines - 1, end_col = #icon, hl = hl }
+  end
   if truncated then
     lines[#lines + 1] = "… more entries omitted"
   end
-  return #lines > 0 and lines or { "(empty directory)" }
+  return #lines > 0 and lines or { "(empty directory)" }, highlights
 end
 
 local function preview_lines(path)
@@ -153,9 +158,17 @@ local function update_preview(picker, item)
   end
 
   local buf = preview.win.buf
+  local lines, icon_highlights = preview_lines(path)
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, preview_lines(path))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
+  vim.api.nvim_buf_clear_namespace(buf, preview_icons_ns, 0, -1)
+  for _, icon in ipairs(icon_highlights or {}) do
+    vim.api.nvim_buf_set_extmark(buf, preview_icons_ns, icon.line, 0, {
+      end_col = icon.end_col,
+      hl_group = icon.hl,
+    })
+  end
   vim.bo[buf].filetype = vim.filetype.match({ filename = path }) or ""
   preview.win:set_title(vim.fn.fnamemodify(path, ":t"))
   vim.api.nvim_win_set_cursor(preview.win.win, { 1, 0 })
