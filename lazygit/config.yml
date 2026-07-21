@@ -9,6 +9,6 @@ customCommands:
   - key: "<c-g>"
     context: "files"
     description: "Generate commit message with pi AI"
-    command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
+    command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && vim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
     output: terminal
     loadingText: "Generating commit message..."
