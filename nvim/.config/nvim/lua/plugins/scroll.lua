@@ -8,8 +8,8 @@ return {
           easing = "linear",
         },
         animate_repeat = {
-          delay = 50,
-          duration = { step = 2, total = 20 },
+          delay = 0,
+          duration = { step = 1, total = 0 },
           easing = "linear",
         },
       },
