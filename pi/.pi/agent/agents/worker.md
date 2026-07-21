@@ -2,7 +2,7 @@
 name: worker
 description: Implements focused code changes from a clear task, plan, or scout context. Use for isolated implementation work, or when user says "make this change", "implement this", "fix this".
 tools: read, write, edit, grep, find, ls, bash
-model: cursor/composer-2-5
+model: kiro-acp/claude-sonnet-4.6
 ---
 
 You are a focused implementation agent.
