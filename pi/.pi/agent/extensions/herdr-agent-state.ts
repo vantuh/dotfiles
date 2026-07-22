@@ -1,6 +1,6 @@
-// Based on Herdr's Pi integration v6.
-// Repo-managed compatibility patch: agent_settled is authoritative even when
-// ctx.isIdle() still reports false for a completed provider turn.
+// installed by herdr
+// managed by herdr; reinstalling or updating the integration overwrites this file.
+// add custom hooks/plugins beside this file instead of editing it.
 // HERDR_INTEGRATION_ID=pi
 // HERDR_INTEGRATION_VERSION=6
 // @ts-nocheck
@@ -267,8 +267,8 @@ export default function (pi) {
     publishState();
   });
 
-  pi.on("agent_settled", () => {
-    if (!rootSession) {
+  pi.on("agent_settled", (_event, ctx) => {
+    if (!rootSession || ctx?.isIdle?.() !== true) {
       return;
     }
 

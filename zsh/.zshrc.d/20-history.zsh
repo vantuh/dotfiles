@@ -1,6 +1,6 @@
 # History settings.
 HISTSIZE=10000
-HISTFILE=~/.zsh_history
+HISTFILE=${HISTFILE:-$HOME/.zsh_history}
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
 setopt APPEND_HISTORY
