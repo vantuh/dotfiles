@@ -13,3 +13,6 @@ export PI_CURSOR_MCP_TOOL_TIMEOUT_SECONDS=120
 # export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG=1
 # export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG_FILE=/tmp/pi-cursor-bridge.ndjson
 # export PI_CURSOR_SDK_EVENT_DEBUG=1
+
+# kiro-acp pi extension debug logging (0 = off). Set to 1 to write /tmp/kiro-acp-debug.log
+export PI_KIRO_ACP_DEBUG=0
