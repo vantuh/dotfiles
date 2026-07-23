@@ -1,6 +1,10 @@
 # History settings.
 HISTSIZE=10000
-HISTFILE=${HISTFILE:-$HOME/.zsh_history}
+if [[ ${HERDR_AGENT_CHILD:-} == 1 ]]; then
+  HISTFILE=/dev/null
+else
+  HISTFILE=${HISTFILE:-$HOME/.zsh_history}
+fi
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
 setopt APPEND_HISTORY
