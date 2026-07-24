@@ -17,6 +17,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
 | zed       | Zed editor settings + keymap      |   ✓   |     |
 | nvim      | LazyVim Neovim config             |   ✓   |  ✓  |
+| nvim-personal | Minimal personal Neovim config |   ✓   |  ✓  |
 
 \* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
 
@@ -71,7 +72,7 @@ To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` and a
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi alacritty karabiner zed nvim
+stow -D zsh tmux starship yazi pi alacritty karabiner zed nvim nvim-personal
 ```
 
 ## Manual stow usage
