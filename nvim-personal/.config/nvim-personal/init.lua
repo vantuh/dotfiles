@@ -946,7 +946,13 @@ do
 end
 
 -- ============================================================
--- SECTION 10: OPTIONAL EXAMPLES / NEXT STEPS
+-- SECTION 10: FILE EXPLORER
+-- Snacks Explorer, carried over from the main LazyVim config
+-- ============================================================
+require 'custom.snacks_explorer'
+
+-- ============================================================
+-- SECTION 11: OPTIONAL EXAMPLES / NEXT STEPS
 -- kickstart.plugins.* examples
 -- ============================================================
 do
