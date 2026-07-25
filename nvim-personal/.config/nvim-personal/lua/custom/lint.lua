@@ -5,13 +5,10 @@ local lint = require 'lint'
 lint.linters_by_ft = {
   dockerfile = { 'hadolint' },
   fish = { 'fish' },
-  go = { 'golangcilint' },
   markdown = { 'markdownlint-cli2' },
   mysql = { 'sqlfluff' },
   plsql = { 'sqlfluff' },
   sql = { 'sqlfluff' },
-  terraform = { 'terraform_validate' },
-  tf = { 'terraform_validate' },
 }
 
 local timer = assert(vim.uv.new_timer())

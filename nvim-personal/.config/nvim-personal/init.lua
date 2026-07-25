@@ -10,7 +10,6 @@ local lazy = require 'custom.lazy'
 lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.guess_indent')
 lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.gitsigns')
 lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.todo_comments')
-lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.lsp')
 lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.lint')
 lazy.on({ 'BufReadPost', 'BufNewFile', 'InsertEnter' }, 'custom.completion')
 lazy.on('InsertEnter', 'custom.autosave')
@@ -19,24 +18,29 @@ lazy.on('FileType', 'custom.ts_expand_hover', { pattern = { 'typescript', 'types
 lazy.on('FileType', 'custom.markdown_preview', { pattern = 'markdown' })
 lazy.on('FileType', 'custom.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
 
--- Core UX
-require 'custom.which_key'
+local function on_vim_enter(module, opts)
+  lazy.on_vim_enter(function() require(module) end, opts)
+end
+
+-- Core UX required before the first screen or VimEnter session restoration.
 require 'custom.colorscheme'
-require 'custom.trouble'
-require 'custom.grug_far'
-require 'custom.dadbod'
-require 'custom.mini'
-
--- Search / formatting
-require 'custom.conform'
-
--- LazyVim-carried UX
 require 'custom.snacks_explorer'
-require 'custom.bufferline'
 require 'custom.persistence'
-require 'custom.lazyvim_habits'
-require 'custom.lualine'
-require 'custom.ui_extras'
-require 'custom.noice'
+
+-- UI that must be ready for the first post-VimEnter redraw.
+on_vim_enter('custom.mini', { sync = true })
+on_vim_enter('custom.bufferline', { sync = true })
+on_vim_enter('custom.lualine', { sync = true })
+
+-- Remaining UI and tools load immediately after the first screen is drawn.
+on_vim_enter 'custom.lsp'
+on_vim_enter 'custom.which_key'
+on_vim_enter 'custom.trouble'
+on_vim_enter 'custom.grug_far'
+on_vim_enter 'custom.dadbod'
+on_vim_enter 'custom.conform'
+on_vim_enter 'custom.lazyvim_habits'
+on_vim_enter 'custom.ui_extras'
+on_vim_enter 'custom.noice'
 
 -- vim: ts=2 sts=2 sw=2 et
