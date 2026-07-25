@@ -186,8 +186,14 @@ require('mason').setup({})
 
 local ensure_installed = vim.tbl_keys(servers)
 vim.list_extend(ensure_installed, {
+  'golangci-lint',
+  'hadolint',
+  'markdown-toc',
+  'markdownlint-cli2',
   'prettier',
+  'sqlfluff',
   'stylua',
+  'tflint',
 })
 require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
 
