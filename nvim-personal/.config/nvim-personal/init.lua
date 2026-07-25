@@ -14,6 +14,7 @@ require 'custom.colorscheme'
 require 'custom.todo_comments'
 require 'custom.trouble'
 require 'custom.grug_far'
+require 'custom.dadbod'
 require 'custom.mini'
 
 -- Search / LSP / format / completion

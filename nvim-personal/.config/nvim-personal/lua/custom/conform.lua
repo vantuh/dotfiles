@@ -15,7 +15,10 @@ require('conform').setup({
       jsonc = true,
       less = true,
       lua = true,
+      mysql = true,
+      plsql = true,
       scss = true,
+      sql = true,
       typescript = true,
       typescriptreact = true,
       yaml = true,
@@ -28,6 +31,11 @@ require('conform').setup({
   default_format_opts = {
     lsp_format = 'fallback',
   },
+  formatters = {
+    sqlfluff = {
+      args = { 'format', '--dialect=ansi', '-' },
+    },
+  },
   formatters_by_ft = {
     css = { 'prettier' },
     html = { 'prettier' },
@@ -38,7 +46,10 @@ require('conform').setup({
     jsonc = { 'prettier' },
     less = { 'prettier' },
     lua = { 'stylua' },
+    mysql = { 'sqlfluff' },
+    plsql = { 'sqlfluff' },
     scss = { 'prettier' },
+    sql = { 'sqlfluff' },
     typescript = { 'prettier' },
     typescriptreact = { 'prettier' },
     yaml = { 'prettier' },
