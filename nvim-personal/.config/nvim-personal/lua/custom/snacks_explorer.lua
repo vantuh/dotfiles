@@ -56,8 +56,8 @@ require("snacks").setup({
 })
 
 vim.keymap.set("n", "<leader>e", function()
-  Snacks.explorer()
-end, { desc = "File Explorer" })
+  Snacks.explorer({ cwd = vim.uv.cwd() })
+end, { desc = "File Explorer (cwd)" })
 
 vim.keymap.set("n", "<leader>n", function()
   if Snacks.config.picker and Snacks.config.picker.enabled then

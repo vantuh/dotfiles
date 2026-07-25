@@ -37,8 +37,12 @@ vim.api.nvim_create_autocmd('PackChanged', {
     end
 
     if name == 'markdown-preview.nvim' then
-      if not ev.data.active then vim.cmd.packadd 'markdown-preview.nvim' end
-      vim.fn['mkdp#util#install']()
+      local app = vim.fs.joinpath(ev.data.path, 'app')
+      if vim.fn.executable 'yarn' == 1 then
+        run_build(name, { 'yarn', 'install', '--frozen-lockfile' }, app)
+      elseif vim.fn.executable 'npm' == 1 then
+        run_build(name, { 'npm', 'install', '--legacy-peer-deps' }, app)
+      end
       return
     end
   end,
