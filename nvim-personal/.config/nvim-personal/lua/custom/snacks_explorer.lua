@@ -56,6 +56,10 @@ require("snacks").setup({
 })
 
 vim.keymap.set("n", "<leader>e", function()
+  Snacks.explorer({ cwd = Snacks.git.get_root() })
+end, { desc = "File Explorer (Root Dir)" })
+
+vim.keymap.set("n", "<leader>E", function()
   Snacks.explorer({ cwd = vim.uv.cwd() })
 end, { desc = "File Explorer (cwd)" })
 
