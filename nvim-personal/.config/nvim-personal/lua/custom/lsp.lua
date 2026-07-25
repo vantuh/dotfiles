@@ -74,6 +74,10 @@ local angular_ls_path = vim.fs.joinpath(
   'language-server'
 )
 
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+local blink_ok, blink = pcall(require, 'custom.blink')
+if blink_ok then capabilities = blink.get_lsp_capabilities(nil, true) end
+
 ---@type table<string, vim.lsp.Config>
 local servers = {
   -- Prefer vtsls for navigation; keep angularls for templates only.
@@ -190,14 +194,12 @@ require('mason').setup({})
 
 local ensure_installed = vim.tbl_keys(servers)
 vim.list_extend(ensure_installed, {
-  'golangci-lint',
   'hadolint',
   'markdown-toc',
   'markdownlint-cli2',
   'prettier',
   'sqlfluff',
   'stylua',
-  'tflint',
 })
 require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
 
@@ -216,6 +218,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 for name, server in pairs(servers) do
+  server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
   vim.lsp.config(name, server)
   vim.lsp.enable(name)
 end
