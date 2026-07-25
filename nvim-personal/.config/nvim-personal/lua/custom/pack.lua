@@ -18,11 +18,6 @@ vim.api.nvim_create_autocmd('PackChanged', {
     local kind = ev.data.kind
     if kind ~= 'install' and kind ~= 'update' then return end
 
-    if name == 'telescope-fzf-native.nvim' and vim.fn.executable 'make' == 1 then
-      run_build(name, { 'make' }, ev.data.path)
-      return
-    end
-
     if name == 'LuaSnip' then
       if vim.fn.has 'win32' ~= 1 and vim.fn.executable 'make' == 1 then
         run_build(name, { 'make', 'install_jsregexp' }, ev.data.path)
@@ -47,3 +42,29 @@ vim.api.nvim_create_autocmd('PackChanged', {
     end
   end,
 })
+
+-- Pack management (see `:help vim.pack`)
+vim.keymap.set('n', '<leader>pu', function()
+  vim.pack.update()
+end, { desc = '[P]ack [U]pdate (fetch + review)' })
+
+vim.keymap.set('n', '<leader>pi', function()
+  vim.pack.update(nil, { target = 'lockfile' })
+end, { desc = '[P]ack [I]nstall/sync from lockfile' })
+
+vim.keymap.set('n', '<leader>po', function()
+  vim.pack.update(nil, { offline = true })
+end, { desc = '[P]ack [O]ffline status' })
+
+vim.keymap.set('n', '<leader>pc', function()
+  local inactive = vim.iter(vim.pack.get())
+    :filter(function(p) return not p.active end)
+    :map(function(p) return p.spec.name end)
+    :totable()
+  if #inactive == 0 then
+    vim.notify('No inactive plugins to clean', vim.log.levels.INFO)
+    return
+  end
+  vim.pack.del(inactive)
+  vim.notify(('Removed %d inactive plugin(s)'):format(#inactive), vim.log.levels.INFO)
+end, { desc = '[P]ack [C]lean inactive' })
