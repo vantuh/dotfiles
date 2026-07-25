@@ -19,6 +19,7 @@ require 'custom.mini'
 -- Search / LSP / format / completion
 require 'custom.lsp'
 require 'custom.conform'
+require 'custom.lint'
 require 'custom.autosave'
 require 'custom.completion'
 require 'custom.treesitter'
