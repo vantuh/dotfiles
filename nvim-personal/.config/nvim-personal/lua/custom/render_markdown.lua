@@ -1,5 +1,3 @@
-vim.filetype.add { extension = { mdx = 'markdown.mdx' } }
-
 vim.pack.add { 'https://github.com/MeanderingProgrammer/render-markdown.nvim' }
 
 local render_markdown = require 'render-markdown'

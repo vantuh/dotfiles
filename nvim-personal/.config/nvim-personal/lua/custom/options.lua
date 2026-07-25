@@ -84,3 +84,4 @@ vim.schedule(function()
 end)
 
 vim.g.markdown_recommended_style = 0 -- Prevent Neovim's Markdown runtime from overriding the configured indentation.
+vim.filetype.add { extension = { mdx = 'markdown.mdx' } } -- Detect .mdx files before filetype-based plugins load.
