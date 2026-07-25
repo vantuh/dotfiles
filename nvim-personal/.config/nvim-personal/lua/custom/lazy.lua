@@ -6,13 +6,11 @@ local M = {}
 local vim_enter_queue = {}
 
 local function drain_vim_enter_queue()
-  for _, entry in ipairs(vim_enter_queue) do
-    if not entry.sync then vim.schedule(entry.fn) end
-  end
-  for _, entry in ipairs(vim_enter_queue) do
-    if entry.sync then entry.fn() end
-  end
+  local queue = vim_enter_queue
   vim_enter_queue = nil
+  for _, fn in ipairs(queue) do
+    vim.schedule(fn)
+  end
 end
 
 vim.api.nvim_create_autocmd('VimEnter', {
@@ -35,15 +33,11 @@ function M.on(events, module, opts)
   })
 end
 
----Run after startup. Async callbacks are scheduled after synchronous UI setup.
+---Run after startup without blocking the first screen.
 ---@param fn fun()
----@param opts? { sync?: boolean }
-function M.on_vim_enter(fn, opts)
-  local sync = opts and opts.sync or false
+function M.on_vim_enter(fn)
   if vim_enter_queue then
-    table.insert(vim_enter_queue, { fn = fn, sync = sync })
-  elseif sync then
-    fn()
+    table.insert(vim_enter_queue, fn)
   else
     vim.schedule(fn)
   end

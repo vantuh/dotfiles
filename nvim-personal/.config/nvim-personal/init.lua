@@ -14,44 +14,50 @@ lazy.on('InsertEnter', 'custom.autosave')
 lazy.on('FileType', 'custom.markdown_preview', { pattern = 'markdown' })
 lazy.on('FileType', 'custom.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
 
-local function on_vim_enter(module, opts)
-  lazy.on_vim_enter(function() require(module) end, opts)
-end
-
 -- Core UX required before the first screen or VimEnter session restoration.
 require 'custom.colorscheme'
 require 'custom.snacks_explorer'
 require 'custom.persistence'
 
--- UI that must be ready for the first post-VimEnter redraw.
-on_vim_enter('custom.mini', { sync = true })
-on_vim_enter('custom.bufferline', { sync = true })
-on_vim_enter('custom.lualine', { sync = true })
+local ui_ready_ms
+vim.api.nvim_create_autocmd('VimEnter', {
+  once = true,
+  callback = function() ui_ready_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6 end,
+})
 
--- Language tooling loads after the first screen, in dependency order.
-on_vim_enter 'custom.treesitter'
-on_vim_enter 'custom.ts_expand_hover'
-on_vim_enter 'custom.completion'
-on_vim_enter 'custom.lsp'
-on_vim_enter 'custom.gitsigns'
-on_vim_enter 'custom.lint'
-on_vim_enter 'custom.todo_comments'
+-- Everything else loads in order after the first screen.
+local after_ui = {
+  'custom.mini',
+  'custom.bufferline',
+  'custom.lualine',
+  'custom.treesitter',
+  'custom.ts_expand_hover',
+  'custom.completion',
+  'custom.lsp',
+  'custom.gitsigns',
+  'custom.lint',
+  'custom.todo_comments',
+  'custom.which_key',
+  'custom.trouble',
+  'custom.grug_far',
+  'custom.dadbod',
+  'custom.conform',
+  'custom.lazyvim_habits',
+  'custom.ui_extras',
+  'custom.noice',
+}
 
--- Remaining UI and tools load immediately after the first screen is drawn.
-on_vim_enter 'custom.which_key'
-on_vim_enter 'custom.trouble'
-on_vim_enter 'custom.grug_far'
-on_vim_enter 'custom.dadbod'
-on_vim_enter 'custom.conform'
-on_vim_enter 'custom.lazyvim_habits'
-on_vim_enter 'custom.ui_extras'
-on_vim_enter 'custom.noice'
+for _, module in ipairs(after_ui) do
+  local name = module
+  lazy.on_vim_enter(function() require(name) end)
+end
 
 -- Keep this last so the measurement includes all deferred startup modules.
 lazy.on_vim_enter(function()
-  local startup_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
+  local tooling_ready_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
+  if #vim.api.nvim_list_uis() == 0 then return end
   vim.defer_fn(function()
-    Snacks.notify.info(('Loaded in %.2f ms'):format(startup_ms), {
+    Snacks.notify.info(('UI ready: %.2f ms\nTooling ready: %.2f ms'):format(ui_ready_ms or 0, tooling_ready_ms), {
       id = 'nvim-startup-time',
       title = 'Neovim Startup',
       timeout = 5000,
