@@ -48,16 +48,15 @@ local after_ui = {
 }
 
 for _, module in ipairs(after_ui) do
-  local name = module
-  lazy.on_vim_enter(function() require(name) end)
+  lazy.on_vim_enter(function() require(module) end)
 end
 
 -- Keep this last so the measurement includes all deferred startup modules.
 lazy.on_vim_enter(function()
-  local tooling_ready_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
+  local modules_loaded_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
   if #vim.api.nvim_list_uis() == 0 then return end
   vim.defer_fn(function()
-    Snacks.notify.info(('UI ready: %.2f ms\nTooling ready: %.2f ms'):format(ui_ready_ms or 0, tooling_ready_ms), {
+    Snacks.notify.info(('UI ready: %.2f ms\nModules loaded: %.2f ms'):format(ui_ready_ms or 0, modules_loaded_ms), {
       id = 'nvim-startup-time',
       title = 'Neovim Startup',
       timeout = 5000,
