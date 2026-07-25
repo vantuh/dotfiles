@@ -10,13 +10,7 @@ require 'custom.pack'
 
 local lazy = require 'custom.lazy'
 lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.guess_indent')
-lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.gitsigns')
-lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.todo_comments')
-lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.lint')
-lazy.on({ 'BufReadPost', 'BufNewFile', 'InsertEnter' }, 'custom.completion')
 lazy.on('InsertEnter', 'custom.autosave')
-lazy.on('FileType', 'custom.treesitter')
-lazy.on('FileType', 'custom.ts_expand_hover', { pattern = { 'typescript', 'typescriptreact' } })
 lazy.on('FileType', 'custom.markdown_preview', { pattern = 'markdown' })
 lazy.on('FileType', 'custom.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
 
@@ -34,8 +28,16 @@ on_vim_enter('custom.mini', { sync = true })
 on_vim_enter('custom.bufferline', { sync = true })
 on_vim_enter('custom.lualine', { sync = true })
 
--- Remaining UI and tools load immediately after the first screen is drawn.
+-- Language tooling loads after the first screen, in dependency order.
+on_vim_enter 'custom.treesitter'
+on_vim_enter 'custom.ts_expand_hover'
+on_vim_enter 'custom.completion'
 on_vim_enter 'custom.lsp'
+on_vim_enter 'custom.gitsigns'
+on_vim_enter 'custom.lint'
+on_vim_enter 'custom.todo_comments'
+
+-- Remaining UI and tools load immediately after the first screen is drawn.
 on_vim_enter 'custom.which_key'
 on_vim_enter 'custom.trouble'
 on_vim_enter 'custom.grug_far'
