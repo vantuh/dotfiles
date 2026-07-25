@@ -84,3 +84,4 @@ stow -d ~/dotfiles -t ~ --restow <package>
 # Remove a single package
 stow -d ~/dotfiles -t ~ -D <package>
 ```
+

@@ -11,6 +11,9 @@ require('which-key').setup({
     { '<leader>t', group = '[T]oggle' },
     { '<leader>g', group = '[G]it' },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+    { '<leader>q', group = '[Q]uit/session' },
+    { '<leader>p', group = '[P]ack' },
+    { '<leader>x', group = 'Diagnosti[x]' },
     { 'gr', group = 'LSP Actions', mode = { 'n' } },
   },
 })

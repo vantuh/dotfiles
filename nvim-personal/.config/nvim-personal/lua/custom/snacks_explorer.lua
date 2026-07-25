@@ -24,8 +24,8 @@ require("snacks").setup({
   },
   terminal = {},
   picker = {
-
     enabled = true,
+    ui_select = true, -- replaces telescope-ui-select for vim.ui.select
     sources = {
       explorer = {
         hidden = true,
@@ -82,6 +82,27 @@ end, { desc = "Buffers" })
 vim.keymap.set("n", "<leader>/", function()
   Snacks.picker.grep({ cwd = Snacks.git.get_root() })
 end, { desc = "Grep Project" })
+
+-- Search (Snacks; replaces kickstart Telescope <leader>s*)
+vim.keymap.set("n", "<leader>sh", function()
+  Snacks.picker.help()
+end, { desc = "[S]earch [H]elp" })
+
+vim.keymap.set("n", "<leader>sk", function()
+  Snacks.picker.keymaps()
+end, { desc = "[S]earch [K]eymaps" })
+
+vim.keymap.set("n", "<leader>sc", function()
+  Snacks.picker.commands()
+end, { desc = "[S]earch [C]ommands" })
+
+vim.keymap.set("n", "<leader>sd", function()
+  Snacks.picker.diagnostics()
+end, { desc = "[S]earch [D]iagnostics" })
+
+vim.keymap.set("n", "<leader>sr", function()
+  Snacks.picker.resume()
+end, { desc = "[S]earch [R]esume" })
 
 vim.keymap.set("n", "<leader>gg", function()
   Snacks.lazygit({ cwd = Snacks.git.get_root() })
