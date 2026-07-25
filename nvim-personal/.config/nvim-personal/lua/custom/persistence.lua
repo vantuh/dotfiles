@@ -9,7 +9,6 @@ vim.opt.sessionoptions = {
   "help",
   "globals",
   "skiprtp",
-  "folds",
 }
 
 local persistence = require("persistence")

@@ -19,17 +19,12 @@ opt.conceallevel = 2 -- Hide markup characters when a syntax plugin provides a c
 opt.confirm = true -- Ask whether to save changes instead of failing when closing a modified file.
 opt.cursorline = true -- Highlight the screen line containing the cursor.
 opt.expandtab = true -- Insert spaces when the Tab key is pressed.
-opt.fillchars = { -- Customize characters used for folds, diffs, and empty lines.
-  foldopen = '', -- Icon shown for an open fold.
-  foldclose = '', -- Icon shown for a closed fold.
-  fold = ' ', -- Fill folded text with spaces instead of dots or dashes.
-  foldsep = ' ', -- Use a blank character for the fold column separator.
+opt.fillchars = { -- Customize characters used for diffs and empty lines.
   diff = '╱', -- Character shown for deleted lines in diff mode.
   eob = ' ', -- Hide the ~ characters below the end of a buffer.
 }
-opt.foldlevel = 99 -- Open almost all folds when a file is opened.
-opt.foldmethod = 'indent' -- Create folds based on indentation levels.
-opt.foldtext = '' -- Use Neovim's modern default display for closed folds.
+opt.foldenable = false -- Keep code folding completely disabled.
+opt.foldcolumn = '0' -- Do not reserve a column for fold controls or icons.
 opt.formatexpr = "v:lua.require'conform'.formatexpr()" -- Let Conform format text used by the gq operator.
 opt.formatoptions = 'jcroqlnt' -- Configure sensible automatic comment and text formatting behavior.
 opt.grepformat = '%f:%l:%c:%m' -- Tell Neovim how to parse file, line, column, and message from grep results.
@@ -56,7 +51,6 @@ opt.sessionoptions = { -- Define which editor state persistence.nvim stores in s
   'help', -- Save open help windows.
   'globals', -- Save global variables that use uppercase names.
   'skiprtp', -- Do not store runtimepath and packpath values in sessions.
-  'folds', -- Save the current fold state.
 }
 opt.shiftround = true -- Round indentation changes to multiples of shiftwidth.
 opt.shiftwidth = 2 -- Add or remove two spaces for each indentation level.
