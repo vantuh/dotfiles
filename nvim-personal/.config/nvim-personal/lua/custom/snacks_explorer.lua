@@ -55,6 +55,9 @@ require("snacks").setup({
   },
 })
 
+-- LazyVim's status column, backed directly by Snacks instead of LazyVim.statuscolumn().
+vim.o.statuscolumn = "%!v:lua.require'snacks.statuscolumn'.get()"
+
 vim.keymap.set("n", "<leader>e", function()
   Snacks.explorer({ cwd = Snacks.git.get_root() })
 end, { desc = "File Explorer (Root Dir)" })
