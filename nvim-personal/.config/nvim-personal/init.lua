@@ -13,6 +13,7 @@ require 'custom.which_key'
 require 'custom.colorscheme'
 require 'custom.todo_comments'
 require 'custom.trouble'
+require 'custom.grug_far'
 require 'custom.mini'
 
 -- Search / LSP / format / completion
