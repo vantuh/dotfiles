@@ -2,9 +2,11 @@ vim.pack.add({
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter-textobjects', version = 'main' },
   'https://github.com/windwp/nvim-ts-autotag',
+  'https://github.com/folke/ts-comments.nvim',
 })
 
 require('nvim-ts-autotag').setup({})
+require('ts-comments').setup({})
 require('nvim-treesitter-textobjects').setup({ move = { set_jumps = true } })
 
 local textobject_moves = {
