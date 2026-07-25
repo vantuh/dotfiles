@@ -25,3 +25,6 @@ vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost', 'InsertLeave' }, {
   group = vim.api.nvim_create_augroup('custom-nvim-lint', { clear = true }),
   callback = run_linter,
 })
+
+-- Module loads after VimEnter, so the first buffer's BufReadPost already fired.
+if vim.bo.filetype ~= '' then run_linter({ buf = vim.api.nvim_get_current_buf() }) end

@@ -73,5 +73,11 @@ end
 
 vim.api.nvim_create_autocmd('FileType', { callback = attach_for_filetype })
 
--- The module itself may be loaded by the FileType event, so process that first buffer explicitly.
-if vim.bo.filetype ~= '' then attach_for_filetype({ buf = 0, match = vim.bo.filetype }) end
+-- Module loads after VimEnter (and after persistence session restore), so FileType already
+-- fired for restored buffers. Attach to every loaded filetyped buffer, not just the current one.
+for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+  if vim.api.nvim_buf_is_loaded(buf) then
+    local filetype = vim.bo[buf].filetype
+    if filetype ~= '' then attach_for_filetype({ buf = buf, match = filetype }) end
+  end
+end
