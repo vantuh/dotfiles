@@ -1,6 +1,8 @@
 -- Personal Neovim config (Kickstart-based).
 -- Core bootstrap stays here; each vim.pack plugin group lives in lua/custom/*.lua
 
+local nvim_start_time = vim.uv.hrtime()
+
 require 'custom.options'
 require 'custom.keymaps'
 require 'custom.autocmds'
@@ -42,5 +44,17 @@ on_vim_enter 'custom.conform'
 on_vim_enter 'custom.lazyvim_habits'
 on_vim_enter 'custom.ui_extras'
 on_vim_enter 'custom.noice'
+
+-- Keep this last so the measurement includes all deferred startup modules.
+lazy.on_vim_enter(function()
+  local startup_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
+  vim.defer_fn(function()
+    Snacks.notify.info(('Loaded in %.2f ms'):format(startup_ms), {
+      id = 'nvim-startup-time',
+      title = 'Neovim Startup',
+      timeout = 5000,
+    })
+  end, 300)
+end)
 
 -- vim: ts=2 sts=2 sw=2 et
