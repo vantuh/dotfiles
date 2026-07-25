@@ -36,6 +36,9 @@ Fetch and review updates:
 :lua vim.pack.update()
 ```
 
-Read `init.lua` from top to bottom before removing or changing sections. Optional
-examples under `lua/kickstart/plugins/` stay disabled until explicitly required
-near the end of `init.lua`.
+`init.lua` is a thin bootstrap that `require`s modules under `lua/custom/`.
+Each `vim.pack` plugin group lives in its own file (e.g. `custom/lsp.lua`,
+`custom/telescope.lua`). Edit the matching module instead of growing `init.lua`.
+
+Optional examples under `lua/kickstart/plugins/` stay disabled until explicitly
+required near the end of `init.lua`.
