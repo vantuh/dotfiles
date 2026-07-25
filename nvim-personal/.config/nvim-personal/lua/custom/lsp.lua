@@ -114,6 +114,8 @@ local servers = {
     end,
   },
   angularls = {},
+  dockerls = {},
+  docker_compose_language_service = {},
   eslint = {},
   tailwindcss = {},
   jsonls = {
