@@ -33,21 +33,24 @@ require('gitsigns').setup({
     end
 
     -- Navigation
-    map('n', ']c', function()
+    map('n', ']h', function()
       if vim.wo.diff then
         vim.cmd.normal({ ']c', bang = true })
       else
         gitsigns.nav_hunk('next')
       end
-    end, { desc = 'Jump to next git [c]hange' })
+    end, { desc = 'Next Git Hunk' })
 
-    map('n', '[c', function()
+    map('n', '[h', function()
       if vim.wo.diff then
         vim.cmd.normal({ '[c', bang = true })
       else
         gitsigns.nav_hunk('prev')
       end
-    end, { desc = 'Jump to previous git [c]hange' })
+    end, { desc = 'Previous Git Hunk' })
+
+    map('n', ']H', function() gitsigns.nav_hunk('last') end, { desc = 'Last Git Hunk' })
+    map('n', '[H', function() gitsigns.nav_hunk('first') end, { desc = 'First Git Hunk' })
 
     -- Actions
     map('v', '<leader>hs', function()
