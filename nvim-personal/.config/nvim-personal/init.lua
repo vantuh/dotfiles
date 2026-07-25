@@ -30,11 +30,6 @@ require 'custom.lualine'
 require 'custom.ui_extras'
 require 'custom.noice'
 require 'custom.ts_expand_hover'
-
--- Optional kickstart examples (disabled by default):
--- require 'kickstart.plugins.lint'
--- require 'kickstart.plugins.autopairs'
--- require 'kickstart.plugins.gitsigns'
--- require 'custom.plugins'
+require 'custom.markdown_preview'
 
 -- vim: ts=2 sts=2 sw=2 et
