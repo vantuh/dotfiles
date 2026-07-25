@@ -6,6 +6,7 @@ vim.pack.add({
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/mason-org/mason-lspconfig.nvim',
   'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim',
+  'https://github.com/b0o/SchemaStore.nvim',
 })
 
 require('fidget').setup({})
@@ -107,8 +108,39 @@ local servers = {
   angularls = {},
   eslint = {},
   tailwindcss = {},
-  jsonls = {},
-  yamlls = {},
+  jsonls = {
+    before_init = function(_, new_config)
+      new_config.settings.json.schemas = new_config.settings.json.schemas or {}
+      vim.list_extend(new_config.settings.json.schemas, require('schemastore').json.schemas())
+    end,
+    settings = {
+      json = {
+        format = { enable = true },
+        validate = { enable = true },
+      },
+    },
+  },
+  yamlls = {
+    before_init = function(_, new_config)
+      new_config.settings.yaml.schemas = vim.tbl_deep_extend(
+        'force',
+        new_config.settings.yaml.schemas or {},
+        require('schemastore').yaml.schemas()
+      )
+    end,
+    settings = {
+      redhat = { telemetry = { enabled = false } },
+      yaml = {
+        keyOrdering = false,
+        format = { enable = true },
+        validate = true,
+        schemaStore = {
+          enable = false,
+          url = '',
+        },
+      },
+    },
+  },
   lua_ls = {
     on_init = function(client)
       client.server_capabilities.documentFormattingProvider = false
