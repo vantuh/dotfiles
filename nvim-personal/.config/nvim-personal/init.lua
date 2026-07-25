@@ -14,7 +14,6 @@ require 'custom.todo_comments'
 require 'custom.mini'
 
 -- Search / LSP / format / completion
-require 'custom.telescope'
 require 'custom.lsp'
 require 'custom.conform'
 require 'custom.autosave'
