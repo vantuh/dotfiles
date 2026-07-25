@@ -12,6 +12,7 @@ require 'custom.gitsigns'
 require 'custom.which_key'
 require 'custom.colorscheme'
 require 'custom.todo_comments'
+require 'custom.trouble'
 require 'custom.mini'
 
 -- Search / LSP / format / completion
