@@ -130,8 +130,8 @@ local function update_preview(picker, item)
     preview.win = Snacks.win({
       relative = "win",
       win = picker.main,
-      width = 0.7,
-      height = 0.7,
+      width = 0.8,
+      height = 0.8,
       border = "rounded",
       title_pos = "center",
       backdrop = {
