@@ -1,9 +1,38 @@
 vim.pack.add({
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
+  { src = 'https://github.com/nvim-treesitter/nvim-treesitter-textobjects', version = 'main' },
   'https://github.com/windwp/nvim-ts-autotag',
 })
 
 require('nvim-ts-autotag').setup({})
+require('nvim-treesitter-textobjects').setup({ move = { set_jumps = true } })
+
+local textobject_moves = {
+  goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer', [']a'] = '@parameter.inner' },
+  goto_next_end = { [']F'] = '@function.outer', [']C'] = '@class.outer', [']A'] = '@parameter.inner' },
+  goto_previous_start = { ['[f'] = '@function.outer', ['[c'] = '@class.outer', ['[a'] = '@parameter.inner' },
+  goto_previous_end = { ['[F'] = '@function.outer', ['[C'] = '@class.outer', ['[A'] = '@parameter.inner' },
+}
+
+local function attach_textobject_moves(buf)
+  for method, keymaps in pairs(textobject_moves) do
+    for key, query in pairs(keymaps) do
+      local object = query:gsub('@', ''):gsub('%..*', '')
+      object = object:sub(1, 1):upper() .. object:sub(2)
+      local direction = key:sub(1, 1) == '[' and 'Previous' or 'Next'
+      local position = key:sub(2, 2) == key:sub(2, 2):upper() and ' End' or ' Start'
+
+      vim.keymap.set({ 'n', 'x', 'o' }, key, function()
+        if vim.wo.diff and key:find '[cC]' then return vim.cmd.normal { key, bang = true } end
+        require('nvim-treesitter-textobjects.move')[method](query, 'textobjects')
+      end, {
+        buffer = buf,
+        silent = true,
+        desc = direction .. ' ' .. object .. position,
+      })
+    end
+  end
+end
 
 local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
 require('nvim-treesitter').install(parsers)
@@ -13,6 +42,9 @@ require('nvim-treesitter').install(parsers)
 local function treesitter_try_attach(buf, language)
   if not vim.treesitter.language.add(language) then return end
   vim.treesitter.start(buf, language)
+
+  local has_textobject_query = vim.treesitter.query.get(language, 'textobjects') ~= nil
+  if has_textobject_query then attach_textobject_moves(buf) end
 
   local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
   if has_indent_query then
