@@ -33,5 +33,6 @@ require 'custom.ui_extras'
 require 'custom.noice'
 require 'custom.ts_expand_hover'
 require 'custom.markdown_preview'
+require 'custom.render_markdown'
 
 -- vim: ts=2 sts=2 sw=2 et
