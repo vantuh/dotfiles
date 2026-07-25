@@ -29,6 +29,16 @@ require("lualine").setup({
     },
     lualine_x = {
       {
+        function()
+          local names = vim.iter(vim.lsp.get_clients({ bufnr = 0 }))
+            :map(function(client) return client.name end)
+            :totable()
+          table.sort(names)
+          return table.concat(names, ", ")
+        end,
+        icon = "",
+      },
+      {
         "diff",
         source = function()
           local gitsigns = vim.b.gitsigns_status_dict
@@ -53,5 +63,10 @@ require("lualine").setup({
     },
   },
   extensions = { "mason" },
+})
+
+vim.api.nvim_create_autocmd({ "LspAttach", "LspDetach" }, {
+  group = vim.api.nvim_create_augroup("custom-lualine-lsp", { clear = true }),
+  callback = function() require("lualine").refresh() end,
 })
 
