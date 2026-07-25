@@ -24,6 +24,16 @@ require('blink.cmp').setup {
   },
   sources = {
     default = { 'lsp', 'path', 'snippets' },
+    per_filetype = {
+      lua = { inherit_defaults = true, 'lazydev' },
+    },
+    providers = {
+      lazydev = {
+        name = 'LazyDev',
+        module = 'lazydev.integrations.blink',
+        score_offset = 100,
+      },
+    },
   },
   snippets = { preset = 'luasnip' },
   fuzzy = { implementation = 'lua' },

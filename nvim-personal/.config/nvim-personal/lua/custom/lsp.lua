@@ -7,9 +7,17 @@ vim.pack.add({
   'https://github.com/mason-org/mason-lspconfig.nvim',
   'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim',
   'https://github.com/b0o/SchemaStore.nvim',
+  'https://github.com/folke/lazydev.nvim',
 })
 
 require('fidget').setup({})
+require('lazydev').setup({
+  library = {
+    { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
+    { path = 'snacks.nvim', words = { 'Snacks' } },
+    { path = 'nvim-lspconfig', words = { 'lspconfig.settings' } },
+  },
+})
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
