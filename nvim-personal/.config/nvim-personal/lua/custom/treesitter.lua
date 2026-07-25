@@ -55,23 +55,23 @@ local function treesitter_try_attach(buf, language)
 end
 
 local available_parsers = require('nvim-treesitter').get_available()
-vim.api.nvim_create_autocmd('FileType', {
-  callback = function(args)
-    local buf, filetype = args.buf, args.match
 
-    local language = vim.treesitter.language.get_lang(filetype)
-    if not language then return end
+local function attach_for_filetype(args)
+  local buf, filetype = args.buf, args.match
+  local language = vim.treesitter.language.get_lang(filetype)
+  if not language then return end
 
-    local installed_parsers = require('nvim-treesitter').get_installed('parsers')
+  local installed_parsers = require('nvim-treesitter').get_installed('parsers')
+  if vim.tbl_contains(installed_parsers, language) then
+    treesitter_try_attach(buf, language)
+  elseif vim.tbl_contains(available_parsers, language) then
+    require('nvim-treesitter').install(language):await(function() treesitter_try_attach(buf, language) end)
+  else
+    treesitter_try_attach(buf, language)
+  end
+end
 
-    if vim.tbl_contains(installed_parsers, language) then
-      treesitter_try_attach(buf, language)
-    elseif vim.tbl_contains(available_parsers, language) then
-      require('nvim-treesitter').install(language):await(function()
-        treesitter_try_attach(buf, language)
-      end)
-    else
-      treesitter_try_attach(buf, language)
-    end
-  end,
-})
+vim.api.nvim_create_autocmd('FileType', { callback = attach_for_filetype })
+
+-- The module itself may be loaded by the FileType event, so process that first buffer explicitly.
+if vim.bo.filetype ~= '' then attach_for_filetype({ buf = 0, match = vim.bo.filetype }) end

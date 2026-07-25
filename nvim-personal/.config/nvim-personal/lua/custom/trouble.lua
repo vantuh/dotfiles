@@ -16,9 +16,21 @@ vim.keymap.set('n', '<leader>cs', '<cmd>Trouble symbols toggle<CR>', { desc = 'S
 vim.keymap.set('n', '<leader>cS', '<cmd>Trouble lsp toggle<CR>', { desc = 'LSP References/Definitions (Trouble)' })
 vim.keymap.set('n', '<leader>xL', '<cmd>Trouble loclist toggle<CR>', { desc = 'Location List (Trouble)' })
 vim.keymap.set('n', '<leader>xQ', '<cmd>Trouble qflist toggle<CR>', { desc = 'Quickfix List (Trouble)' })
-vim.keymap.set('n', '<leader>xt', '<cmd>Trouble todo toggle<CR>', { desc = 'TODO Comments (Trouble)' })
-vim.keymap.set('n', '<leader>xT', '<cmd>Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}<CR>', { desc = 'TODO/FIX/FIXME (Trouble)' })
-vim.keymap.set('n', '<leader>st', '<cmd>Trouble todo toggle<CR>', { desc = 'TODO Comments' })
+local function todo_trouble(command)
+  return function()
+    require 'custom.todo_comments'
+    vim.cmd(command)
+  end
+end
+
+vim.keymap.set('n', '<leader>xt', todo_trouble 'Trouble todo toggle', { desc = 'TODO Comments (Trouble)' })
+vim.keymap.set(
+  'n',
+  '<leader>xT',
+  todo_trouble 'Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}',
+  { desc = 'TODO/FIX/FIXME (Trouble)' }
+)
+vim.keymap.set('n', '<leader>st', todo_trouble 'Trouble todo toggle', { desc = 'TODO Comments' })
 
 local function quickfix_item(next)
   return function()
