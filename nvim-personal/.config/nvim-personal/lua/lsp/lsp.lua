@@ -19,8 +19,13 @@ require('lazydev').setup({
   },
 })
 
+vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
+vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, { desc = 'Rename' })
+vim.keymap.set('n', '<leader>ss', function() Snacks.picker.lsp_symbols() end, { desc = 'LSP Symbols' })
+vim.keymap.set('n', '<leader>sS', function() Snacks.picker.lsp_workspace_symbols() end, { desc = 'LSP Workspace Symbols' })
+
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
+  group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
   callback = function(event)
     local map = function(keys, func, desc, mode)
       mode = mode or 'n'
@@ -28,12 +33,23 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
 
     map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
-    map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
+    map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]tion', { 'n', 'x' })
     map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
+    -- LazyVim-style navigation via Snacks picker
+    map('gd', function() Snacks.picker.lsp_definitions() end, 'Goto Definition')
+    -- nowait: avoid waiting for grn/gra/grD prefix
+    vim.keymap.set('n', 'gr', function() Snacks.picker.lsp_references() end, {
+      buffer = event.buf,
+      desc = 'LSP: References',
+      nowait = true,
+    })
+    map('gI', function() Snacks.picker.lsp_implementations() end, 'Goto Implementation')
+    map('gy', function() Snacks.picker.lsp_type_definitions() end, 'Goto Type Definition')
 
     local client = vim.lsp.get_client_by_id(event.data.client_id)
     if client and client:supports_method('textDocument/documentHighlight', event.buf) then
-      local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+      local highlight_augroup = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
       vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
         buffer = event.buf,
         group = highlight_augroup,
@@ -47,10 +63,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
       })
 
       vim.api.nvim_create_autocmd('LspDetach', {
-        group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
+        group = vim.api.nvim_create_augroup('lsp-detach', { clear = true }),
         callback = function(event2)
           vim.lsp.buf.clear_references()
-          vim.api.nvim_clear_autocmds({ group = 'kickstart-lsp-highlight', buffer = event2.buf })
+          vim.api.nvim_clear_autocmds({ group = 'lsp-highlight', buffer = event2.buf })
         end,
       })
     end
@@ -205,7 +221,7 @@ require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
 
 -- angularls also attaches to TypeScript; without this, Snacks gd/gr waits on BOTH.
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('kickstart-angularls-nav', { clear = true }),
+  group = vim.api.nvim_create_augroup('lsp-angularls-nav', { clear = true }),
   callback = function(event)
     local client = vim.lsp.get_client_by_id(event.data.client_id)
     if not client or client.name ~= 'angularls' then return end
