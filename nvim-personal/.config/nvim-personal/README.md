@@ -40,5 +40,5 @@ Fetch and review updates:
 `core/`, `ui/`, `editor/`, `lang/`, `lsp/`, `completion/`, plus top-level
 `defer.lua` / `pack.lua`. Filetype-local maps live in `ftplugin/`.
 Each `vim.pack` plugin group lives in its own file (e.g. `lsp/lsp.lua`,
-`editor/snacks_explorer.lua`). Edit the matching module instead of growing
+`editor/snacks.lua`). Edit the matching module instead of growing
 `init.lua`. Optional system check: `:checkhealth nvim_personal`.

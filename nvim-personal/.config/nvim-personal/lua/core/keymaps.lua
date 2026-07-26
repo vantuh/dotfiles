@@ -113,3 +113,10 @@ vim.keymap.set('n', '<leader><Tab><Tab>', '<cmd>tabnew<CR>', { desc = 'New tab' 
 vim.keymap.set('n', '<leader><Tab>]', '<cmd>tabnext<CR>', { desc = 'Next tab' })
 vim.keymap.set('n', '<leader><Tab>d', '<cmd>tabclose<CR>', { desc = 'Close tab' })
 vim.keymap.set('n', '<leader><Tab>[', '<cmd>tabprevious<CR>', { desc = 'Previous tab' })
+
+-- Inspect (plugin-free)
+vim.keymap.set('n', '<leader>ui', vim.show_pos, { desc = 'Inspect Position' })
+vim.keymap.set('n', '<leader>uI', function()
+  vim.treesitter.inspect_tree()
+  vim.api.nvim_input 'I'
+end, { desc = 'Inspect Tree' })
