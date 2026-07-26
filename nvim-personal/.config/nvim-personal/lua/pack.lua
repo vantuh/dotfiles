@@ -1,5 +1,9 @@
 -- vim.pack build hooks after install/update.
 -- See `:help vim.pack`, `:help vim.pack-events`
+--
+-- Invariant: require this module before any vim.pack.add() in the session.
+-- PackChanged install hooks only fire for plugins installed on the first
+-- vim.pack.add() call that bootstraps from the lockfile.
 
 local function run_build(name, cmd, cwd)
   local result = vim.system(cmd, { cwd = cwd }):wait()
