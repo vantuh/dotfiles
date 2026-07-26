@@ -10,6 +10,11 @@ vim.g.have_nerd_font = true -- Tell the config that the terminal can display Ner
 vim.g.autoformat = true -- Enable automatic formatting on save by default.
 vim.g.snacks_animate = true -- Allow animations provided by Snacks.nvim.
 
+-- Snacks explorer replaces netrw; skip shipping its startup cost.
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+
 local opt = vim.opt -- Short alias used for setting Neovim options below.
 
 opt.autowrite = true -- Automatically save modified files before commands that switch buffers or run tools.
