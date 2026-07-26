@@ -15,15 +15,16 @@ vim.api.nvim_create_autocmd('InsertEnter', {
 require('completion.blink').setup {
   keymap = {
     preset = 'enter', -- 'enter' = <CR> accepts the (preselected) first item
+    ['<C-y>'] = { 'select_and_accept' },
   },
   appearance = {
     nerd_font_variant = 'mono',
   },
   completion = {
-    documentation = { auto_show = false, auto_show_delay_ms = 500 },
+    documentation = { auto_show = true, auto_show_delay_ms = 200 },
   },
   sources = {
-    default = { 'lsp', 'path', 'snippets' },
+    default = { 'lsp', 'path', 'snippets', 'buffer' },
     per_filetype = {
       lua = { inherit_defaults = true, 'lazydev' },
       sql = { inherit_defaults = true, 'dadbod' },
@@ -40,6 +41,21 @@ require('completion.blink').setup {
         module = 'lazydev.integrations.blink',
         score_offset = 100,
       },
+    },
+  },
+  cmdline = {
+    enabled = true,
+    keymap = {
+      preset = 'cmdline',
+      ['<Right>'] = false,
+      ['<Left>'] = false,
+    },
+    completion = {
+      list = { selection = { preselect = false } },
+      menu = {
+        auto_show = function(ctx) return vim.fn.getcmdtype() == ':' end,
+      },
+      ghost_text = { enabled = true },
     },
   },
   snippets = { preset = 'luasnip' },
