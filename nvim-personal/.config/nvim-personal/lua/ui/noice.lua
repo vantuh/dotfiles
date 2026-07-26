@@ -1,7 +1,7 @@
 -- LazyVim-style message/cmdline UI. Keeps snacks.notifier for top-right toasts.
 
 vim.pack.add({
-  'https://github.com/MunifTanjim/nui.nvim', -- required by noice; also used by custom.ui_extras
+  'https://github.com/MunifTanjim/nui.nvim', -- required by noice; also used by ui.ui_extras
   'https://github.com/folke/noice.nvim',
 })
 

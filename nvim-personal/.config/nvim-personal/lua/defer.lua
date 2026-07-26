@@ -23,7 +23,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
 ---@param opts? { pattern?: string|string[] }
 function M.on(events, module, opts)
   opts = opts or {}
-  local group_name = 'custom-lazy-' .. module:gsub('[^%w]', '-')
+  local group_name = 'defer-' .. module:gsub('[^%w]', '-')
 
   vim.api.nvim_create_autocmd(events, {
     group = vim.api.nvim_create_augroup(group_name, { clear = true }),

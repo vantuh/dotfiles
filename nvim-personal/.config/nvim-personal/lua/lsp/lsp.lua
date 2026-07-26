@@ -75,7 +75,7 @@ local angular_ls_path = vim.fs.joinpath(
 )
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-local blink_ok, blink = pcall(require, 'custom.blink')
+local blink_ok, blink = pcall(require, 'completion.blink')
 if blink_ok then capabilities = blink.get_lsp_capabilities(nil, true) end
 
 ---@type table<string, vim.lsp.Config>

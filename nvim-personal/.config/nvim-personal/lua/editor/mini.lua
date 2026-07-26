@@ -1,4 +1,4 @@
--- mini.nvim modules (statusline lives in custom/lualine.lua instead).
+-- mini.nvim modules (statusline lives in ui/lualine.lua instead).
 
 vim.pack.add({ 'https://github.com/nvim-mini/mini.nvim' })
 
