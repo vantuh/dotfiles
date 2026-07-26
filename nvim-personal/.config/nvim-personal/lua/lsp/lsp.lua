@@ -217,7 +217,11 @@ vim.list_extend(ensure_installed, {
   'sqlfluff',
   'stylua',
 })
-require('mason-tool-installer').setup({ ensure_installed = ensure_installed })
+require('mason-tool-installer').setup({
+  ensure_installed = ensure_installed,
+  -- Tools are already installed; skip registry scan / ensure on every VimEnter.
+  run_on_start = false,
+})
 
 -- angularls also attaches to TypeScript; without this, Snacks gd/gr waits on BOTH.
 vim.api.nvim_create_autocmd('LspAttach', {

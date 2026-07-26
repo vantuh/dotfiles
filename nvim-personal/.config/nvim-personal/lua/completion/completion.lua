@@ -5,9 +5,12 @@ vim.pack.add {
 }
 require('luasnip').setup {}
 
--- Optional: premade snippets
+-- Premade snippets: pack is cheap; scanning 144 JSON files is not — wait until insert.
 vim.pack.add { 'https://github.com/rafamadriz/friendly-snippets' }
-require('luasnip.loaders.from_vscode').lazy_load()
+vim.api.nvim_create_autocmd('InsertEnter', {
+  once = true,
+  callback = function() require('luasnip.loaders.from_vscode').lazy_load() end,
+})
 
 require('completion.blink').setup {
   keymap = {
