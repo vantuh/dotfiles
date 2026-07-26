@@ -1,8 +1,6 @@
 -- LazyVim-like statusline (without LazyVim helpers / noice / trouble).
 vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" })
 
-vim.o.laststatus = 3
-
 require("lualine").setup({
   options = {
     theme = "auto",

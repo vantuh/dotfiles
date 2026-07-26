@@ -1,16 +1,6 @@
 vim.pack.add({ "https://github.com/folke/persistence.nvim" })
 
--- Match LazyVim: don't persist blank windows / terminals (explorer sidebars).
-vim.opt.sessionoptions = {
-  "buffers",
-  "curdir",
-  "tabpages",
-  "winsize",
-  "help",
-  "globals",
-  "skiprtp",
-}
-
+-- sessionoptions owned by core/options.lua
 local persistence = require("persistence")
 persistence.setup({})
 
