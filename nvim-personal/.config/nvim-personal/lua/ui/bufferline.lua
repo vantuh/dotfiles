@@ -9,6 +9,11 @@ require("bufferline").setup({
       Snacks.bufdelete(bufnr)
     end,
     diagnostics = "nvim_lsp",
+    diagnostics_indicator = function(_, _, diagnostics)
+      local errors = diagnostics.error and " " .. diagnostics.error .. " " or ""
+      local warnings = diagnostics.warning and " " .. diagnostics.warning or ""
+      return vim.trim(errors .. warnings)
+    end,
     always_show_bufferline = false,
     offsets = {
       { filetype = "snacks_layout_box" },
