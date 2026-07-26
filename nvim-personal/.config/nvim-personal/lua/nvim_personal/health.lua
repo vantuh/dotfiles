@@ -1,9 +1,4 @@
---[[
---
--- This file is not required for your own configuration,
--- but helps people determine if their system is setup correctly.
---
---]]
+-- Optional system check for this config. Run: :checkhealth nvim_personal
 
 local check_version = function()
   local verstr = tostring(vim.version())
@@ -20,28 +15,22 @@ local check_version = function()
 end
 
 local check_external_reqs = function()
-  -- Basic utils: `git`, `make`, `unzip`
   for _, exe in ipairs { 'git', 'make', 'unzip', 'rg' } do
-    local is_executable = vim.fn.executable(exe) == 1
-    if is_executable then
+    if vim.fn.executable(exe) == 1 then
       vim.health.ok(string.format("Found executable: '%s'", exe))
     else
       vim.health.warn(string.format("Could not find executable: '%s'", exe))
     end
   end
-
-  return true
 end
 
 return {
   check = function()
-    vim.health.start 'kickstart.nvim'
+    vim.health.start 'nvim-personal'
 
     vim.health.info [[NOTE: Not every warning is a 'must-fix' in `:checkhealth`
 
-  Fix only warnings for plugins and languages you intend to use.
-    Mason will give warnings for languages that are not installed.
-    You do not need to install, unless you want to use those languages!]]
+  Fix only warnings for tools and languages you intend to use.]]
 
     local uv = vim.uv or vim.loop
     vim.health.info('System Information: ' .. vim.inspect(uv.os_uname()))

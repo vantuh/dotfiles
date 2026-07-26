@@ -6,6 +6,7 @@ local nvim_start_time = vim.uv.hrtime()
 require 'core.options'
 require 'core.keymaps'
 require 'core.autocmds'
+-- pack must load before any module that calls vim.pack.add() (hook ordering).
 require 'pack'
 
 local defer = require 'defer'

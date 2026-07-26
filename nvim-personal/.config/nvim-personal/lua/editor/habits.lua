@@ -124,13 +124,6 @@ end, { desc = 'Inspect Tree' })
 
 vim.keymap.set('n', '<leader>uC', function() Snacks.picker.colorschemes() end, { desc = 'Colorschemes' })
 
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'lua',
-  callback = function(event)
-    vim.keymap.set({ 'n', 'x' }, '<localleader>r', function() Snacks.debug.run() end, { buffer = event.buf, desc = 'Run Lua' })
-  end,
-})
-
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('editor-habits-lsp', { clear = true }),
   callback = function(event)
