@@ -74,14 +74,6 @@ vim.keymap.set('n', '<leader>xq', function()
   local ok, err = pcall(open and vim.cmd.cclose or vim.cmd.copen)
   if not ok then vim.notify(err, vim.log.levels.ERROR) end
 end, { desc = 'Quickfix list' })
-vim.keymap.set('n', '[q', function()
-  local ok, err = pcall(vim.cmd.cprevious)
-  if not ok then vim.notify(err, vim.log.levels.ERROR) end
-end, { desc = 'Previous quickfix item' })
-vim.keymap.set('n', ']q', function()
-  local ok, err = pcall(vim.cmd.cnext)
-  if not ok then vim.notify(err, vim.log.levels.ERROR) end
-end, { desc = 'Next quickfix item' })
 vim.keymap.set('n', '<leader>qq', '<cmd>qa<CR>', { desc = 'Quit All' })
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
