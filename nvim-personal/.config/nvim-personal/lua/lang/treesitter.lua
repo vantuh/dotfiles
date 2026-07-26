@@ -36,7 +36,26 @@ local function attach_textobject_moves(buf)
   end
 end
 
-local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+local parsers = {
+  'angular',
+  'bash',
+  'c',
+  'diff',
+  'gitattributes',
+  'gitcommit',
+  'git_config',
+  'git_rebase',
+  'gitignore',
+  'html',
+  'lua',
+  'luadoc',
+  'markdown',
+  'markdown_inline',
+  'query',
+  'scss',
+  'vim',
+  'vimdoc',
+}
 require('nvim-treesitter').install(parsers)
 
 ---@param buf integer
@@ -56,11 +75,7 @@ end
 
 local available_parsers = require('nvim-treesitter').get_available()
 
-local function attach_for_filetype(args)
-  local buf, filetype = args.buf, args.match
-  local language = vim.treesitter.language.get_lang(filetype)
-  if not language then return end
-
+local function attach_language(buf, language)
   local installed_parsers = require('nvim-treesitter').get_installed('parsers')
   if vim.tbl_contains(installed_parsers, language) then
     treesitter_try_attach(buf, language)
@@ -71,13 +86,29 @@ local function attach_for_filetype(args)
   end
 end
 
+local function attach_for_filetype(args)
+  local language = vim.treesitter.language.get_lang(args.match)
+  if language then attach_language(args.buf, language) end
+end
+
 vim.api.nvim_create_autocmd('FileType', { callback = attach_for_filetype })
+
+-- Angular component templates use the Angular parser instead of generic HTML.
+vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
+  pattern = { '*.component.html', '*.container.html' },
+  callback = function(args) attach_language(args.buf, 'angular') end,
+})
 
 -- Module loads after VimEnter (and after persistence session restore), so FileType already
 -- fired for restored buffers. Attach to every loaded filetyped buffer, not just the current one.
 for _, buf in ipairs(vim.api.nvim_list_bufs()) do
   if vim.api.nvim_buf_is_loaded(buf) then
-    local filetype = vim.bo[buf].filetype
-    if filetype ~= '' then attach_for_filetype({ buf = buf, match = filetype }) end
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name:match('%.component%.html$') or name:match('%.container%.html$') then
+      attach_language(buf, 'angular')
+    else
+      local filetype = vim.bo[buf].filetype
+      if filetype ~= '' then attach_for_filetype({ buf = buf, match = filetype }) end
+    end
   end
 end
