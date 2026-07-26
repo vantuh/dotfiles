@@ -18,7 +18,7 @@ vim.keymap.set('n', '<leader>xL', '<cmd>Trouble loclist toggle<CR>', { desc = 'L
 vim.keymap.set('n', '<leader>xQ', '<cmd>Trouble qflist toggle<CR>', { desc = 'Quickfix List (Trouble)' })
 local function todo_trouble(command)
   return function()
-    require 'custom.todo_comments'
+    require 'editor.todo_comments'
     vim.cmd(command)
   end
 end

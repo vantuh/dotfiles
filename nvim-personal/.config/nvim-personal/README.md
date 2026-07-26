@@ -36,6 +36,8 @@ Fetch and review updates:
 :lua vim.pack.update()
 ```
 
-`init.lua` is a thin bootstrap that `require`s modules under `lua/custom/`.
-Each `vim.pack` plugin group lives in its own file (e.g. `custom/lsp.lua`,
-`custom/snacks_explorer.lua`). Edit the matching module instead of growing `init.lua`.
+`init.lua` is a thin bootstrap that `require`s modules under `lua/`:
+`core/`, `ui/`, `editor/`, `lang/`, `lsp/`, `completion/`, plus top-level
+`defer.lua` / `pack.lua`. Each `vim.pack` plugin group lives in its own file
+(e.g. `lsp/lsp.lua`, `editor/snacks_explorer.lua`). Edit the matching module
+instead of growing `init.lua`.

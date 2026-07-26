@@ -1,23 +1,23 @@
 -- Personal Neovim config (Kickstart-based).
--- Core bootstrap stays here; each vim.pack plugin group lives in lua/custom/*.lua
+-- Core bootstrap stays here; plugin groups live under lua/{ui,editor,lang,lsp,completion}/
 
 local nvim_start_time = vim.uv.hrtime()
 
-require 'custom.options'
-require 'custom.keymaps'
-require 'custom.autocmds'
-require 'custom.pack'
+require 'core.options'
+require 'core.keymaps'
+require 'core.autocmds'
+require 'pack'
 
-local lazy = require 'custom.lazy'
-lazy.on({ 'BufReadPre', 'BufNewFile' }, 'custom.guess_indent')
-lazy.on('InsertEnter', 'custom.autosave')
-lazy.on('FileType', 'custom.markdown_preview', { pattern = 'markdown' })
-lazy.on('FileType', 'custom.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
+local defer = require 'defer'
+defer.on({ 'BufReadPre', 'BufNewFile' }, 'editor.guess_indent')
+defer.on('InsertEnter', 'editor.autosave')
+defer.on('FileType', 'lang.markdown_preview', { pattern = 'markdown' })
+defer.on('FileType', 'lang.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
 
 -- Core UX required before the first screen or VimEnter session restoration.
-require 'custom.colorscheme'
-require 'custom.snacks_explorer'
-require 'custom.persistence'
+require 'ui.colorscheme'
+require 'editor.snacks_explorer'
+require 'editor.persistence'
 
 local ui_ready_ms
 vim.api.nvim_create_autocmd('VimEnter', {
@@ -27,32 +27,32 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
 -- Everything else loads in order after the first screen.
 local after_ui = {
-  'custom.mini',
-  'custom.bufferline',
-  'custom.lualine',
-  'custom.treesitter',
-  'custom.ts_expand_hover',
-  'custom.completion',
-  'custom.lsp',
-  'custom.gitsigns',
-  'custom.lint',
-  'custom.todo_comments',
-  'custom.which_key',
-  'custom.trouble',
-  'custom.grug_far',
-  'custom.dadbod',
-  'custom.conform',
-  'custom.lazyvim_habits',
-  'custom.ui_extras',
-  'custom.noice',
+  'editor.mini',
+  'ui.bufferline',
+  'ui.lualine',
+  'lang.treesitter',
+  'lang.ts_expand_hover',
+  'completion.completion',
+  'lsp.lsp',
+  'editor.gitsigns',
+  'lsp.lint',
+  'editor.todo_comments',
+  'ui.which_key',
+  'lsp.trouble',
+  'editor.grug_far',
+  'editor.dadbod',
+  'lsp.conform',
+  'core.lazyvim_habits',
+  'ui.ui_extras',
+  'ui.noice',
 }
 
 for _, module in ipairs(after_ui) do
-  lazy.on_vim_enter(function() require(module) end)
+  defer.on_vim_enter(function() require(module) end)
 end
 
 -- Keep this last so the measurement includes all deferred startup modules.
-lazy.on_vim_enter(function()
+defer.on_vim_enter(function()
   local modules_loaded_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
   if #vim.api.nvim_list_uis() == 0 then return end
   vim.defer_fn(function()
