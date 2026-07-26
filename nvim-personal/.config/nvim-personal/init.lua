@@ -42,7 +42,8 @@ local after_ui = {
   'editor.grug_far',
   'editor.dadbod',
   'lsp.conform',
-  'core.lazyvim_habits',
+  'editor.flash',
+  'editor.habits',
   'ui.ui_extras',
   'ui.noice',
 }

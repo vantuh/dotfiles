@@ -1,12 +1,5 @@
 -- LazyVim-style muscle-memory aliases on top of kickstart/snacks.
--- Keeps kickstart maps where they don't clash; overrides a few (cf, ss/sS, gd/gr).
-
-vim.pack.add { 'https://github.com/folke/flash.nvim' }
-require('flash').setup {}
-
-vim.keymap.set({ 'n', 'x', 'o' }, 's', function() require('flash').jump() end, { desc = 'Flash' })
-
-vim.keymap.set({ 'n', 'x', 'o' }, 'S', function() require('flash').treesitter() end, { desc = 'Flash Treesitter' })
+-- Keeps kickstart maps where they don't clash; overrides a few (ss/sS, gd/gr).
 
 local function git_root() return Snacks.git.get_root() end
 
@@ -139,7 +132,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('lazyvim-habits-lsp', { clear = true }),
+  group = vim.api.nvim_create_augroup('editor-habits-lsp', { clear = true }),
   callback = function(event)
     local opts = { buffer = event.buf }
     vim.keymap.set('n', 'gd', function() Snacks.picker.lsp_definitions() end, vim.tbl_extend('force', opts, { desc = 'Goto Definition' }))
