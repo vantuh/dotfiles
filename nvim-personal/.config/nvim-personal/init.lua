@@ -17,7 +17,7 @@ defer.on('FileType', 'lang.render_markdown', { pattern = { 'markdown', 'markdown
 
 -- Core UX required before the first screen or VimEnter session restoration.
 require 'ui.colorscheme'
-require 'editor.snacks_explorer'
+require 'editor.snacks'
 require 'editor.persistence'
 
 local ui_ready_ms
@@ -44,7 +44,6 @@ local after_ui = {
   'editor.dadbod',
   'lsp.conform',
   'editor.flash',
-  'editor.habits',
   'ui.ui_extras',
   'ui.noice',
 }
