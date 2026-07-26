@@ -1,5 +1,5 @@
--- LazyVim-style muscle-memory aliases on top of kickstart/snacks.
--- Keeps kickstart maps where they don't clash; overrides a few (ss/sS, gd/gr).
+-- LazyVim-style Snacks muscle-memory: find/git/terminal/toggles.
+-- Diagnostics live in core/keymaps; LSP maps live in lsp/lsp.lua.
 
 local function git_root() return Snacks.git.get_root() end
 
@@ -59,32 +59,6 @@ vim.keymap.set({ 'n', 'x' }, '<leader>gY', function()
   }
 end, { desc = 'Git Browse (copy URL)' })
 
--- LSP / code (LazyVim names; kickstart defaults still available as gr*)
-vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
-vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, { desc = 'Rename' })
-vim.keymap.set('n', '<leader>cd', vim.diagnostic.open_float, { desc = 'Line Diagnostics' })
-
-vim.keymap.set('n', '<leader>ss', function() Snacks.picker.lsp_symbols() end, { desc = 'LSP Symbols' })
-
-vim.keymap.set('n', '<leader>sS', function() Snacks.picker.lsp_workspace_symbols() end, { desc = 'LSP Workspace Symbols' })
-
-local function diagnostic_goto(next, severity)
-  return function()
-    vim.diagnostic.jump {
-      count = (next and 1 or -1) * vim.v.count1,
-      severity = severity and vim.diagnostic.severity[severity] or nil,
-      float = true,
-    }
-  end
-end
-
-vim.keymap.set('n', ']d', diagnostic_goto(true), { desc = 'Next Diagnostic' })
-vim.keymap.set('n', '[d', diagnostic_goto(false), { desc = 'Prev Diagnostic' })
-vim.keymap.set('n', ']e', diagnostic_goto(true, 'ERROR'), { desc = 'Next Error' })
-vim.keymap.set('n', '[e', diagnostic_goto(false, 'ERROR'), { desc = 'Prev Error' })
-vim.keymap.set('n', ']w', diagnostic_goto(true, 'WARN'), { desc = 'Next Warning' })
-vim.keymap.set('n', '[w', diagnostic_goto(false, 'WARN'), { desc = 'Prev Warning' })
-
 Snacks.toggle.option('spell', { name = 'Spelling' }):map '<leader>us'
 Snacks.toggle.option('wrap', { name = 'Wrap' }):map '<leader>uw'
 Snacks.toggle.option('relativenumber', { name = 'Relative Number' }):map '<leader>uL'
@@ -123,14 +97,3 @@ vim.keymap.set('n', '<leader>uI', function()
 end, { desc = 'Inspect Tree' })
 
 vim.keymap.set('n', '<leader>uC', function() Snacks.picker.colorschemes() end, { desc = 'Colorschemes' })
-
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('editor-habits-lsp', { clear = true }),
-  callback = function(event)
-    local opts = { buffer = event.buf }
-    vim.keymap.set('n', 'gd', function() Snacks.picker.lsp_definitions() end, vim.tbl_extend('force', opts, { desc = 'Goto Definition' }))
-    vim.keymap.set('n', 'gr', function() Snacks.picker.lsp_references() end, vim.tbl_extend('force', opts, { desc = 'References', nowait = true }))
-    vim.keymap.set('n', 'gI', function() Snacks.picker.lsp_implementations() end, vim.tbl_extend('force', opts, { desc = 'Goto Implementation' }))
-    vim.keymap.set('n', 'gy', function() Snacks.picker.lsp_type_definitions() end, vim.tbl_extend('force', opts, { desc = 'Goto Type Definition' }))
-  end,
-})
