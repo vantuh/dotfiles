@@ -9,7 +9,9 @@ export PI_CURSOR_EXPOSE_BUILTIN_TOOLS=1
 export PI_CURSOR_PI_TOOL_BRIDGE=1
 export PI_CURSOR_SETTING_SOURCES=project,plugins,team
 export PI_CURSOR_MCP_CONNECT_TIMEOUT_SECONDS=5
-export PI_CURSOR_MCP_TOOL_TIMEOUT_SECONDS=120
+# Long enough for herdr_agent waits (default timeoutMs=10m). Cursor SDK MCP
+# default is 60s; pi-cursor-sdk raises to 3600s unless this overrides lower.
+export PI_CURSOR_MCP_TOOL_TIMEOUT_SECONDS=3600
 # export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG=1
 # export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG_FILE=/tmp/pi-cursor-bridge.ndjson
 # export PI_CURSOR_SDK_EVENT_DEBUG=1
