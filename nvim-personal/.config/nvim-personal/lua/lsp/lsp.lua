@@ -35,6 +35,16 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
     map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]tion', { 'n', 'x' })
     map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+    map('<leader>cl', function() vim.cmd 'LspInfo' end, '[L]SP Info')
+    map('gK', vim.lsp.buf.signature_help, 'Signature Help')
+    map('<leader>cA', function()
+      vim.lsp.buf.code_action { context = { only = { 'source' }, diagnostics = {} } }
+    end, 'Source Action')
+    map('<leader>co', function()
+      vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' }, diagnostics = {} } }
+    end, 'Organize Imports')
+    map('gai', function() Snacks.picker.lsp_incoming_calls() end, 'Incoming Calls')
+    map('gao', function() Snacks.picker.lsp_outgoing_calls() end, 'Outgoing Calls')
 
     -- LazyVim-style navigation via Snacks picker
     map('gd', function() Snacks.picker.lsp_definitions() end, 'Goto Definition')
@@ -152,7 +162,9 @@ local servers = {
       format = true,
     },
   },
-  tailwindcss = {},
+  tailwindcss = {
+    filetypes_exclude = { 'markdown' },
+  },
   marksman = {},
   prismals = {},
   jsonls = {
@@ -231,6 +243,7 @@ vim.list_extend(ensure_installed, {
   'markdown-toc',
   'markdownlint-cli2',
   'prettier',
+  'shfmt',
   'sqlfluff',
   'stylua',
 })
