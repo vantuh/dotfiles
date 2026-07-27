@@ -72,6 +72,9 @@ require('conform').setup {
 
     local enabled_filetypes = {
       css = true,
+      fish = true,
+      graphql = true,
+      handlebars = true,
       html = true,
       htmlangular = true,
       javascript = true,
@@ -85,12 +88,14 @@ require('conform').setup {
       mysql = true,
       plsql = true,
       scss = true,
+      sh = true,
       sql = true,
       typescript = true,
       typescriptreact = true,
+      vue = true,
       yaml = true,
     }
-    if enabled_filetypes[vim.bo[bufnr].filetype] then return { timeout_ms = 500 } end
+    if enabled_filetypes[vim.bo[bufnr].filetype] then return { timeout_ms = 3000 } end
     return nil
   end,
   default_format_opts = {
@@ -120,6 +125,8 @@ require('conform').setup {
   },
   formatters_by_ft = {
     css = { 'prettier' },
+    graphql = { 'prettier' },
+    handlebars = { 'prettier' },
     html = { 'prettier' },
     htmlangular = { 'prettier' },
     javascript = { 'prettier' },
@@ -134,8 +141,10 @@ require('conform').setup {
     plsql = { 'sqlfluff' },
     scss = { 'prettier' },
     sql = { 'sqlfluff' },
+    sh = { 'shfmt' },
     typescript = { 'prettier' },
     typescriptreact = { 'prettier' },
+    vue = { 'prettier' },
     yaml = { 'prettier' },
   },
 }
