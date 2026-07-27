@@ -45,7 +45,8 @@ require('snacks').setup {
       },
       files = {
         hidden = true,
-        ignored = false,
+        ignored = true,
+        exclude = { 'node_modules', '.git', 'dist', 'build', '.next', '.nuxt' },
         matcher = {
           frecency = true,
           sort_empty = true,
@@ -83,17 +84,34 @@ vim.keymap.set('n', '<leader>fr', function() Snacks.picker.recent() end, { desc 
 vim.keymap.set('n', '<leader>fp', function() Snacks.picker.projects() end, { desc = 'Projects' })
 vim.keymap.set('n', '<leader>fc', function() Snacks.picker.files { cwd = vim.fn.stdpath 'config' } end, { desc = 'Find Config File' })
 
+vim.keymap.set('n', '<leader>:', function() Snacks.picker.command_history() end, { desc = 'Command History' })
+vim.keymap.set('n', '<leader>fb', function() Snacks.picker.buffers() end, { desc = 'Buffers' })
+vim.keymap.set('n', '<leader>fB', function() Snacks.picker.buffers { filter = { cwd = true } } end, { desc = 'Buffers (cwd)' })
+vim.keymap.set('n', '<leader>fR', function() Snacks.picker.recent { filter = { cwd = true } } end, { desc = 'Recent Files (cwd)' })
+
 -- Search
 vim.keymap.set('n', '<leader>sg', function() Snacks.picker.grep { cwd = git_root() } end, { desc = 'Grep Project' })
 vim.keymap.set({ 'n', 'x' }, '<leader>sw', function() Snacks.picker.grep_word { cwd = git_root() } end, { desc = 'Search Word' })
+vim.keymap.set({ 'n', 'x' }, '<leader>sW', function() Snacks.picker.grep_word() end, { desc = 'Search Word (cwd)' })
+vim.keymap.set('n', '<leader>sG', function() Snacks.picker.grep() end, { desc = 'Grep (cwd)' })
+vim.keymap.set('n', '<leader>sb', function() Snacks.picker.lines() end, { desc = 'Buffer Lines' })
+vim.keymap.set('n', '<leader>sB', function() Snacks.picker.grep_buffers() end, { desc = 'Grep Open Buffers' })
 vim.keymap.set('n', '<leader>sm', function() Snacks.picker.marks() end, { desc = 'Marks' })
 vim.keymap.set('n', '<leader>sj', function() Snacks.picker.jumps() end, { desc = 'Jumps' })
 vim.keymap.set('n', '<leader>su', function() Snacks.picker.undo() end, { desc = 'Undo History' })
 vim.keymap.set('n', '<leader>s"', function() Snacks.picker.registers() end, { desc = 'Registers' })
 vim.keymap.set('n', '<leader>sh', function() Snacks.picker.help() end, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sk', function() Snacks.picker.keymaps() end, { desc = '[S]earch [K]eymaps' })
-vim.keymap.set('n', '<leader>sc', function() Snacks.picker.commands() end, { desc = '[S]earch [C]ommands' })
+vim.keymap.set('n', '<leader>sc', function() Snacks.picker.command_history() end, { desc = 'Command History' })
+vim.keymap.set('n', '<leader>sC', function() Snacks.picker.commands() end, { desc = '[S]earch [C]ommands' })
 vim.keymap.set('n', '<leader>sd', function() Snacks.picker.diagnostics() end, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>sD', function() Snacks.picker.diagnostics_buffer() end, { desc = 'Buffer Diagnostics' })
+vim.keymap.set('n', '<leader>sa', function() Snacks.picker.autocmds() end, { desc = 'Autocmds' })
+vim.keymap.set('n', '<leader>si', function() Snacks.picker.icons() end, { desc = 'Icons' })
+vim.keymap.set('n', '<leader>sl', function() Snacks.picker.loclist() end, { desc = 'Location List' })
+vim.keymap.set('n', '<leader>sM', function() Snacks.picker.man() end, { desc = 'Man Pages' })
+vim.keymap.set('n', '<leader>sq', function() Snacks.picker.qflist() end, { desc = 'Quickfix List' })
+vim.keymap.set('n', '<leader>s/', function() Snacks.picker.search_history() end, { desc = 'Search History' })
 -- <leader>sr is grug-far (Search and Replace); resume uses sR
 vim.keymap.set('n', '<leader>sR', function() Snacks.picker.resume() end, { desc = '[S]earch [R]esume' })
 vim.keymap.set('n', '<leader>uC', function() Snacks.picker.colorschemes() end, { desc = 'Colorschemes' })
@@ -121,7 +139,7 @@ vim.keymap.set({ 'n', 'x' }, '<leader>gY', function()
 end, { desc = 'Git Browse (copy URL)' })
 vim.keymap.set('n', '<leader>gg', function() Snacks.lazygit { cwd = git_root() } end, { desc = 'Lazygit (Git Root)' })
 vim.keymap.set('n', '<leader>gG', function() Snacks.lazygit() end, { desc = 'Lazygit (cwd)' })
-vim.keymap.set('n', '<leader>gh', function()
+vim.keymap.set('n', '<leader>gH', function()
   Snacks.terminal.toggle({ 'hunk', 'diff', '--watch' }, {
     cwd = git_root() or vim.uv.cwd(),
     win = {
