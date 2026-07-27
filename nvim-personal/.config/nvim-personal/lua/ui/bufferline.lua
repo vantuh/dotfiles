@@ -44,5 +44,9 @@ vim.keymap.set("n", "[b", "<cmd>BufferLineCyclePrev<CR>", { desc = "Previous Buf
 vim.keymap.set("n", "]b", "<cmd>BufferLineCycleNext<CR>", { desc = "Next Buffer" })
 
 vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineTogglePin<CR>", { desc = "Toggle Pin" })
+vim.keymap.set("n", "<leader>bP", "<cmd>BufferLineGroupClose ungrouped<CR>", { desc = "Delete Non-Pinned Buffers" })
+vim.keymap.set("n", "[B", "<cmd>BufferLineMovePrev<CR>", { desc = "Move Buffer Prev" })
+vim.keymap.set("n", "]B", "<cmd>BufferLineMoveNext<CR>", { desc = "Move Buffer Next" })
+vim.keymap.set("n", "<leader>bj", "<cmd>BufferLinePick<CR>", { desc = "Pick Buffer" })
 vim.keymap.set("n", "<leader>bl", "<cmd>BufferLineCloseLeft<CR>", { desc = "Delete Buffers to the Left" })
 vim.keymap.set("n", "<leader>br", "<cmd>BufferLineCloseRight<CR>", { desc = "Delete Buffers to the Right" })
