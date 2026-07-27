@@ -63,6 +63,34 @@ require('mini.ai').setup({
     inside_next = 'ii',
   },
   n_lines = 500,
+  custom_textobjects = {
+    -- block (conditional/loop)
+    o = require('mini.ai').gen_spec.treesitter({
+      a = { '@block.outer', '@conditional.outer', '@loop.outer' },
+      i = { '@block.inner', '@conditional.inner', '@loop.inner' },
+    }),
+    -- function
+    f = require('mini.ai').gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
+    -- class
+    c = require('mini.ai').gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
+    -- tag
+    t = { '<(%w-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
+    -- digit sequence
+    d = { '%f[%d]%d+' },
+    -- case-sensitive word (camelCase, PascalCase, snake_case segment)
+    e = {
+      { '%u[%l%d]+%f[^%l%d]', '%f[%S][%l%d]+%f[^%l%d]', '%f[%P][%l%d]+%f[^%l%d]', '^[%l%d]+%f[^%l%d]' },
+      '^().*()$',
+    },
+    -- whole buffer
+    g = function()
+      local from = { line = 1, col = 1 }
+      local to = { line = vim.fn.line '$', col = math.max(vim.fn.getline('$'):len(), 1) }
+      return { from = from, to = to }
+    end,
+    -- function call
+    u = require('mini.ai').gen_spec.function_call(),
+  },
 })
 
 require('mini.surround').setup()
