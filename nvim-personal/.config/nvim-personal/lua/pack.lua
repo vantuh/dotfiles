@@ -72,3 +72,5 @@ vim.keymap.set('n', '<leader>pc', function()
   vim.pack.del(inactive)
   vim.notify(('Removed %d inactive plugin(s)'):format(#inactive), vim.log.levels.INFO)
 end, { desc = '[P]ack [C]lean inactive' })
+
+vim.keymap.set('n', '<leader>pm', function() vim.cmd 'Mason' end, { desc = '[P]ack [M]ason' })
