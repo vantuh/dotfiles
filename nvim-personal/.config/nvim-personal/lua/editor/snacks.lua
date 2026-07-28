@@ -6,6 +6,8 @@ require('snacks').setup {
   explorer = { enabled = true },
   lazygit = { enabled = true },
   indent = { enabled = true },
+  scope = { enabled = true },
+  words = { enabled = true },
   input = { enabled = true },
   -- Top-right toasts (replaces the bottom message row together with noice + cmdheight=0)
   notifier = {

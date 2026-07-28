@@ -88,8 +88,10 @@ require('mini.ai').setup({
       local to = { line = vim.fn.line '$', col = math.max(vim.fn.getline('$'):len(), 1) }
       return { from = from, to = to }
     end,
-    -- function call
+    -- function call (with dot in name, e.g. vim.fn.foo)
     u = require('mini.ai').gen_spec.function_call(),
+    -- function call without dot (e.g. foo, _bar)
+    U = require('mini.ai').gen_spec.function_call({ name_pattern = '[%w_]' }),
   },
 })
 
