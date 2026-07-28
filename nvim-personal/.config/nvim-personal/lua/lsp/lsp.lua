@@ -38,12 +38,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map('<leader>cl', function() vim.cmd 'LspInfo' end, '[L]SP Info')
     map('gK', vim.lsp.buf.signature_help, 'Signature Help')
     map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help', 'i')
-    map('<leader>cA', function()
-      vim.lsp.buf.code_action { context = { only = { 'source' }, diagnostics = {} } }
-    end, 'Source Action')
-    map('<leader>co', function()
-      vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' }, diagnostics = {} } }
-    end, 'Organize Imports')
+    map('<leader>cA', function() vim.lsp.buf.code_action { context = { only = { 'source' }, diagnostics = {} } } end, 'Source Action')
+    map('<leader>co', function() vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' }, diagnostics = {} } } end, 'Organize Imports')
     map('gai', function() Snacks.picker.lsp_incoming_calls() end, 'Incoming Calls')
     map('gao', function() Snacks.picker.lsp_outgoing_calls() end, 'Outgoing Calls')
 
@@ -170,9 +166,7 @@ local servers = {
   },
   tailwindcss = {
     before_init = function(_, config)
-      config.filetypes = vim.tbl_filter(function(ft)
-        return ft ~= 'markdown'
-      end, config.filetypes or {})
+      config.filetypes = vim.tbl_filter(function(ft) return ft ~= 'markdown' end, config.filetypes or {})
     end,
   },
   marksman = {},

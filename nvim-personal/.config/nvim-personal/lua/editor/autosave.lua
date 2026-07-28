@@ -1,5 +1,5 @@
-vim.pack.add({ "https://github.com/okuuva/auto-save.nvim" })
+vim.pack.add { 'https://github.com/okuuva/auto-save.nvim' }
 
-require("auto-save").setup({
+require('auto-save').setup {
   debounce_delay = 1500,
-})
+}

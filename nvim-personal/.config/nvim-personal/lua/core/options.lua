@@ -14,7 +14,6 @@ vim.g.snacks_animate = true -- Allow animations provided by Snacks.nvim.
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
-
 local opt = vim.opt -- Short alias used for setting Neovim options below.
 
 opt.autowrite = true -- Automatically save modified files before commands that switch buffers or run tools.

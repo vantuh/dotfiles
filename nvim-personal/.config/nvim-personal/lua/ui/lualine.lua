@@ -1,43 +1,41 @@
 -- LazyVim-like statusline (without LazyVim helpers / noice / trouble).
-vim.pack.add({ "https://github.com/nvim-lualine/lualine.nvim" })
+vim.pack.add { 'https://github.com/nvim-lualine/lualine.nvim' }
 
-require("lualine").setup({
+require('lualine').setup {
   options = {
-    theme = "auto",
+    theme = 'auto',
     globalstatus = true,
     disabled_filetypes = {
-      statusline = { "dashboard", "alpha", "ministarter", "snacks_dashboard" },
+      statusline = { 'dashboard', 'alpha', 'ministarter', 'snacks_dashboard' },
     },
   },
   sections = {
-    lualine_a = { "mode" },
-    lualine_b = { "branch" },
+    lualine_a = { 'mode' },
+    lualine_b = { 'branch' },
     lualine_c = {
       {
-        "diagnostics",
+        'diagnostics',
         symbols = {
-          error = " ",
-          warn = " ",
-          info = " ",
-          hint = " ",
+          error = ' ',
+          warn = ' ',
+          info = ' ',
+          hint = ' ',
         },
       },
-      { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
-      { "filename", path = 1 },
+      { 'filetype', icon_only = true, separator = '', padding = { left = 1, right = 0 } },
+      { 'filename', path = 1 },
     },
     lualine_x = {
       {
         function()
-          local names = vim.iter(vim.lsp.get_clients({ bufnr = 0 }))
-            :map(function(client) return client.name end)
-            :totable()
+          local names = vim.iter(vim.lsp.get_clients { bufnr = 0 }):map(function(client) return client.name end):totable()
           table.sort(names)
-          return table.concat(names, ", ")
+          return table.concat(names, ', ')
         end,
-        icon = "",
+        icon = '',
       },
       {
-        "diff",
+        'diff',
         source = function()
           local gitsigns = vim.b.gitsigns_status_dict
           if gitsigns then
@@ -51,20 +49,17 @@ require("lualine").setup({
       },
     },
     lualine_y = {
-      { "progress", separator = " ", padding = { left = 1, right = 0 } },
-      { "location", padding = { left = 0, right = 1 } },
+      { 'progress', separator = ' ', padding = { left = 1, right = 0 } },
+      { 'location', padding = { left = 0, right = 1 } },
     },
     lualine_z = {
-      function()
-        return " " .. os.date("%R")
-      end,
+      function() return ' ' .. os.date '%R' end,
     },
   },
-  extensions = { "mason" },
-})
+  extensions = { 'mason' },
+}
 
-vim.api.nvim_create_autocmd({ "LspAttach", "LspDetach" }, {
-  group = vim.api.nvim_create_augroup("custom-lualine-lsp", { clear = true }),
-  callback = function() require("lualine").refresh() end,
+vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach' }, {
+  group = vim.api.nvim_create_augroup('custom-lualine-lsp', { clear = true }),
+  callback = function() require('lualine').refresh() end,
 })
-
