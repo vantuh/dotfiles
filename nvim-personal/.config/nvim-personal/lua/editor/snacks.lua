@@ -2,6 +2,20 @@
 
 vim.pack.add { 'https://github.com/folke/snacks.nvim' }
 
+-- Put "Yes" first in explorer confirm dialogs (move/delete).
+vim.schedule(function()
+  local ok, util = pcall(require, 'snacks.picker.util')
+  if not ok then return end
+  util.confirm = function(prompt, fn)
+    Snacks.picker.select({ 'Yes', 'No' }, {
+      prompt = prompt,
+      snacks = { layout = { layout = { max_width = 60 } } },
+    }, function(_, idx)
+      if idx == 1 then fn() end
+    end)
+  end
+end)
+
 require('snacks').setup {
   explorer = { enabled = true },
   lazygit = { enabled = true },
