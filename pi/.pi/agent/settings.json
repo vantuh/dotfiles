@@ -12,7 +12,7 @@
     "reserveTokens": 8192,
     "keepRecentTokens": 16000
   },
-  "theme": "dracula",
+  "theme": "dark",
   "enabledModels": [
     "kiro-acp/claude-opus-4.8",
     "kiro-acp/claude-haiku-4.5",
