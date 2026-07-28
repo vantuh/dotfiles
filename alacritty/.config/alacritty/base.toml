@@ -1,35 +1,35 @@
-# Theme - Dracula
+# Theme - Catppuccin Mocha
 [colors.primary]
-background = "#282a36"
-foreground = "#f8f8f2"
+background = "#1e1e2e"
+foreground = "#cdd6f4"
 
 [colors.cursor]
-text = "#44475a"
-cursor = "#f8f8f2"
+text = "#1e1e2e"
+cursor = "#f5e0dc"
 
 [colors.selection]
-text = "#f8f8f2"
-background = "#44475a"
+text = "#1e1e2e"
+background = "#f5e0dc"
 
 [colors.normal]
-black   = "#21222c"
-red     = "#ff5555"
-green   = "#50fa7b"
-yellow  = "#f1fa8c"
-blue    = "#bd93f9"
-magenta = "#ff79c6"
-cyan    = "#8be9fd"
-white   = "#f8f8f2"
+black   = "#45475a"
+red     = "#f38ba8"
+green   = "#a6e3a1"
+yellow  = "#f9e2af"
+blue    = "#89b4fa"
+magenta = "#f5c2e7"
+cyan    = "#94e2d5"
+white   = "#bac2de"
 
 [colors.bright]
-black   = "#6272a4"
-red     = "#ff6e6e"
-green   = "#69ff94"
-yellow  = "#ffffa5"
-blue    = "#d6acff"
-magenta = "#ff92df"
-cyan    = "#a4ffff"
-white   = "#ffffff"
+black   = "#585b70"
+red     = "#f38ba8"
+green   = "#a6e3a1"
+yellow  = "#f9e2af"
+blue    = "#89b4fa"
+magenta = "#f5c2e7"
+cyan    = "#94e2d5"
+white   = "#a6adc8"
 
 [font.normal]
 family = "JetBrainsMono Nerd Font"
