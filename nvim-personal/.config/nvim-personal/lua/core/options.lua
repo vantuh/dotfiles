@@ -82,6 +82,8 @@ opt.wildoptions = 'pum' -- Display command-line completion matches in a popup me
 opt.winminwidth = 5 -- Prevent normal windows from becoming narrower than five columns.
 opt.wrap = false -- Keep long lines on one screen row unless wrapping is enabled locally.
 opt.cmdheight = 0 -- Hide the command/message row because Noice and Snacks display that information.
+opt.showcmd = true -- Show partial commands in the last line (relevant with cmdheight=0 via Noice).
+opt.showcmdloc = 'last' -- Display partial commands in the last line of the screen.
 
 -- Initialize the system clipboard later because detecting a clipboard provider can slow startup.
 vim.schedule(function()
