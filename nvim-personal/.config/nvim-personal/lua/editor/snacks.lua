@@ -53,10 +53,18 @@ require('snacks').setup {
           preview = 'main',
         },
         on_show = function(picker)
+          -- Auto enable preview in explorer
           picker:toggle('preview', { enable = true })
           vim.schedule(function()
             if not picker.closed then picker:show_preview() end
           end)
+          -- Re-enable preview when returning focus to the explorer
+          vim.api.nvim_create_autocmd('WinEnter', {
+            callback = function()
+              if picker.closed then return true end -- remove autocmd
+              if picker:is_focused() then picker:toggle('preview', { enable = true }) end
+            end,
+          })
         end,
       },
       files = {
@@ -158,18 +166,23 @@ vim.keymap.set({ 'n', 'x' }, '<leader>gY', function()
 end, { desc = 'Git Browse (copy URL)' })
 vim.keymap.set('n', '<leader>gg', function() Snacks.lazygit { cwd = git_root() } end, { desc = 'Lazygit (Git Root)' })
 vim.keymap.set('n', '<leader>gG', function() Snacks.lazygit() end, { desc = 'Lazygit (cwd)' })
-vim.keymap.set('n', '<leader>gH', function()
-  Snacks.terminal.toggle({ 'hunk', 'diff', '--watch' }, {
-    cwd = git_root() or vim.uv.cwd(),
-    win = {
-      position = 'float',
-      width = 0.95,
-      height = 0.9,
-      border = 'rounded',
-      backdrop = 60,
-    },
-  })
-end, { desc = 'Hunk Review' })
+vim.keymap.set(
+  'n',
+  '<leader>gH',
+  function()
+    Snacks.terminal.toggle({ 'hunk', 'diff', '--watch' }, {
+      cwd = git_root() or vim.uv.cwd(),
+      win = {
+        position = 'float',
+        width = 0.95,
+        height = 0.9,
+        border = 'rounded',
+        backdrop = 60,
+      },
+    })
+  end,
+  { desc = 'Hunk Review' }
+)
 
 -- Toggles
 Snacks.toggle.option('spell', { name = 'Spelling' }):map '<leader>us'
