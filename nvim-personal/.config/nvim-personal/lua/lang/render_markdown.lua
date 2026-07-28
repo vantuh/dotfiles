@@ -17,8 +17,8 @@ render_markdown.setup {
   },
 }
 
-Snacks.toggle {
+Snacks.toggle({
   name = 'Render Markdown',
   get = render_markdown.get,
   set = render_markdown.set,
-}:map '<leader>um'
+}):map '<leader>um'

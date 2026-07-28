@@ -1,13 +1,13 @@
-vim.pack.add({
+vim.pack.add {
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
   { src = 'https://github.com/nvim-treesitter/nvim-treesitter-textobjects', version = 'main' },
   'https://github.com/windwp/nvim-ts-autotag',
   'https://github.com/folke/ts-comments.nvim',
-})
+}
 
-require('nvim-ts-autotag').setup({})
-require('ts-comments').setup({})
-require('nvim-treesitter-textobjects').setup({ move = { set_jumps = true } })
+require('nvim-ts-autotag').setup {}
+require('ts-comments').setup {}
+require('nvim-treesitter-textobjects').setup { move = { set_jumps = true } }
 
 local textobject_moves = {
   goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer', [']a'] = '@parameter.inner' },
@@ -77,15 +77,13 @@ local function treesitter_try_attach(buf, language)
   if has_textobject_query then attach_textobject_moves(buf) end
 
   local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
-  if has_indent_query then
-    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-  end
+  if has_indent_query then vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
 end
 
 local available_parsers = require('nvim-treesitter').get_available()
 
 local function attach_language(buf, language)
-  local installed_parsers = require('nvim-treesitter').get_installed('parsers')
+  local installed_parsers = require('nvim-treesitter').get_installed 'parsers'
   if vim.tbl_contains(installed_parsers, language) then
     treesitter_try_attach(buf, language)
   elseif vim.tbl_contains(available_parsers, language) then
@@ -113,11 +111,11 @@ vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
 for _, buf in ipairs(vim.api.nvim_list_bufs()) do
   if vim.api.nvim_buf_is_loaded(buf) then
     local name = vim.api.nvim_buf_get_name(buf)
-    if name:match('%.component%.html$') or name:match('%.container%.html$') then
+    if name:match '%.component%.html$' or name:match '%.container%.html$' then
       attach_language(buf, 'angular')
     else
       local filetype = vim.bo[buf].filetype
-      if filetype ~= '' then attach_for_filetype({ buf = buf, match = filetype }) end
+      if filetype ~= '' then attach_for_filetype { buf = buf, match = filetype } end
     end
   end
 end

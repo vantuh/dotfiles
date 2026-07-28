@@ -56,13 +56,16 @@ end
 defer.on_vim_enter(function()
   local modules_loaded_ms = (vim.uv.hrtime() - nvim_start_time) / 1e6
   if #vim.api.nvim_list_uis() == 0 then return end
-  vim.defer_fn(function()
-    Snacks.notify.info(('UI ready: %.2f ms\nModules loaded: %.2f ms'):format(ui_ready_ms or 0, modules_loaded_ms), {
-      id = 'nvim-startup-time',
-      title = 'Neovim Startup',
-      timeout = 5000,
-    })
-  end, 300)
+  vim.defer_fn(
+    function()
+      Snacks.notify.info(('UI ready: %.2f ms\nModules loaded: %.2f ms'):format(ui_ready_ms or 0, modules_loaded_ms), {
+        id = 'nvim-startup-time',
+        title = 'Neovim Startup',
+        timeout = 5000,
+      })
+    end,
+    300
+  )
 end)
 
 -- vim: ts=2 sts=2 sw=2 et

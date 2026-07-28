@@ -1,6 +1,6 @@
 -- mini.nvim modules (statusline lives in ui/lualine.lua instead).
 
-vim.pack.add({ 'https://github.com/nvim-mini/mini.nvim' })
+vim.pack.add { 'https://github.com/nvim-mini/mini.nvim' }
 
 if vim.g.have_nerd_font then
   require('mini.icons').setup()
@@ -56,7 +56,7 @@ vim.keymap.set('n', '<leader>up', function()
   vim.notify('Mini pairs: ' .. (vim.g.minipairs_disable and 'disabled' or 'enabled'))
 end, { desc = 'Toggle Mini Pairs' })
 
-require('mini.ai').setup({
+require('mini.ai').setup {
   -- Avoid conflicts with built-in incremental selection on Neovim>=0.12
   mappings = {
     around_next = 'aa',
@@ -65,14 +65,14 @@ require('mini.ai').setup({
   n_lines = 500,
   custom_textobjects = {
     -- block (conditional/loop)
-    o = require('mini.ai').gen_spec.treesitter({
+    o = require('mini.ai').gen_spec.treesitter {
       a = { '@block.outer', '@conditional.outer', '@loop.outer' },
       i = { '@block.inner', '@conditional.inner', '@loop.inner' },
-    }),
+    },
     -- function
-    f = require('mini.ai').gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
+    f = require('mini.ai').gen_spec.treesitter { a = '@function.outer', i = '@function.inner' },
     -- class
-    c = require('mini.ai').gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
+    c = require('mini.ai').gen_spec.treesitter { a = '@class.outer', i = '@class.inner' },
     -- tag
     t = { '<(%w-)%f[^<%w][^<>]->.-</%1>', '^<.->().*()</[^/]->$' },
     -- digit sequence
@@ -91,8 +91,8 @@ require('mini.ai').setup({
     -- function call (with dot in name, e.g. vim.fn.foo)
     u = require('mini.ai').gen_spec.function_call(),
     -- function call without dot (e.g. foo, _bar)
-    U = require('mini.ai').gen_spec.function_call({ name_pattern = '[%w_]' }),
+    U = require('mini.ai').gen_spec.function_call { name_pattern = '[%w_]' },
   },
-})
+}
 
 require('mini.surround').setup()
