@@ -103,6 +103,7 @@ vim.keymap.set('n', '<leader>sj', function() Snacks.picker.jumps() end, { desc =
 vim.keymap.set('n', '<leader>su', function() Snacks.picker.undo() end, { desc = 'Undo History' })
 vim.keymap.set('n', '<leader>s"', function() Snacks.picker.registers() end, { desc = 'Registers' })
 vim.keymap.set('n', '<leader>sh', function() Snacks.picker.help() end, { desc = '[S]earch [H]elp' })
+vim.keymap.set('n', '<leader>sH', function() Snacks.picker.highlights() end, { desc = 'Search Highlights' })
 vim.keymap.set('n', '<leader>sk', function() Snacks.picker.keymaps() end, { desc = '[S]earch [K]eymaps' })
 vim.keymap.set('n', '<leader>sc', function() Snacks.picker.command_history() end, { desc = 'Command History' })
 vim.keymap.set('n', '<leader>sC', function() Snacks.picker.commands() end, { desc = '[S]earch [C]ommands' })
@@ -132,6 +133,8 @@ vim.keymap.set('n', '<leader>gl', function() Snacks.picker.git_log { cwd = git_r
 vim.keymap.set('n', '<leader>gb', function() Snacks.picker.git_log_line() end, { desc = 'Git Blame Line' })
 vim.keymap.set('n', '<leader>gf', function() Snacks.picker.git_log_file() end, { desc = 'Git File History' })
 vim.keymap.set('n', '<leader>gL', function() Snacks.picker.git_log() end, { desc = 'Git Log (cwd)' })
+vim.keymap.set('n', '<leader>gD', function() Snacks.picker.git_diff { staged = false } end, { desc = 'Git Diff (origin)' })
+vim.keymap.set('n', '<leader>gS', function() Snacks.picker.git_stash() end, { desc = 'Git Stash' })
 vim.keymap.set({ 'n', 'x' }, '<leader>gB', function() Snacks.gitbrowse() end, { desc = 'Git Browse (open)' })
 vim.keymap.set({ 'n', 'x' }, '<leader>gY', function()
   Snacks.gitbrowse {
