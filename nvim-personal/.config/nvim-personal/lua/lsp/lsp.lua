@@ -163,7 +163,11 @@ local servers = {
     },
   },
   tailwindcss = {
-    filetypes_exclude = { 'markdown' },
+    before_init = function(_, config)
+      config.filetypes = vim.tbl_filter(function(ft)
+        return ft ~= 'markdown'
+      end, config.filetypes or {})
+    end,
   },
   marksman = {},
   prismals = {},

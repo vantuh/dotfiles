@@ -142,6 +142,7 @@ require('conform').setup {
     scss = { 'prettier' },
     sql = { 'sqlfluff' },
     sh = { 'shfmt' },
+    fish = { 'fish_indent' },
     typescript = { 'prettier' },
     typescriptreact = { 'prettier' },
     vue = { 'prettier' },
