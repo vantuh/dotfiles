@@ -33,9 +33,13 @@ end
 ---@param ctx ConformCtx
 function prettier.has_parser(ctx)
   local ft = vim.bo[ctx.buf].filetype
-  if prettier_supported[ft] then return true end
+  if prettier_supported[ft] then
+    return true
+  end
   local ret = vim.fn.system { 'prettier', '--file-info', ctx.filename }
-  local ok, parser = pcall(function() return vim.fn.json_decode(ret).inferredParser end)
+  local ok, parser = pcall(function()
+    return vim.fn.json_decode(ret).inferredParser
+  end)
   return ok and parser and parser ~= vim.NIL
 end
 
@@ -47,7 +51,9 @@ do
     prettier[fn_name] = function(...)
       local key = vim.inspect { ... }
       cache[fn_name] = cache[fn_name] or {}
-      if cache[fn_name][key] == nil then cache[fn_name][key] = orig(...) end
+      if cache[fn_name][key] == nil then
+        cache[fn_name][key] = orig(...)
+      end
       return cache[fn_name][key]
     end
   end
@@ -58,9 +64,13 @@ end
 vim.api.nvim_create_autocmd('BufWritePre', {
   group = vim.api.nvim_create_augroup('eslint-format-on-save', { clear = true }),
   callback = function(event)
-    if vim.g.autoformat == false or vim.b[event.buf].autoformat == false then return end
+    if vim.g.autoformat == false or vim.b[event.buf].autoformat == false then
+      return
+    end
     local clients = vim.lsp.get_clients { bufnr = event.buf, name = 'eslint' }
-    if #clients == 0 then return end
+    if #clients == 0 then
+      return
+    end
     vim.lsp.buf.format { bufnr = event.buf, name = 'eslint', timeout_ms = 3000, async = false }
   end,
 })
@@ -68,7 +78,9 @@ vim.api.nvim_create_autocmd('BufWritePre', {
 require('conform').setup {
   notify_on_error = false,
   format_on_save = function(bufnr)
-    if vim.g.autoformat == false or vim.b[bufnr].autoformat == false then return nil end
+    if vim.g.autoformat == false or vim.b[bufnr].autoformat == false then
+      return nil
+    end
 
     local enabled_filetypes = {
       css = true,
@@ -95,7 +107,9 @@ require('conform').setup {
       vue = true,
       yaml = true,
     }
-    if enabled_filetypes[vim.bo[bufnr].filetype] then return { timeout_ms = 3000 } end
+    if enabled_filetypes[vim.bo[bufnr].filetype] then
+      return { timeout_ms = 3000 }
+    end
     return nil
   end,
   default_format_opts = {
@@ -103,19 +117,25 @@ require('conform').setup {
   },
   formatters = {
     prettier = {
-      condition = function(_, ctx) return prettier.has_parser(ctx) and (vim.g.lazyvim_prettier_needs_config ~= true or prettier.has_config(ctx)) end,
+      condition = function(_, ctx)
+        return prettier.has_parser(ctx) and (vim.g.lazyvim_prettier_needs_config ~= true or prettier.has_config(ctx))
+      end,
     },
     ['markdown-toc'] = {
       condition = function(_, ctx)
         for _, line in ipairs(vim.api.nvim_buf_get_lines(ctx.buf, 0, -1, false)) do
-          if line:find '<!%-%- toc %-%->' then return true end
+          if line:find '<!%-%- toc %-%->' then
+            return true
+          end
         end
         return false
       end,
     },
     ['markdownlint-cli2'] = {
       condition = function(_, ctx)
-        local diagnostics = vim.tbl_filter(function(diagnostic) return diagnostic.source == 'markdownlint' end, vim.diagnostic.get(ctx.buf))
+        local diagnostics = vim.tbl_filter(function(diagnostic)
+          return diagnostic.source == 'markdownlint'
+        end, vim.diagnostic.get(ctx.buf))
         return #diagnostics > 0
       end,
     },
@@ -151,7 +171,9 @@ require('conform').setup {
 }
 
 -- Format lives on <leader>cf (LazyVim-style) so <leader>ff can be "find files"
-vim.keymap.set({ 'n', 'v' }, '<leader>cf', function() require('conform').format { async = true } end, { desc = '[C]ode [F]ormat buffer' })
+vim.keymap.set({ 'n', 'v' }, '<leader>cf', function()
+  require('conform').format { async = true }
+end, { desc = '[C]ode [F]ormat buffer' })
 
 vim.keymap.set('n', '<leader>uf', function()
   vim.g.autoformat = not vim.g.autoformat

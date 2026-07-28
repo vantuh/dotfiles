@@ -2,8 +2,12 @@ vim.pack.add { 'https://github.com/akinsho/bufferline.nvim' }
 
 require('bufferline').setup {
   options = {
-    close_command = function(bufnr) Snacks.bufdelete(bufnr) end,
-    right_mouse_command = function(bufnr) Snacks.bufdelete(bufnr) end,
+    close_command = function(bufnr)
+      Snacks.bufdelete(bufnr)
+    end,
+    right_mouse_command = function(bufnr)
+      Snacks.bufdelete(bufnr)
+    end,
     diagnostics = 'nvim_lsp',
     diagnostics_indicator = function(_, _, diagnostics)
       local errors = diagnostics.error and ' ' .. diagnostics.error .. ' ' or ''
@@ -17,11 +21,17 @@ require('bufferline').setup {
   },
 }
 
-vim.keymap.set('n', '<leader>bd', function() Snacks.bufdelete() end, { desc = 'Delete Buffer' })
+vim.keymap.set('n', '<leader>bd', function()
+  Snacks.bufdelete()
+end, { desc = 'Delete Buffer' })
 
-vim.keymap.set('n', '<leader>bo', function() Snacks.bufdelete.other() end, { desc = 'Delete Other Buffers' })
+vim.keymap.set('n', '<leader>bo', function()
+  Snacks.bufdelete.other()
+end, { desc = 'Delete Other Buffers' })
 
-vim.keymap.set('n', '<leader>bi', function() Snacks.bufdelete.invisible() end, { desc = 'Delete Invisible Buffers' })
+vim.keymap.set('n', '<leader>bi', function()
+  Snacks.bufdelete.invisible()
+end, { desc = 'Delete Invisible Buffers' })
 
 vim.keymap.set('n', '<leader>bD', '<cmd>bdelete<CR>', { desc = 'Delete Buffer and Window' })
 

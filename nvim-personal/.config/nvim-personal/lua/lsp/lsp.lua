@@ -21,8 +21,12 @@ require('lazydev').setup {
 
 vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
 vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, { desc = 'Rename' })
-vim.keymap.set('n', '<leader>ss', function() Snacks.picker.lsp_symbols() end, { desc = 'LSP Symbols' })
-vim.keymap.set('n', '<leader>sS', function() Snacks.picker.lsp_workspace_symbols() end, { desc = 'LSP Workspace Symbols' })
+vim.keymap.set('n', '<leader>ss', function()
+  Snacks.picker.lsp_symbols()
+end, { desc = 'LSP Symbols' })
+vim.keymap.set('n', '<leader>sS', function()
+  Snacks.picker.lsp_workspace_symbols()
+end, { desc = 'LSP Workspace Symbols' })
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -35,24 +39,42 @@ vim.api.nvim_create_autocmd('LspAttach', {
     map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
     map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]tion', { 'n', 'x' })
     map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-    map('<leader>cl', function() vim.cmd 'LspInfo' end, '[L]SP Info')
+    map('<leader>cl', function()
+      vim.cmd 'LspInfo'
+    end, '[L]SP Info')
     map('gK', vim.lsp.buf.signature_help, 'Signature Help')
     map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help', 'i')
-    map('<leader>cA', function() vim.lsp.buf.code_action { context = { only = { 'source' }, diagnostics = {} } } end, 'Source Action')
-    map('<leader>co', function() vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' }, diagnostics = {} } } end, 'Organize Imports')
-    map('gai', function() Snacks.picker.lsp_incoming_calls() end, 'Incoming Calls')
-    map('gao', function() Snacks.picker.lsp_outgoing_calls() end, 'Outgoing Calls')
+    map('<leader>cA', function()
+      vim.lsp.buf.code_action { context = { only = { 'source' }, diagnostics = {} } }
+    end, 'Source Action')
+    map('<leader>co', function()
+      vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' }, diagnostics = {} } }
+    end, 'Organize Imports')
+    map('gai', function()
+      Snacks.picker.lsp_incoming_calls()
+    end, 'Incoming Calls')
+    map('gao', function()
+      Snacks.picker.lsp_outgoing_calls()
+    end, 'Outgoing Calls')
 
     -- LazyVim-style navigation via Snacks picker
-    map('gd', function() Snacks.picker.lsp_definitions() end, 'Goto Definition')
+    map('gd', function()
+      Snacks.picker.lsp_definitions()
+    end, 'Goto Definition')
     -- nowait: avoid waiting for grn/gra/grD prefix
-    vim.keymap.set('n', 'gr', function() Snacks.picker.lsp_references() end, {
+    vim.keymap.set('n', 'gr', function()
+      Snacks.picker.lsp_references()
+    end, {
       buffer = event.buf,
       desc = 'LSP: References',
       nowait = true,
     })
-    map('gI', function() Snacks.picker.lsp_implementations() end, 'Goto Implementation')
-    map('gy', function() Snacks.picker.lsp_type_definitions() end, 'Goto Type Definition')
+    map('gI', function()
+      Snacks.picker.lsp_implementations()
+    end, 'Goto Implementation')
+    map('gy', function()
+      Snacks.picker.lsp_type_definitions()
+    end, 'Goto Type Definition')
 
     local client = vim.lsp.get_client_by_id(event.data.client_id)
     if client and client:supports_method('textDocument/documentHighlight', event.buf) then
@@ -79,7 +101,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
 
     if client and client:supports_method('textDocument/inlayHint', event.buf) then
-      map('<leader>th', function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }) end, '[T]oggle Inlay [H]ints')
+      map('<leader>th', function()
+        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
+      end, '[T]oggle Inlay [H]ints')
     end
 
     if client and client:supports_method('textDocument/codeLens', event.buf) then
@@ -89,7 +113,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- Rename file via Snacks when the server supports workspace rename operations.
     if client and (client:supports_method('workspace/didRenameFiles', event.buf) or client:supports_method('workspace/willRenameFiles', event.buf)) then
-      map('<leader>cR', function() Snacks.rename.rename_file() end, 'Rename File')
+      map('<leader>cR', function()
+        Snacks.rename.rename_file()
+      end, 'Rename File')
     end
   end,
 })
@@ -99,7 +125,9 @@ local angular_ls_path = vim.fs.joinpath(vim.fn.stdpath 'data', 'mason', 'package
 
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 local blink_ok, blink = pcall(require, 'completion.blink')
-if blink_ok then capabilities = blink.get_lsp_capabilities(nil, true) end
+if blink_ok then
+  capabilities = blink.get_lsp_capabilities(nil, true)
+end
 
 -- Shared capability: workspace file-operation rename events (used by Snacks.rename).
 capabilities = vim.tbl_deep_extend('force', capabilities, {
@@ -166,7 +194,9 @@ local servers = {
   },
   tailwindcss = {
     before_init = function(_, config)
-      config.filetypes = vim.tbl_filter(function(ft) return ft ~= 'markdown' end, config.filetypes or {})
+      config.filetypes = vim.tbl_filter(function(ft)
+        return ft ~= 'markdown'
+      end, config.filetypes or {})
     end,
   },
   marksman = {},
@@ -206,7 +236,9 @@ local servers = {
 
       if client.workspace_folders then
         local path = client.workspace_folders[1].name
-        if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then return end
+        if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then
+          return
+        end
       end
 
       client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
@@ -262,7 +294,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('lsp-angularls-nav', { clear = true }),
   callback = function(event)
     local client = vim.lsp.get_client_by_id(event.data.client_id)
-    if not client or client.name ~= 'angularls' then return end
+    if not client or client.name ~= 'angularls' then
+      return
+    end
     client.server_capabilities.renameProvider = false
     client.server_capabilities.definitionProvider = false
     client.server_capabilities.referencesProvider = false
@@ -276,10 +310,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('lsp-vtsls', { clear = true }),
   callback = function(event)
     local client = vim.lsp.get_client_by_id(event.data.client_id)
-    if not client or client.name ~= 'vtsls' then return end
+    if not client or client.name ~= 'vtsls' then
+      return
+    end
 
     local buf = event.buf
-    local map = function(keys, func, desc) vim.keymap.set('n', keys, func, { buffer = buf, desc = 'LSP: ' .. desc }) end
+    local map = function(keys, func, desc)
+      vim.keymap.set('n', keys, func, { buffer = buf, desc = 'LSP: ' .. desc })
+    end
 
     -- gD: go to TypeScript source definition (not .d.ts)
     map('gD', function()
@@ -295,50 +333,36 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end, 'Goto Source Definition')
 
     -- gR: find all file references
-    map(
-      'gR',
-      function()
-        require('trouble').open {
-          mode = 'lsp_command',
-          params = {
-            command = 'typescript.findAllFileReferences',
-            arguments = { vim.uri_from_bufnr(0) },
-          },
-        }
-      end,
-      'File References'
-    )
+    map('gR', function()
+      require('trouble').open {
+        mode = 'lsp_command',
+        params = {
+          command = 'typescript.findAllFileReferences',
+          arguments = { vim.uri_from_bufnr(0) },
+        },
+      }
+    end, 'File References')
 
     -- <leader>cM: add missing imports
-    map(
-      '<leader>cM',
-      function()
-        vim.lsp.buf.code_action {
-          apply = true,
-          context = { only = { 'source.addMissingImports.ts' }, diagnostics = {} },
-        }
-      end,
-      'Add Missing Imports'
-    )
+    map('<leader>cM', function()
+      vim.lsp.buf.code_action {
+        apply = true,
+        context = { only = { 'source.addMissingImports.ts' }, diagnostics = {} },
+      }
+    end, 'Add Missing Imports')
 
     -- <leader>cD: fix all diagnostics
-    map(
-      '<leader>cD',
-      function()
-        vim.lsp.buf.code_action {
-          apply = true,
-          context = { only = { 'source.fixAll.ts' }, diagnostics = {} },
-        }
-      end,
-      'Fix All Diagnostics'
-    )
+    map('<leader>cD', function()
+      vim.lsp.buf.code_action {
+        apply = true,
+        context = { only = { 'source.fixAll.ts' }, diagnostics = {} },
+      }
+    end, 'Fix All Diagnostics')
 
     -- <leader>cV: select TypeScript workspace version
-    map(
-      '<leader>cV',
-      function() client:exec_cmd({ command = 'typescript.selectTypeScriptVersion', arguments = nil }, { bufnr = buf }) end,
-      'Select TS Workspace Version'
-    )
+    map('<leader>cV', function()
+      client:exec_cmd({ command = 'typescript.selectTypeScriptVersion', arguments = nil }, { bufnr = buf })
+    end, 'Select TS Workspace Version')
 
     -- _typescript.moveToFileRefactoring: interactive file picker (adapted from upstream).
     client.commands['_typescript.moveToFileRefactoring'] = function(command, _ctx)
@@ -369,14 +393,18 @@ vim.api.nvim_create_autocmd('LspAttach', {
         table.insert(files, 1, 'Enter new path...')
         vim.ui.select(files, {
           prompt = 'Select move destination:',
-          format_item = function(f) return vim.fn.fnamemodify(f, ':~:.') end,
+          format_item = function(f)
+            return vim.fn.fnamemodify(f, ':~:.')
+          end,
         }, function(f)
           if f and f:find '^Enter new path' then
             vim.ui.input({
               prompt = 'Enter move destination:',
               default = vim.fn.fnamemodify(fname, ':h') .. '/',
               completion = 'file',
-            }, function(newf) return newf and move(newf) end)
+            }, function(newf)
+              return newf and move(newf)
+            end)
           elseif f then
             move(f)
           end

@@ -19,8 +19,12 @@ local function run_linter(event)
     100,
     0,
     vim.schedule_wrap(function()
-      if not vim.api.nvim_buf_is_valid(buf) then return end
-      vim.api.nvim_buf_call(buf, function() lint.try_lint() end)
+      if not vim.api.nvim_buf_is_valid(buf) then
+        return
+      end
+      vim.api.nvim_buf_call(buf, function()
+        lint.try_lint()
+      end)
     end)
   )
 end
@@ -31,4 +35,6 @@ vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost', 'InsertLeave' }, {
 })
 
 -- Module loads after VimEnter, so the first buffer's BufReadPost already fired.
-if vim.bo.filetype ~= '' then run_linter { buf = vim.api.nvim_get_current_buf() } end
+if vim.bo.filetype ~= '' then
+  run_linter { buf = vim.api.nvim_get_current_buf() }
+end

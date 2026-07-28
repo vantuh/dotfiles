@@ -28,7 +28,12 @@ require('lualine').setup {
     lualine_x = {
       {
         function()
-          local names = vim.iter(vim.lsp.get_clients { bufnr = 0 }):map(function(client) return client.name end):totable()
+          local names = vim
+            .iter(vim.lsp.get_clients { bufnr = 0 })
+            :map(function(client)
+              return client.name
+            end)
+            :totable()
           table.sort(names)
           return table.concat(names, ', ')
         end,
@@ -53,7 +58,9 @@ require('lualine').setup {
       { 'location', padding = { left = 0, right = 1 } },
     },
     lualine_z = {
-      function() return ' ' .. os.date '%R' end,
+      function()
+        return ' ' .. os.date '%R'
+      end,
     },
   },
   extensions = { 'mason' },
@@ -61,5 +68,7 @@ require('lualine').setup {
 
 vim.api.nvim_create_autocmd({ 'LspAttach', 'LspDetach' }, {
   group = vim.api.nvim_create_augroup('custom-lualine-lsp', { clear = true }),
-  callback = function() require('lualine').refresh() end,
+  callback = function()
+    require('lualine').refresh()
+  end,
 })

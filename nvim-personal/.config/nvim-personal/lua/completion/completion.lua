@@ -9,7 +9,9 @@ require('luasnip').setup {}
 vim.pack.add { 'https://github.com/rafamadriz/friendly-snippets' }
 vim.api.nvim_create_autocmd('InsertEnter', {
   once = true,
-  callback = function() require('luasnip.loaders.from_vscode').lazy_load() end,
+  callback = function()
+    require('luasnip.loaders.from_vscode').lazy_load()
+  end,
 })
 
 require('completion.blink').setup {
@@ -90,7 +92,9 @@ require('completion.blink').setup {
     completion = {
       list = { selection = { preselect = false } },
       menu = {
-        auto_show = function(ctx) return vim.fn.getcmdtype() == ':' end,
+        auto_show = function(ctx)
+          return vim.fn.getcmdtype() == ':'
+        end,
       },
       ghost_text = { enabled = true },
     },

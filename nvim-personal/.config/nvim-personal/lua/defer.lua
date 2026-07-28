@@ -29,7 +29,9 @@ function M.on(events, module, opts)
     group = vim.api.nvim_create_augroup(group_name, { clear = true }),
     pattern = opts.pattern,
     once = true,
-    callback = function() require(module) end,
+    callback = function()
+      require(module)
+    end,
   })
 end
 
