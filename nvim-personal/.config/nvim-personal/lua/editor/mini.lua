@@ -21,7 +21,9 @@ pairs.setup(pair_options)
 
 local open_pair = pairs.open
 pairs.open = function(pair, neigh_pattern)
-  if vim.fn.getcmdline() ~= '' then return open_pair(pair, neigh_pattern) end
+  if vim.fn.getcmdline() ~= '' then
+    return open_pair(pair, neigh_pattern)
+  end
 
   local opening, closing = pair:sub(1, 1), pair:sub(2, 2)
   local line = vim.api.nvim_get_current_line()
@@ -33,19 +35,25 @@ pairs.open = function(pair, neigh_pattern)
     return '`\n```' .. vim.api.nvim_replace_termcodes('<Up>', true, true, true)
   end
 
-  if pair_options.skip_next and next_character ~= '' and next_character:match(pair_options.skip_next) then return opening end
+  if pair_options.skip_next and next_character ~= '' and next_character:match(pair_options.skip_next) then
+    return opening
+  end
 
   if pair_options.skip_ts then
     local ok, captures = pcall(vim.treesitter.get_captures_at_pos, 0, cursor[1] - 1, math.max(cursor[2] - 1, 0))
     for _, capture in ipairs(ok and captures or {}) do
-      if vim.tbl_contains(pair_options.skip_ts, capture.capture) then return opening end
+      if vim.tbl_contains(pair_options.skip_ts, capture.capture) then
+        return opening
+      end
     end
   end
 
   if pair_options.skip_unbalanced and next_character == closing and closing ~= opening then
     local _, opening_count = line:gsub(vim.pesc(opening), '')
     local _, closing_count = line:gsub(vim.pesc(closing), '')
-    if closing_count > opening_count then return opening end
+    if closing_count > opening_count then
+      return opening
+    end
   end
 
   return open_pair(pair, neigh_pattern)

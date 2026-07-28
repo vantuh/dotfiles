@@ -12,8 +12,12 @@ end
 
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'markdown',
-  callback = function(event) set_preview_keymap(event.buf) end,
+  callback = function(event)
+    set_preview_keymap(event.buf)
+  end,
 })
 
 -- The module itself may be loaded by the FileType event.
-if vim.bo.filetype == 'markdown' then set_preview_keymap(0) end
+if vim.bo.filetype == 'markdown' then
+  set_preview_keymap(0)
+end

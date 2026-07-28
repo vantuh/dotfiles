@@ -3,7 +3,9 @@
 vim.keymap.set({ 'i', 'n', 's' }, '<Esc>', function()
   vim.cmd 'nohlsearch'
   local ok, luasnip = pcall(require, 'luasnip')
-  if ok and luasnip.session.current_nodes[vim.api.nvim_get_current_buf()] then luasnip.unlink_current() end
+  if ok and luasnip.session.current_nodes[vim.api.nvim_get_current_buf()] then
+    luasnip.unlink_current()
+  end
   return '<Esc>'
 end, { expr = true, desc = 'Escape and clear search' })
 vim.keymap.set('i', 'jj', '<Esc>', { desc = 'Exit insert mode' })
@@ -96,13 +98,17 @@ vim.keymap.set('n', '[w', diagnostic_goto(false, 'WARN'), { desc = 'Prev Warning
 vim.keymap.set('n', '<leader>xl', function()
   local open = vim.fn.getloclist(0, { winid = 0 }).winid ~= 0
   local ok, err = pcall(open and vim.cmd.lclose or vim.cmd.lopen)
-  if not ok then vim.notify(err, vim.log.levels.ERROR) end
+  if not ok then
+    vim.notify(err, vim.log.levels.ERROR)
+  end
 end, { desc = 'Location list' })
 
 vim.keymap.set('n', '<leader>xq', function()
   local open = vim.fn.getqflist({ winid = 0 }).winid ~= 0
   local ok, err = pcall(open and vim.cmd.cclose or vim.cmd.copen)
-  if not ok then vim.notify(err, vim.log.levels.ERROR) end
+  if not ok then
+    vim.notify(err, vim.log.levels.ERROR)
+  end
 end, { desc = 'Quickfix list' })
 vim.keymap.set('n', '<leader>qq', '<cmd>qa<CR>', { desc = 'Quit All' })
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })

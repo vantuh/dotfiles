@@ -35,7 +35,9 @@ local function quickfix_item(next)
     end
 
     local ok, err = pcall(next and vim.cmd.cnext or vim.cmd.cprevious)
-    if not ok then vim.notify(err, vim.log.levels.ERROR) end
+    if not ok then
+      vim.notify(err, vim.log.levels.ERROR)
+    end
   end
 end
 

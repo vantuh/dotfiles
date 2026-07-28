@@ -36,15 +36,27 @@ require('noice').setup {
 }
 
 -- Noice keymaps (LazyVim parity)
-vim.keymap.set('n', '<leader>snl', function() require('noice').cmd 'last' end, { desc = 'Noice Last Message' })
-vim.keymap.set('n', '<leader>snh', function() require('noice').cmd 'history' end, { desc = 'Noice History' })
-vim.keymap.set('n', '<leader>sna', function() require('noice').cmd 'all' end, { desc = 'Noice All' })
-vim.keymap.set('n', '<leader>snd', function() require('noice').cmd 'dismiss' end, { desc = 'Dismiss All Messages' })
+vim.keymap.set('n', '<leader>snl', function()
+  require('noice').cmd 'last'
+end, { desc = 'Noice Last Message' })
+vim.keymap.set('n', '<leader>snh', function()
+  require('noice').cmd 'history'
+end, { desc = 'Noice History' })
+vim.keymap.set('n', '<leader>sna', function()
+  require('noice').cmd 'all'
+end, { desc = 'Noice All' })
+vim.keymap.set('n', '<leader>snd', function()
+  require('noice').cmd 'dismiss'
+end, { desc = 'Dismiss All Messages' })
 
 -- Scroll LSP / Noice popups in normal mode
 vim.keymap.set({ 'i', 's' }, '<C-f>', function()
-  if not require('noice.lsp').scroll(4) then return '<C-f>' end
+  if not require('noice.lsp').scroll(4) then
+    return '<C-f>'
+  end
 end, { silent = true, expr = true, desc = 'Scroll Forward' })
 vim.keymap.set({ 'i', 's' }, '<C-b>', function()
-  if not require('noice.lsp').scroll(-4) then return '<C-b>' end
+  if not require('noice.lsp').scroll(-4) then
+    return '<C-b>'
+  end
 end, { silent = true, expr = true, desc = 'Scroll Backward' })
