@@ -16,7 +16,6 @@ require('which-key').setup {
     { '<leader>x', group = 'Diagnosti[x]' },
     { '<leader>u', group = '[U]I/Toggle' },
     { '<leader>w', group = '[W]indows' },
-    { '<leader><Tab>', group = '[T]abs' },
     { '<leader>dp', group = '[P]rofiler' },
     { 'gr', group = 'LSP Actions', mode = { 'n' } },
   },
