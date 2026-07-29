@@ -108,7 +108,7 @@ lua/
     autosave.lua      auto-save
     guess_indent.lua  indent detection
     persistence.lua   sessions
-    dadbod.lua        DB UI
+    dadbod.lua        SQL completion only (no DBUI)
   lang/
     treesitter.lua         parsers, textobjects, autotag
     ts_expand_hover.lua    TypeScript expandable hover
