@@ -119,7 +119,7 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
-COMMON_PACKAGES="zsh tmux starship yazi pi herdr hunk nvim nvim-personal"
+COMMON_PACKAGES="zsh tmux starship yazi pi herdr hunk nvim"
 
 if [[ "$PLATFORM" == "macos" ]]; then
   PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
@@ -134,6 +134,12 @@ for agent_ext in "$HOME/.pi/agent/extensions"; do
     rm -f "$agent_ext"
   fi
 done
+
+# Remove stale nvim-personal symlink: the personal config is now the default
+# `nvim` config inside the merged `nvim` package (LazyVim lives at `lazyvim`).
+if [[ -L "$HOME/.config/nvim-personal" ]]; then
+  rm -f "$HOME/.config/nvim-personal"
+fi
 
 echo "Stowing packages: $PACKAGES"
 echo ""

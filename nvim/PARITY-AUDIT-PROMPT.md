@@ -1,17 +1,17 @@
-# LazyVim → nvim-personal parity audit prompt
+# LazyVim → personal config parity audit prompt
 
 Prompt for a fresh agent session. Run it whenever you need to check the
-current parity state between `nvim/` and `nvim-personal/`. Previous results:
+current parity state between `.config/lazyvim/` and `.config/nvim/`. Previous results:
 [PARITY-AUDIT.md](PARITY-AUDIT.md) (V1), [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) (V2).
 Project context: [AGENTS.md](AGENTS.md).
 
 ---
 
-I am migrating from `nvim/` (LazyVim setup) to my own fully controlled config `nvim-personal/`. Perform a fresh full audit of their functional parity.
+I am migrating from the LazyVim setup (`.config/lazyvim/`) to my own fully controlled config `.config/nvim/`. Perform a fresh full audit of their functional parity.
 
 ## Goal
 
-`nvim-personal` should reproduce the useful, actual functionality of the current `nvim/`, but without depending on LazyVim as a framework. The config must stay simple, explicit, and fully under my control: unnecessary parts can be skipped, and needed parts implemented directly.
+This personal config should reproduce the useful, actual functionality of the current LazyVim setup (`.config/lazyvim/`), but without depending on LazyVim as a framework. The config must stay simple, explicit, and fully under my control: unnecessary parts can be skipped, and needed parts implemented directly.
 
 Compare not just plugin lists, but also **how exactly each feature is configured and behaves**:
 
@@ -30,15 +30,15 @@ Compare not just plugin lists, but also **how exactly each feature is configured
 
 The configs live in this dotfiles repository:
 
-- `nvim/.config/nvim/` — the current LazyVim setup;
-- `nvim-personal/.config/nvim-personal/` — my own config.
+- `nvim/.config/lazyvim/` — the current LazyVim setup;
+- `nvim/.config/nvim/` — my own config.
 
-1. Read `nvim/.config/nvim/lazy-lock.json` and find the exact `LazyVim` commit.
+1. Read `nvim/.config/lazyvim/lazy-lock.json` and find the exact `LazyVim` commit.
 2. Download that exact upstream `LazyVim/LazyVim` commit into a temporary directory outside the repo, e.g. `/tmp/LazyVim-<commit>`.
 3. Analyze the effective combination of:
    - upstream LazyVim defaults;
-   - extras from `nvim/.config/nvim/lazyvim.json`;
-   - local overrides from `nvim/.config/nvim/lua/`;
+   - extras from `nvim/.config/lazyvim/lazyvim.json`;
+   - local overrides from `nvim/.config/lazyvim/lua/`;
    - the actual lockfiles of both configs.
 4. Clearly distinguish upstream defaults, enabled extras, and local overrides.
 5. **You must read [CHANGELOG.md](CHANGELOG.md)** before the audit. Treat
@@ -59,11 +59,11 @@ The configs live in this dotfiles repository:
 
 ## Language scope
 
-Compare in detail only the languages and filetypes actually present or explicitly configured in `nvim-personal` at the time of the audit.
+Compare in detail only the languages and filetypes actually present or explicitly configured in the personal config at the time of the audit.
 
 Git language support should be considered desirable: verify Treesitter/filetype behavior for `gitcommit`, `gitconfig`, `gitrebase`, `gitignore`, and `gitattributes`. Do not add `cmp-git` if the current completion engine is Blink and the upstream extra wires it only for `nvim-cmp`.
 
-For languages that exist only in `nvim/` but are absent in personal, create a separate "do not port without a separate decision" list. In particular, Go, Python, and Terraform should not be added automatically.
+For languages that exist only in `.config/lazyvim/` but are absent in personal, create a separate "do not port without a separate decision" list. In particular, Go, Python, and Terraform should not be added automatically.
 
 ## Delegation
 
@@ -121,7 +121,7 @@ After my confirmation:
 - changes must be minimal and surgical;
 - do not reformat unrelated lines or whole files unnecessarily;
 - do not change the package-manager architecture or lockfiles without need;
-- verify Lua syntax, `git diff --check`, and headless startup via `NVIM_APPNAME=nvim-personal nvim --headless`;
+- verify Lua syntax, `git diff --check`, and headless startup via `nvim --headless`;
 - for a non-trivial diff run a separate read-only review;
 - separately list everything that needs manual verification in a real TypeScript/Angular/ESLint/Git project.
 
