@@ -83,6 +83,9 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   via lazy.nvim→plugin icons (grep, marks, pack, hunk, …). Keymap `desc`
   strings aligned to LazyVim wording (snacks picker, gitsigns, pack,
   conform, trouble).
+- **Removed Snacks profiler:** dropped `<leader>dpp`/`dph` and which-key
+  `profiler` groups. Not used day-to-day; wrapping LSP funcs conflicts
+  with noice and stop can crash (`E484` on Neovim runtime path).
 
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
