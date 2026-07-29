@@ -77,6 +77,9 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 - **UI toggles unified under `<leader>u`:** dropped which-key `[T]oggle`
   group. Git blame/word-diff: `<leader>tb`/`tw` → `uB`/`uW`. Removed
   duplicate `<leader>th` inlay hints (Snacks `<leader>uh` remains).
+- **which-key icons:** group labels are plain words (`buffer`, `search`, …)
+  like LazyVim so built-in icon rules match. Bracketed `[B]uffer`-style
+  names hid icons. Explicit icons for `pack`, `␣/`, `␣:`.
 
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
