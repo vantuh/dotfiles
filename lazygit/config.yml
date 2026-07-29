@@ -2,6 +2,13 @@ gui:
   nerdFontsVersion: "3"
   showFileIcons: true
 
+# Standalone lazygit (e.g. Herdr tab): open in existing Herdr nvim via herdr-nvim-edit.
+# Inside Snacks.lazygit, snacks appends editPreset=nvim-remote ($NVIM) and that wins.
+os:
+  edit: 'herdr-nvim-edit {{filename}}'
+  editAtLine: 'herdr-nvim-edit +{{line}} {{filename}}'
+  editAtLineAndWait: 'nvim +{{line}} {{filename}}'
+
 git:
   pagers:
     - pager: delta --side-by-side --line-numbers --paging=never
@@ -9,6 +16,6 @@ customCommands:
   - key: "<c-g>"
     context: "files"
     description: "Generate commit message with pi AI"
-    command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && vim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
+    command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
     output: terminal
     loadingText: "Generating commit message..."
