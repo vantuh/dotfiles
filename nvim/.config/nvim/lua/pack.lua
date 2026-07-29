@@ -56,15 +56,15 @@ vim.api.nvim_create_autocmd('PackChanged', {
 -- Pack management (see `:help vim.pack`)
 vim.keymap.set('n', '<leader>pu', function()
   vim.pack.update()
-end, { desc = '[P]ack [U]pdate (fetch + review)' })
+end, { desc = 'Pack Update (fetch + review)' })
 
 vim.keymap.set('n', '<leader>pi', function()
   vim.pack.update(nil, { target = 'lockfile' })
-end, { desc = '[P]ack [I]nstall/sync from lockfile' })
+end, { desc = 'Pack Install/sync from lockfile' })
 
 vim.keymap.set('n', '<leader>po', function()
   vim.pack.update(nil, { offline = true })
-end, { desc = '[P]ack [O]ffline status' })
+end, { desc = 'Pack Offline status' })
 
 vim.keymap.set('n', '<leader>pc', function()
   local inactive = vim
@@ -82,8 +82,8 @@ vim.keymap.set('n', '<leader>pc', function()
   end
   vim.pack.del(inactive)
   vim.notify(('Removed %d inactive plugin(s)'):format(#inactive), vim.log.levels.INFO)
-end, { desc = '[P]ack [C]lean inactive' })
+end, { desc = 'Pack Clean inactive' })
 
 vim.keymap.set('n', '<leader>pm', function()
   vim.cmd 'Mason'
-end, { desc = '[P]ack [M]ason' })
+end, { desc = 'Mason' })

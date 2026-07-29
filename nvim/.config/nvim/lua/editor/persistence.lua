@@ -126,4 +126,4 @@ end, { desc = 'Restore Last Session' })
 
 vim.keymap.set('n', '<leader>qd', function()
   persistence.stop()
-end, { desc = 'Do Not Save Session' })
+end, { desc = "Don't Save Current Session" })
