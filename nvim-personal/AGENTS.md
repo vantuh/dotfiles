@@ -1,98 +1,100 @@
 # AGENTS.md — nvim-personal
 
-Контекст і правила для AI агентів, що працюють із цим конфігом.
+Context and rules for AI agents working with this config.
 
-## Що це і звідки
+## What it is and where it came from
 
-`nvim-personal` починався як fork
+`nvim-personal` started as a fork of
 [Kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
 (commit `f0a2108ed51547793c758d9318bad94f242b22e5`).
-Kickstart — стартова точка, **не runtime-залежність**. Від початкового
-Kickstart зараз практично нічого не залишилось: структура, плагіни,
-keymaps, LSP — все повністю переписано.
+Kickstart is a starting point, **not a runtime dependency**. Almost nothing
+of the original Kickstart remains: structure, plugins, keymaps, LSP — all
+fully rewritten.
 
-Паралельно існує `nvim/` — LazyVim-збірка (commit
-`c10948c50b18fae7f256433afdef09e432410480`). Мета: `nvim-personal` має
-відтворювати корисний функціонал LazyVim, але без залежності від нього як
-фреймворку. Все явно, все під контролем.
+A parallel `nvim/` config exists — a LazyVim setup (commit
+`c10948c50b18fae7f256433afdef09e432410480`). Goal: `nvim-personal` should
+reproduce the useful functionality of LazyVim, but without depending on it
+as a framework. Everything explicit, everything under control.
 
-## Поточний стан parity
+## Current parity status
 
-**Parity: ~98–99% щоденного функціоналу** (станом на 2026-07-28).
+**Parity: ~98–99% of daily functionality** (as of 2026-07-28).
 
-Проведено три раунди аудиту:
+Three audit rounds were performed:
 
-- [PARITY-AUDIT.md](PARITY-AUDIT.md) — V1, вихідний аналіз (parity ~88–92%)
-- [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) — V2, після Must/Should змін (parity ~94–96%)
-- Поточний стан — V3, після Optional змін (parity ~98–99%)
+- [PARITY-AUDIT.md](PARITY-AUDIT.md) — V1, initial analysis (parity ~88–92%)
+- [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) — V2, after Must/Should changes (parity ~94–96%)
+- Current state — V3, after Optional changes (parity ~98–99%)
 
-Для нового раунду аудиту — див. [PARITY-AUDIT-PROMPT.md](PARITY-AUDIT-PROMPT.md)
-(промпт для запуску в новій сесії агента).
+For a new audit round see [PARITY-AUDIT-PROMPT.md](PARITY-AUDIT-PROMPT.md)
+(prompt to run in a fresh agent session).
 
-## Що навмисно НЕ перенесено
+## What was intentionally NOT ported
 
-Це не gaps — це свідомі рішення.
+These are not gaps — they are deliberate decisions. The full list of
+deviations and iterative changes is kept in [CHANGELOG.md](CHANGELOG.md).
 
-### Folding — повністю відсутній
+### Folding — completely absent
 
-`foldenable = false`, `foldcolumn = '0'`. LazyVim налаштовує folding
+`foldenable = false`, `foldcolumn = '0'`. LazyVim configures folding
 (`foldlevel = 99`, `foldmethod = 'indent'`, `foldtext = ''`). Personal
-folding не використовує і не хоче.
+does not use folding and does not want it.
 
-### Explorer floating preview — замінено
+### Explorer floating preview — replaced
 
-LazyVim-конфіг (`nvim/`) має кастомний floating preview у sidebar explorer
-(~160 рядків, окреме float-вікно над main при hover). Personal використовує
-`preview = 'main'` — preview у головному split. Свідоме спрощення.
+The LazyVim config (`nvim/`) has a custom floating preview in the sidebar
+explorer (~160 lines, a separate float window over main on hover). Personal
+uses `preview = 'main'` — preview in the main split. A deliberate
+simplification.
 
-### Telescope — видалено
+### Telescope — removed
 
 `telescope.nvim`, `telescope-fzf-native.nvim`, `telescope-ui-select.nvim`
-прибрано з lockfile. Snacks picker (`ui_select = true`) повністю замінює
-їх. Якщо пакети ще фізично є на диску — видалити через `<leader>pc`
-(Pack Clean inactive).
+removed from the lockfile. The Snacks picker (`ui_select = true`) fully
+replaces them. If the packages still physically exist on disk — remove them
+via `<leader>pc` (Pack Clean inactive).
 
-### DAP / debugger — відсутній
+### DAP / debugger — absent
 
-Без debugger adapters, DAP keymaps і залежностей. Не використовується.
+No debugger adapters, DAP keymaps, or dependencies. Not used.
 
-### lazy.nvim — відсутній
+### lazy.nvim — absent
 
-Package manager: `vim.pack` (Neovim built-in). Ніякого LazyVim framework
-або lazy.nvim.
+Package manager: `vim.pack` (Neovim built-in). No LazyVim framework or
+lazy.nvim.
 
-### Language extras — не всі перенесено
+### Language extras — not all ported
 
-Go, Python, Terraform є в LazyVim-збірці (`nvim/`), але в personal не
-додаються автоматично. Кожна мова — окреме рішення.
+Go, Python, Terraform exist in the LazyVim setup (`nvim/`), but are not
+added automatically in personal. Each language is a separate decision.
 
-`cmp-git` не додано: completion engine — Blink, а LazyVim підключає cmp-git
-лише для nvim-cmp.
+`cmp-git` not added: the completion engine is Blink, and LazyVim wires
+cmp-git only for nvim-cmp.
 
-### sessionoptions без `folds`
+### sessionoptions without `folds`
 
-LazyVim зберігає стан фолдингу в сесіях. Personal не зберігає — folding
-вимкнено.
+LazyVim stores fold state in sessions. Personal does not — folding is
+disabled.
 
-## Що є тільки в personal (personal-only)
+## Personal-only features
 
-- `fidget.nvim` — LSP progress у statusline
-- `guess-indent.nvim` — авто-детект відступів
-- `mini.surround` — surround textobjects (у LazyVim немає)
-- Persistence safety hook — сесія не відновлюється якщо передано аргументи
-- SSH clipboard defer — clipboard ініціалізується після старту
+- `fidget.nvim` — LSP progress in the statusline
+- `guess-indent.nvim` — automatic indentation detection
+- `mini.surround` — surround textobjects (not present in LazyVim)
+- Persistence safety hook — the session is not restored if arguments were passed
+- SSH clipboard defer — clipboard is initialized after startup
 
-## Структура конфігу
+## Config structure
 
 ```
-init.lua              bootstrap: require всі модулі
+init.lua              bootstrap: require all modules
 lua/
   core/
     options.lua       vim options
-    keymaps.lua       core keymaps (не-plugin)
+    keymaps.lua       core keymaps (non-plugin)
     autocmds.lua      autocmds
   ui/
-    colorscheme.lua   тема (catppuccin)
+    colorscheme.lua   theme (catppuccin)
     lualine.lua       statusline
     bufferline.lua    tabline
     noice.lua         cmdline/messages UI
@@ -129,18 +131,21 @@ ftplugin/
 nvim-pack-lock.json   lockfile (tracked in git)
 ```
 
-## Правила для агентів
+## Rules for agents
 
-- **Редагуй тільки файли всередині репозиторію** (`~/dotfiles/nvim-personal/`),
-  ніколи напряму в `~/.config/nvim-personal/` — вони symlinked і зміни
-  зникнуть при `stow --restow`.
-- Не додавай folding, DAP, lazy.nvim.
-- Не додавай мовні extras (Go, Python, Terraform) без явного рішення.
-- Не додавай cmp-git (completion engine — Blink).
-- Перевіряй Lua syntax і headless startup після змін:
+- **Edit only files inside the repository** (`~/dotfiles/nvim-personal/`),
+  never directly in `~/.config/nvim-personal/` — they are symlinked and
+  changes will disappear on `stow --restow`.
+- **Record any config change** (adding/removing a plugin, keymap, option, or
+  behavior change) in [CHANGELOG.md](CHANGELOG.md) — iterative changes go in
+  the dated section, deliberate exclusions in the relevant section.
+- Do not add folding, DAP, or lazy.nvim.
+- Do not add language extras (Go, Python, Terraform) without an explicit decision.
+- Do not add cmp-git (completion engine is Blink).
+- Verify Lua syntax and headless startup after changes:
   ```bash
   NVIM_APPNAME=nvim-personal nvim --headless '+qa'
   ```
-- Після нетривіальних змін запусти `git diff --check`.
-- Lockfile (`nvim-pack-lock.json`) tracked. Змінюй тільки якщо свідомо
-  додаєш/видаляєш плагін.
+- After non-trivial changes run `git diff --check`.
+- The lockfile (`nvim-pack-lock.json`) is tracked. Change it only when
+  deliberately adding/removing a plugin.
