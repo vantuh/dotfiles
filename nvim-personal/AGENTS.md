@@ -92,7 +92,7 @@ lua/
     keymaps.lua       core keymaps (не-plugin)
     autocmds.lua      autocmds
   ui/
-    colorscheme.lua   тема (dracula)
+    colorscheme.lua   тема (catppuccin)
     lualine.lua       statusline
     bufferline.lua    tabline
     noice.lua         cmdline/messages UI
