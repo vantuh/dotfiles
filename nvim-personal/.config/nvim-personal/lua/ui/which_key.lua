@@ -21,3 +21,8 @@ require('which-key').setup {
     { 'gr', group = 'LSP Actions', mode = { 'n' } },
   },
 }
+
+-- Window hydra: loop through <C-w> mappings via which-key
+vim.keymap.set('n', '<C-w><space>', function()
+  require('which-key').show { keys = '<c-w>', loop = true }
+end, { desc = 'Window Hydra Mode (which-key)' })
