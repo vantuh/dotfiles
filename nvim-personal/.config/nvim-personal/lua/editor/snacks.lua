@@ -253,21 +253,6 @@ vim.keymap.set('n', '<leader>uC', function()
   Snacks.picker.colorschemes()
 end, { desc = 'Colorschemes' })
 
--- Terminal
-vim.keymap.set('n', '<leader>fT', function()
-  Snacks.terminal()
-end, { desc = 'Terminal (cwd)' })
-vim.keymap.set('n', '<leader>ft', function()
-  Snacks.terminal(nil, { cwd = git_root() })
-end, { desc = 'Terminal (Root Dir)' })
-vim.keymap.set({ 'n', 't' }, '<C-/>', function()
-  Snacks.terminal.focus(nil, { cwd = git_root() })
-end, { desc = 'Terminal (Root Dir)' })
--- Some terminals send C-/ as C-_
-vim.keymap.set({ 'n', 't' }, '<C-_>', function()
-  Snacks.terminal.focus(nil, { cwd = git_root() })
-end, { desc = 'Terminal (Root Dir)' })
-
 -- Git
 vim.keymap.set('n', '<leader>gs', function()
   Snacks.picker.git_status()
