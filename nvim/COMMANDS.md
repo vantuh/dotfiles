@@ -1,6 +1,9 @@
-# Neovim / LazyVim — шпаргалка
+# Neovim — шпаргалка
 
-`<leader>` у LazyVim = **Space** (`␣`).  
+За замовчуванням `nvim` = personal config (`~/.config/nvim`).  
+LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
+
+`<leader>` = **Space** (`␣`).  
 Приклади: `␣␣` = Space Space, `␣gs` = Space g s.
 
 Підказка в редакторі: натисни `␣` і почекай — з’явиться **which-key**.
@@ -388,7 +391,10 @@
 
 ## Нотатки
 
-- Конфіг: `~/dotfiles/nvim/.config/nvim/` (symlink → `~/.config/nvim`)
-- Свої хоткеї: `lua/config/keymaps.lua`
-- Свої плагіни: `lua/plugins/*.lua`
+- Personal (default): `~/dotfiles/nvim/.config/nvim/` → `~/.config/nvim`
+  - хоткеї: `lua/core/keymaps.lua`
+  - плагіни/модулі: `lua/{ui,editor,lang,lsp,completion}/`
+- LazyVim: `~/dotfiles/nvim/.config/lazyvim/` → `~/.config/lazyvim`
+  - хоткеї: `lua/config/keymaps.lua`
+  - плагіни: `lua/plugins/*.lua`
 - Цей файл **не** частина runtime Neovim — це довідка в репі.

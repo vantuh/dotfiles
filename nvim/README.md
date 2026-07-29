@@ -5,8 +5,7 @@ Personal Neovim 0.12+ configuration based on a snapshot of
 `f0a2108ed51547793c758d9318bad94f242b22e5`.
 
 Kickstart is source material, not a runtime dependency. The copied files are now
-owned and maintained as part of this dotfiles repository. The upstream license
-is preserved in `LICENSE.kickstart.md`.
+owned and maintained as part of this dotfiles repository.
 
 ## Run
 
