@@ -62,6 +62,28 @@ vim.api.nvim_create_autocmd('User', {
   end,
 })
 
+-- PersistenceSavePre runs too late for :qa — confirm already asked about
+-- leftover empty/Snacks buffers. Only clear `modified` here: closing windows
+-- in QuitPre aborts :qa after the explorer closes (␣qq looked like it only
+-- hid the sidebar).
+vim.api.nvim_create_autocmd('QuitPre', {
+  desc = 'Clear modified on Snacks/empty buffers so quit confirm is not shown',
+  callback = function()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_valid(buf) then
+        local name = vim.api.nvim_buf_get_name(buf)
+        local ft = vim.bo[buf].filetype
+        local bt = vim.bo[buf].buftype
+        local snacks = vim.startswith(ft, 'snacks_')
+        local empty = name == '' and ft == '' and (bt == '' or bt == 'nofile')
+        if snacks or empty then
+          vim.bo[buf].modified = false
+        end
+      end
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('User', {
   pattern = 'PersistenceLoadPost',
   callback = function()
