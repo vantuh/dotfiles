@@ -112,8 +112,6 @@ require('which-key').setup {
     { '<leader>x', group = 'diagnostics/quickfix' },
     { '<leader>u', group = 'ui' },
     { '<leader>w', group = 'windows' },
-    { '<leader>d', group = 'profiler' },
-    { '<leader>dp', group = 'profiler' },
     { 'gr', group = 'LSP Actions', mode = { 'n' }, icon = { icon = ' ', color = 'orange' } },
   },
 }
