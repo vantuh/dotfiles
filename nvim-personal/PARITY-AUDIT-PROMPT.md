@@ -1,90 +1,97 @@
 # LazyVim → nvim-personal parity audit prompt
 
-Промпт для нової сесії агента. Запускати коли потрібно перевірити
-актуальний стан parity між `nvim/` і `nvim-personal/`. Попередні результати:
+Prompt for a fresh agent session. Run it whenever you need to check the
+current parity state between `nvim/` and `nvim-personal/`. Previous results:
 [PARITY-AUDIT.md](PARITY-AUDIT.md) (V1), [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) (V2).
-Контекст проєкту: [AGENTS.md](AGENTS.md).
+Project context: [AGENTS.md](AGENTS.md).
 
 ---
 
-Я переходжу з `nvim/` (LazyVim setup) на власний повністю контрольований конфіг `nvim-personal/`. Проведи повторний повний аудит їхньої функціональної відповідності.
+I am migrating from `nvim/` (LazyVim setup) to my own fully controlled config `nvim-personal/`. Perform a fresh full audit of their functional parity.
 
-## Мета
+## Goal
 
-`nvim-personal` має відтворювати корисний фактичний функціонал поточного `nvim/`, але без залежності від LazyVim як framework. Конфіг має залишатися простим, явним і повністю під моїм контролем: зайве можна не переносити, а потрібні частини реалізовувати напряму.
+`nvim-personal` should reproduce the useful, actual functionality of the current `nvim/`, but without depending on LazyVim as a framework. The config must stay simple, explicit, and fully under my control: unnecessary parts can be skipped, and needed parts implemented directly.
 
-Порівнюй не лише списки плагінів, а й те, **як саме налаштована та поводиться кожна функція**:
+Compare not just plugin lists, but also **how exactly each feature is configured and behaves**:
 
-- встановлені плагіни та їхні налаштування;
-- options, autocmds і keymaps;
-- LSP servers, capabilities, actions і file operations;
-- completion, snippets і command-line completion;
-- formatting та linting, включно з порядком formatter-ів;
-- Treesitter parsers, filetype overrides і textobjects;
+- installed plugins and their settings;
+- options, autocmds, and keymaps;
+- LSP servers, capabilities, actions, and file operations;
+- completion, snippets, and command-line completion;
+- formatting and linting, including formatter order;
+- Treesitter parsers, filetype overrides, and textobjects;
 - diagnostics, picker, explorer, buffers, sessions, terminal;
 - Git UX;
-- UI та щоденна LazyVim muscle memory;
-- інший фактично доступний користувачу функціонал.
+- UI and everyday LazyVim muscle memory;
+- any other functionality actually available to the user.
 
-## Джерела
+## Sources
 
-Конфіги знаходяться в цьому dotfiles-репозиторії:
+The configs live in this dotfiles repository:
 
-- `nvim/.config/nvim/` — актуальний LazyVim setup;
-- `nvim-personal/.config/nvim-personal/` — власний конфіг.
+- `nvim/.config/nvim/` — the current LazyVim setup;
+- `nvim-personal/.config/nvim-personal/` — my own config.
 
-1. Прочитай `nvim/.config/nvim/lazy-lock.json` і знайди точний commit `LazyVim`.
-2. Завантаж цей точний commit upstream `LazyVim/LazyVim` у тимчасову директорію поза репозиторієм, наприклад `/tmp/LazyVim-<commit>`.
-3. Аналізуй ефективну комбінацію:
+1. Read `nvim/.config/nvim/lazy-lock.json` and find the exact `LazyVim` commit.
+2. Download that exact upstream `LazyVim/LazyVim` commit into a temporary directory outside the repo, e.g. `/tmp/LazyVim-<commit>`.
+3. Analyze the effective combination of:
    - upstream LazyVim defaults;
-   - extras із `nvim/.config/nvim/lazyvim.json`;
-   - локальні overrides із `nvim/.config/nvim/lua/`;
-   - фактичні lockfiles обох конфігів.
-4. Чітко відрізняй upstream defaults, enabled extras і локальні overrides.
+   - extras from `nvim/.config/nvim/lazyvim.json`;
+   - local overrides from `nvim/.config/nvim/lua/`;
+   - the actual lockfiles of both configs.
+4. Clearly distinguish upstream defaults, enabled extras, and local overrides.
+5. **You must read [CHANGELOG.md](CHANGELOG.md)** before the audit. Treat
+   everything documented there (deliberate exclusions, personal-only
+   features, iterative changes) as **intentional and known**: do not count it
+   as a gap, do not suggest "restoring it to match LazyVim", and do not
+   present it as an unexpected difference. If the actual behavior contradicts
+   the CHANGELOG, flag that separately as a documentation discrepancy.
 
-## Що не порівнювати і не переносити
+## What NOT to compare or port
 
-- Не порівнюй package-manager implementation: `lazy.nvim` проти `vim.pack`. Реалізація `vim.pack` у personal нас влаштовує.
-- Не додавай LazyVim framework або `lazy.nvim` у personal.
-- Не додавай folding: я навмисно його не використовую і не люблю.
-- Не додавай DAP/debugger, debug adapters, debugger keymaps або залежності: я debugger не використовую.
-- Не перенось language extras лише тому, що вони ввімкнені у старому LazyVim setup.
+- Anything already listed in [CHANGELOG.md](CHANGELOG.md) as a deliberate decision (do not re-report it as a gap).
+- Do not compare package-manager implementation: `lazy.nvim` vs `vim.pack`. The `vim.pack` implementation in personal is fine as is.
+- Do not add the LazyVim framework or `lazy.nvim` to personal.
+- Do not add folding: I deliberately do not use it and dislike it.
+- Do not add DAP/debugger, debug adapters, debugger keymaps, or dependencies: I do not use a debugger.
+- Do not port language extras just because they are enabled in the old LazyVim setup.
 
 ## Language scope
 
-Детально порівнюй лише мови та filetypes, які фактично присутні або явно налаштовані в `nvim-personal` на момент аудиту.
+Compare in detail only the languages and filetypes actually present or explicitly configured in `nvim-personal` at the time of the audit.
 
-Git language support потрібно вважати бажаним: перевір Treesitter/filetype-поведінку для `gitcommit`, `gitconfig`, `gitrebase`, `gitignore` і `gitattributes`. Не додавай `cmp-git`, якщо поточний completion engine — Blink і upstream extra підключає його лише для `nvim-cmp`.
+Git language support should be considered desirable: verify Treesitter/filetype behavior for `gitcommit`, `gitconfig`, `gitrebase`, `gitignore`, and `gitattributes`. Do not add `cmp-git` if the current completion engine is Blink and the upstream extra wires it only for `nvim-cmp`.
 
-Для мов, які є лише в `nvim/`, але відсутні в personal, створи окремий список «не переносити без окремого рішення». Зокрема Go, Python і Terraform не слід автоматично додавати.
+For languages that exist only in `nvim/` but are absent in personal, create a separate "do not port without a separate decision" list. In particular, Go, Python, and Terraform should not be added automatically.
 
-## Делегування
+## Delegation
 
-Використай окремих read-only субагентів, якщо вони доступні:
+Use separate read-only subagents if available:
 
-1. Один агент окремо розбирає точний upstream LazyVim snapshot і формує карту effective setup.
-2. Інші незалежно порівнюють:
-   - plugins та user-visible feature coverage;
+1. One agent separately dissects the exact upstream LazyVim snapshot and builds a map of the effective setup.
+2. Others independently compare:
+   - plugins and user-visible feature coverage;
    - LSP/languages/completion/formatting/linting/Treesitter;
    - core UX/options/keymaps/autocmds/UI/session/navigation.
-3. Після цього сам перевір критичні твердження агентів за локальним кодом. Не приймай їхні висновки без верифікації.
+3. Then verify the agents' critical claims yourself against the local code. Do not accept their conclusions without verification.
 
-Не доручай агентам редагувати ті самі файли паралельно.
+Do not have agents edit the same files in parallel.
 
-## Формат результату
+## Result format
 
-Підготуй один зведений звіт із такими розділами:
+Prepare a single consolidated report with these sections:
 
-1. **Executive summary** — приблизний рівень parity та найбільші відмінності.
+1. **Executive summary** — approximate parity level and the biggest differences.
 2. **Effective plugin/feature matrix**:
    - equivalent;
    - LazyVim-only;
    - personal-only;
    - same plugin, different behavior.
-3. **Language matrix** для мов у scope:
+3. **Language matrix** for the in-scope languages:
    - LSP;
    - capabilities/settings;
-   - formatter-и та їхній порядок;
+   - formatters and their order;
    - linters;
    - completion sources;
    - Treesitter parsers/filetype overrides;
@@ -96,26 +103,26 @@ Git language support потрібно вважати бажаним: перев�
    - Should;
    - Optional;
    - Do not copy.
-7. Для кожного gap наведи:
-   - фактичну поведінкову різницю;
-   - точні source paths;
-   - мінімальну рекомендовану зміну;
-   - можливі tradeoffs.
+7. For each gap provide:
+   - the actual behavioral difference;
+   - exact source paths;
+   - the minimal recommended change;
+   - possible tradeoffs.
 
-Не роби висновок лише з lockfile: наявність плагіна не означає, що він активний або налаштований.
+Do not conclude from the lockfile alone: a plugin being present does not mean it is active or configured.
 
-## Виконання змін
+## Applying changes
 
-Спочатку проведи аудит і покажи звіт. Не редагуй конфіг автоматично до мого підтвердження ranked plan.
+First do the audit and show the report. Do not edit the config automatically until I confirm a ranked plan.
 
-Після мого підтвердження:
+After my confirmation:
 
-- роби лише погоджені Must/Should/Optional пункти;
-- зміни мають бути мінімальними та хірургічними;
-- не форматуй сторонні рядки або цілі файли без необхідності;
-- не змінюй package-manager architecture чи lockfiles без потреби;
-- перевір Lua syntax, `git diff --check` і headless startup через `NVIM_APPNAME=nvim-personal nvim --headless`;
-- для нетривіального diff запусти окремий read-only review;
-- окремо переліч усе, що потребує ручної перевірки у реальному TypeScript/Angular/ESLint/Git проєкті.
+- do only the agreed Must/Should/Optional items;
+- changes must be minimal and surgical;
+- do not reformat unrelated lines or whole files unnecessarily;
+- do not change the package-manager architecture or lockfiles without need;
+- verify Lua syntax, `git diff --check`, and headless startup via `NVIM_APPNAME=nvim-personal nvim --headless`;
+- for a non-trivial diff run a separate read-only review;
+- separately list everything that needs manual verification in a real TypeScript/Angular/ESLint/Git project.
 
 ---
