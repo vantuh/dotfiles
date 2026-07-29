@@ -56,6 +56,9 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   with the explorer open does not ask to save Untitled. Do not close windows
   there — that aborted `:qa` after only the sidebar closed (`␣qq`). Window
   cleanup stays on `PersistenceSavePre`.
+- **Removed dadbod UI:** dropped `vim-dadbod-ui` and `<leader>D`. Kept
+  `vim-dadbod` + `vim-dadbod-completion` for SQL Blink completion only (no
+  connection sidebar). Loads on `sql`/`mysql`/`plsql` FileType.
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).

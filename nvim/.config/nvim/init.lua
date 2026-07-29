@@ -14,6 +14,7 @@ defer.on({ 'BufReadPre', 'BufNewFile' }, 'editor.guess_indent')
 defer.on('InsertEnter', 'editor.autosave')
 defer.on('FileType', 'lang.markdown_preview', { pattern = 'markdown' })
 defer.on('FileType', 'lang.render_markdown', { pattern = { 'markdown', 'markdown.mdx' } })
+defer.on('FileType', 'editor.dadbod', { pattern = { 'sql', 'mysql', 'plsql' } })
 
 -- Core UX required before the first screen or VimEnter session restoration.
 require 'ui.colorscheme'
@@ -43,7 +44,6 @@ local after_ui = {
   'ui.which_key',
   'lsp.trouble',
   'editor.grug_far',
-  'editor.dadbod',
   'lsp.conform',
   'editor.flash',
   'ui.ui_extras',
