@@ -27,6 +27,8 @@ require('snacks').setup {
   scope = { enabled = true },
   words = { enabled = true },
   input = { enabled = true },
+  bigfile = { enabled = true },
+  quickfile = { enabled = true },
   -- Top-right toasts (replaces the bottom message row together with noice + cmdheight=0)
   notifier = {
     enabled = true,
