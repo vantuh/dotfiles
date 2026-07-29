@@ -52,6 +52,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 - **Docs:** refresh paths after the package merge — `COMMANDS.md` notes
   personal vs LazyVim layouts; drop missing `LICENSE.kickstart.md` /
   `PARITY-AUDIT*.md` links from README / AGENTS / audit prompt.
+- **Quit:** on `QuitPre`, clear `modified` on empty/Snacks buffers so `:qa`
+  with the explorer open does not ask to save Untitled. Do not close windows
+  there — that aborted `:qa` after only the sidebar closed (`␣qq`). Window
+  cleanup stays on `PersistenceSavePre`.
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).
