@@ -88,6 +88,22 @@ require('snacks').setup {
           sort_empty = true,
         },
       },
+      scratch = {
+        win = {
+          input = {
+            keys = {
+              ['<c-a>'] = { 'scratch_new', mode = { 'n', 'i' } },
+              ['<c-d>'] = { 'scratch_delete', mode = { 'n', 'i' } },
+            },
+          },
+          list = {
+            keys = {
+              ['<c-a>'] = 'scratch_new',
+              ['<c-d>'] = 'scratch_delete',
+            },
+          },
+        },
+      },
     },
   },
 }
@@ -338,3 +354,11 @@ Snacks.toggle.profiler_highlights():map '<leader>dph'
 Snacks.toggle.inlay_hints():map '<leader>uh'
 Snacks.toggle.zoom():map('<leader>wm'):map '<leader>uZ'
 Snacks.toggle.zen():map '<leader>uz'
+
+-- Scratch buffers
+vim.keymap.set('n', '<leader>.', function()
+  Snacks.scratch()
+end, { desc = 'Toggle Scratch Buffer' })
+vim.keymap.set('n', '<leader>S', function()
+  Snacks.scratch.select()
+end, { desc = 'Select Scratch Buffer' })
