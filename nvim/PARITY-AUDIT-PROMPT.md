@@ -1,9 +1,9 @@
 # LazyVim → personal config parity audit prompt
 
 Prompt for a fresh agent session. Run it whenever you need to check the
-current parity state between `.config/lazyvim/` and `.config/nvim/`. Previous results:
-[PARITY-AUDIT.md](PARITY-AUDIT.md) (V1), [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) (V2).
-Project context: [AGENTS.md](AGENTS.md).
+current parity state between `.config/lazyvim/` and `.config/nvim/`.
+Project context: [AGENTS.md](AGENTS.md). Intentional differences:
+[CHANGELOG.md](CHANGELOG.md).
 
 ---
 

@@ -21,11 +21,8 @@ as a framework. Everything explicit, everything under control.
 
 **Parity: ~98–99% of daily functionality** (as of 2026-07-28).
 
-Three audit rounds were performed:
-
-- [PARITY-AUDIT.md](PARITY-AUDIT.md) — V1, initial analysis (parity ~88–92%)
-- [PARITY-AUDIT-V2.md](PARITY-AUDIT-V2.md) — V2, after Must/Should changes (parity ~94–96%)
-- Current state — V3, after Optional changes (parity ~98–99%)
+Three audit rounds were performed (V1 ~88–92%, V2 ~94–96%, V3 current ~98–99%).
+Earlier written audit reports are not kept in the repo.
 
 For a new audit round see [PARITY-AUDIT-PROMPT.md](PARITY-AUDIT-PROMPT.md)
 (prompt to run in a fresh agent session).

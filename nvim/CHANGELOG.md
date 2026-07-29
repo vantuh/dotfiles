@@ -49,6 +49,9 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   moved to `.config/lazyvim/` (appname `lazyvim`, run via `nvim-lazy`). The
   separate `nvim-personal` package and the `NVIM_APPNAME=nvim-personal` alias
   were removed.
+- **Docs:** refresh paths after the package merge — `COMMANDS.md` notes
+  personal vs LazyVim layouts; drop missing `LICENSE.kickstart.md` /
+  `PARITY-AUDIT*.md` links from README / AGENTS / audit prompt.
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).
