@@ -1,18 +1,19 @@
-# AGENTS.md — nvim-personal
+# AGENTS.md — nvim (personal config)
 
 Context and rules for AI agents working with this config.
 
 ## What it is and where it came from
 
-`nvim-personal` started as a fork of
+This config (the default `nvim`, at `.config/nvim/`) started as a fork of
 [Kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim)
 (commit `f0a2108ed51547793c758d9318bad94f242b22e5`).
 Kickstart is a starting point, **not a runtime dependency**. Almost nothing
 of the original Kickstart remains: structure, plugins, keymaps, LSP — all
 fully rewritten.
 
-A parallel `nvim/` config exists — a LazyVim setup (commit
-`c10948c50b18fae7f256433afdef09e432410480`). Goal: `nvim-personal` should
+A parallel LazyVim setup lives beside it in the same package at
+`.config/lazyvim/` (appname `lazyvim`, commit
+`c10948c50b18fae7f256433afdef09e432410480`). Goal: this personal config should
 reproduce the useful functionality of LazyVim, but without depending on it
 as a framework. Everything explicit, everything under control.
 
@@ -42,7 +43,7 @@ does not use folding and does not want it.
 
 ### Explorer floating preview — replaced
 
-The LazyVim config (`nvim/`) has a custom floating preview in the sidebar
+The LazyVim config (`.config/lazyvim/`) has a custom floating preview in the sidebar
 explorer (~160 lines, a separate float window over main on hover). Personal
 uses `preview = 'main'` — preview in the main split. A deliberate
 simplification.
@@ -65,7 +66,7 @@ lazy.nvim.
 
 ### Language extras — not all ported
 
-Go, Python, Terraform exist in the LazyVim setup (`nvim/`), but are not
+Go, Python, Terraform exist in the LazyVim setup (`.config/lazyvim/`), but are not
 added automatically in personal. Each language is a separate decision.
 
 `cmp-git` not added: the completion engine is Blink, and LazyVim wires
@@ -133,8 +134,8 @@ nvim-pack-lock.json   lockfile (tracked in git)
 
 ## Rules for agents
 
-- **Edit only files inside the repository** (`~/dotfiles/nvim-personal/`),
-  never directly in `~/.config/nvim-personal/` — they are symlinked and
+- **Edit only files inside the repository** (`~/dotfiles/nvim/.config/nvim/`),
+  never directly in `~/.config/nvim/` — they are symlinked and
   changes will disappear on `stow --restow`.
 - **Record any config change** (adding/removing a plugin, keymap, option, or
   behavior change) in [CHANGELOG.md](CHANGELOG.md) — iterative changes go in
@@ -144,7 +145,8 @@ nvim-pack-lock.json   lockfile (tracked in git)
 - Do not add cmp-git (completion engine is Blink).
 - Verify Lua syntax and headless startup after changes:
   ```bash
-  NVIM_APPNAME=nvim-personal nvim --headless '+qa'
+  nvim --headless '+qa'                        # personal (default)
+  NVIM_APPNAME=lazyvim nvim --headless '+qa'   # LazyVim
   ```
 - After non-trivial changes run `git diff --check`.
 - The lockfile (`nvim-pack-lock.json`) is tracked. Change it only when

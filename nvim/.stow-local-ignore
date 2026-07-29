@@ -1,0 +1,6 @@
+# Repo docs — keep in the package, do not symlink into $HOME
+^/AGENTS\.md$
+^/CHANGELOG\.md$
+^/COMMANDS\.md$
+^/PARITY-AUDIT-PROMPT\.md$
+^/README\.md$

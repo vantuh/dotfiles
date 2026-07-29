@@ -11,13 +11,13 @@ is preserved in `LICENSE.kickstart.md`.
 ## Run
 
 ```sh
-nvp
-# or
-NVIM_APPNAME=nvim-personal nvim
+nvim
 ```
 
-`NVIM_APPNAME` keeps config, plugins, state, and cache separate from the main
-LazyVim installation.
+This is now the default Neovim config (`~/.config/nvim`). The previous LazyVim
+setup lives at `~/.config/lazyvim` — run it with `nvim-lazy`
+(`NVIM_APPNAME=lazyvim nvim`). Separate `NVIM_APPNAME` values keep config,
+plugins, state, and cache of the two setups apart.
 
 ## Plugin management
 

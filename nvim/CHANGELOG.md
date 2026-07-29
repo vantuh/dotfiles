@@ -1,8 +1,8 @@
-# CHANGELOG — nvim-personal
+# CHANGELOG — nvim (personal config)
 
 History of deliberate deviations of this config from the baseline LazyVim
-setup (`nvim/`, commit `c10948c50b18fae7f256433afdef09e432410480`) and of
-iterative changes in `nvim-personal`.
+setup (`.config/lazyvim/`, commit `c10948c50b18fae7f256433afdef09e432410480`)
+and of iterative changes in this config.
 
 **Purpose:** a single source of truth for how personal intentionally differs
 from LazyVim. The parity audit must cross-check against this file and must
@@ -43,6 +43,12 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-07-29
 
+- **Became the default `nvim` config.** The two Neovim setups were merged into
+  a single stow package `nvim/`: this personal config now lives at
+  `.config/nvim/` (default `nvim`, `~/.config/nvim`), and the old LazyVim setup
+  moved to `.config/lazyvim/` (appname `lazyvim`, run via `nvim-lazy`). The
+  separate `nvim-personal` package and the `NVIM_APPNAME=nvim-personal` alias
+  were removed.
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).
