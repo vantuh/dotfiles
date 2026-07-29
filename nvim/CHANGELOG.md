@@ -59,6 +59,11 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 - **Removed dadbod UI:** dropped `vim-dadbod-ui` and `<leader>D`. Kept
   `vim-dadbod` + `vim-dadbod-completion` for SQL Blink completion only (no
   connection sidebar). Loads on `sql`/`mysql`/`plsql` FileType.
+- **postgres_lsp:** enable Supabase Postgres Language Server for `.sql`
+  (`postgres-language-server` via Mason). Root markers include `.git` so it
+  attaches without a project `postgres-language-server.jsonc`.
+- **Removed `<leader>K` (keywordprg).** Escape hatch for original `K`/`man`
+  after TS hover remapped `K`; unused.
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).

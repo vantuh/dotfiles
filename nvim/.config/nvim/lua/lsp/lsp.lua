@@ -230,6 +230,12 @@ local servers = {
       },
     },
   },
+  -- Postgres SQL LSP (mason: postgres-language-server). Default root marker is only
+  -- postgres-language-server.jsonc; allow .git so migrations attach in normal repos.
+  postgres_lsp = {
+    root_markers = { 'postgres-language-server.jsonc', '.git' },
+    workspace_required = false,
+  },
   lua_ls = {
     on_init = function(client)
       client.server_capabilities.documentFormattingProvider = false
