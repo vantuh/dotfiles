@@ -8,7 +8,6 @@ require('which-key').setup {
     { '<leader>f', group = '[F]ind' },
     { '<leader>c', group = '[C]ode' },
     { '<leader>b', group = '[B]uffer' },
-    { '<leader>t', group = '[T]oggle' },
     { '<leader>g', group = '[G]it' },
     { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
     { '<leader>q', group = '[Q]uit/session' },
