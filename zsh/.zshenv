@@ -11,7 +11,9 @@ fi
 # Environment
 export LANG=en_US.UTF-8
 export LC_TIME=uk_UA.UTF-8
-export EDITOR='code'
+export EDITOR='nvim'
+export VISUAL='nvim'
+export GIT_EDITOR='nvim'
 
 # Tool env
 export NVM_COMPLETION=true
