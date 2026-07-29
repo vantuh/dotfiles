@@ -173,7 +173,7 @@ require('conform').setup {
 -- Format lives on <leader>cf (LazyVim-style) so <leader>ff can be "find files"
 vim.keymap.set({ 'n', 'v' }, '<leader>cf', function()
   require('conform').format { async = true }
-end, { desc = '[C]ode [F]ormat buffer' })
+end, { desc = 'Format Buffer' })
 
 vim.keymap.set('n', '<leader>uf', function()
   vim.g.autoformat = not vim.g.autoformat

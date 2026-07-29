@@ -79,7 +79,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   duplicate `<leader>th` inlay hints (Snacks `<leader>uh` remains).
 - **which-key icons:** group labels are plain words (`buffer`, `search`, …)
   like LazyVim so built-in icon rules match. Bracketed `[B]uffer`-style
-  names hid icons. Explicit icons for `pack`, `␣/`, `␣:`.
+  names hid icons. Extra `icons.rules` cover leftovers that LazyVim gets
+  via lazy.nvim→plugin icons (grep, marks, pack, hunk, …). Keymap `desc`
+  strings aligned to LazyVim wording (snacks picker, gitsigns, pack,
+  conform, trouble).
 
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
