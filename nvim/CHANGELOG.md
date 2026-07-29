@@ -64,6 +64,20 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   attaches without a project `postgres-language-server.jsonc`.
 - **Removed `<leader>K` (keywordprg).** Escape hatch for original `K`/`man`
   after TS hover remapped `K`; unused.
+- **Zoom toggle:** only `<leader>uZ` (UI). Dropped duplicate `<leader>wm`
+  (LazyVim had both).
+- **Todo keymaps (LazyVim parity):** `<leader>st`/`<leader>sT` = Snacks Todo
+  picker; `<leader>xt`/`<leader>xT` = Trouble. Removed mistaken
+  `<leader>st` → Trouble override from `trouble.lua`.
+- **Buffers:** keep both cycle aliases — `<S-h>`/`<S-l>` and `[b`/`]b`.
+- **Tab pages unused:** removed `<leader><Tab>*` keymaps and which-key
+  `[T]abs` group. No tab-page plugin was installed (bufferline is buffers).
+  Kept `tabdo` resize autocmd, `sessionoptions` `tabpages`, and UI toggle
+  for `showtabline` (controls bufferline visibility).
+- **UI toggles unified under `<leader>u`:** dropped which-key `[T]oggle`
+  group. Git blame/word-diff: `<leader>tb`/`tw` → `uB`/`uW`. Removed
+  duplicate `<leader>th` inlay hints (Snacks `<leader>uh` remains).
+
 - **Theme:** `dracula` → `catppuccin` (mocha). The LazyVim setup stays on dracula.
 - **Scratch buffers enabled:** `<leader>.` (toggle), `<leader>S` (select).
   Previously absent in personal (in LazyVim — `util.lua`).
