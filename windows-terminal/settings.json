@@ -45,7 +45,7 @@
   ],
   "profiles": {
     "defaults": {
-      "colorScheme": "Dracula",
+      "colorScheme": "Catppuccin Mocha",
       "fontSize": 11,
       "cellHeight": "1.5"
     },
@@ -76,27 +76,27 @@
   },
   "schemes": [
     {
-      "name": "Dracula",
-      "cursorColor": "#F8F8F2",
-      "selectionBackground": "#44475A",
-      "background": "#282A36",
-      "foreground": "#F8F8F2",
-      "black": "#21222C",
-      "blue": "#BD93F9",
-      "cyan": "#8BE9FD",
-      "green": "#50FA7B",
-      "purple": "#FF79C6",
-      "red": "#FF5555",
-      "white": "#F8F8F2",
-      "yellow": "#F1FA8C",
-      "brightBlack": "#6272A4",
-      "brightBlue": "#D6ACFF",
-      "brightCyan": "#A4FFFF",
-      "brightGreen": "#69FF94",
-      "brightPurple": "#FF92DF",
-      "brightRed": "#FF6E6E",
-      "brightWhite": "#FFFFFF",
-      "brightYellow": "#FFFFA5"
+      "name": "Catppuccin Mocha",
+      "cursorColor": "#F5E0DC",
+      "selectionBackground": "#585B70",
+      "background": "#1E1E2E",
+      "foreground": "#CDD6F4",
+      "black": "#45475A",
+      "blue": "#89B4FA",
+      "cyan": "#94E2D5",
+      "green": "#A6E3A1",
+      "purple": "#F5C2E7",
+      "red": "#F38BA8",
+      "white": "#BAC2DE",
+      "yellow": "#F9E2AF",
+      "brightBlack": "#585B70",
+      "brightBlue": "#89B4FA",
+      "brightCyan": "#94E2D5",
+      "brightGreen": "#A6E3A1",
+      "brightPurple": "#F5C2E7",
+      "brightRed": "#F38BA8",
+      "brightWhite": "#A6ADC8",
+      "brightYellow": "#F9E2AF"
     }
   ],
   "themes": []
