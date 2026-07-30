@@ -75,12 +75,15 @@ function main(): void {
   const ws = focused.workspace_id;
   if (!ws) fail("focused pane has no workspace_id");
 
-  execFileSync("herdr", ["tab", "rename", currentTab, "Orchestrator"], quiet);
+  execFileSync("herdr", ["tab", "rename", currentTab, "agent"], quiet);
 
-  const lazygitPane = createTab(ws, "lazygit");
+  const nvimPane = createTab(ws, "nvim");
+  execFileSync("herdr", ["pane", "run", nvimPane, "nvim"], quiet);
+
+  const lazygitPane = createTab(ws, "lg");
   execFileSync("herdr", ["pane", "run", lazygitPane, "lg"], quiet);
 
-  const hunkPane = createTab(ws, "hunk_review");
+  const hunkPane = createTab(ws, "hunk");
   execFileSync("herdr", ["pane", "run", hunkPane, "hunk diff --watch"], quiet);
 
   const testsPane = createTab(ws, "tests");
