@@ -41,6 +41,13 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ## Iterative changes
 
+### 2026-07-30
+
+- **herdr-nvim-edit:** opens files in an existing Herdr nvim pane (same git
+  root preferred) via `Ctrl-\ Ctrl-n` + `:edit` (not `Esc` — Esc cancels
+  snacks explorer). Standalone Herdr lazygit uses it via `lazygit/config.yml`.
+  Snacks `<leader>gg` keeps default `nvim-remote`.
+
 ### 2026-07-29
 
 - **Became the default `nvim` config.** The two Neovim setups were merged into
