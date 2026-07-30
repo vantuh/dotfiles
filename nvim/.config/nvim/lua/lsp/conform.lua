@@ -1,28 +1,48 @@
 vim.pack.add { 'https://github.com/stevearc/conform.nvim' }
 
+-- Single source of truth: which formatters run for each filetype.
+-- Two lookup sets are derived from this table below:
+--   format_on_save_ft — every ft here formats on save
+--   prettier_ft       — fts where prettier is a known parser, so we can skip
+--                        the `prettier --file-info` shell probe
+local formatters_by_ft = {
+  css = { 'prettier' },
+  graphql = { 'prettier' },
+  handlebars = { 'prettier' },
+  html = { 'prettier' },
+  htmlangular = { 'prettier' },
+  javascript = { 'prettier' },
+  javascriptreact = { 'prettier' },
+  json = { 'prettier' },
+  jsonc = { 'prettier' },
+  less = { 'prettier' },
+  lua = { 'stylua' },
+  markdown = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
+  ['markdown.mdx'] = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
+  mysql = { 'sqlfluff' },
+  plsql = { 'sqlfluff' },
+  scss = { 'prettier' },
+  sql = { 'sqlfluff' },
+  sh = { 'shfmt' },
+  fish = { 'fish_indent' },
+  typescript = { 'prettier' },
+  typescriptreact = { 'prettier' },
+  vue = { 'prettier' },
+  yaml = { 'prettier' },
+}
+
+local format_on_save_ft = {}
+local prettier_ft = {}
+for ft, formatters in pairs(formatters_by_ft) do
+  format_on_save_ft[ft] = true
+  if vim.tbl_contains(formatters, 'prettier') then
+    prettier_ft[ft] = true
+  end
+end
+
 -- Prettier condition (adapted from LazyVim extras/formatting/prettier.lua)
 ---@alias ConformCtx {buf: number, filename: string, dirname: string}
 local prettier = {}
-
-local prettier_supported = {
-  css = true,
-  graphql = true,
-  handlebars = true,
-  html = true,
-  htmlangular = true,
-  javascript = true,
-  javascriptreact = true,
-  json = true,
-  jsonc = true,
-  less = true,
-  markdown = true,
-  ['markdown.mdx'] = true,
-  scss = true,
-  typescript = true,
-  typescriptreact = true,
-  vue = true,
-  yaml = true,
-}
 
 ---@param ctx ConformCtx
 function prettier.has_config(ctx)
@@ -33,7 +53,7 @@ end
 ---@param ctx ConformCtx
 function prettier.has_parser(ctx)
   local ft = vim.bo[ctx.buf].filetype
-  if prettier_supported[ft] then
+  if prettier_ft[ft] then
     return true
   end
   local ret = vim.fn.system { 'prettier', '--file-info', ctx.filename }
@@ -66,32 +86,7 @@ require('conform').setup {
       return nil
     end
 
-    local enabled_filetypes = {
-      css = true,
-      fish = true,
-      graphql = true,
-      handlebars = true,
-      html = true,
-      htmlangular = true,
-      javascript = true,
-      javascriptreact = true,
-      json = true,
-      jsonc = true,
-      less = true,
-      lua = true,
-      markdown = true,
-      ['markdown.mdx'] = true,
-      mysql = true,
-      plsql = true,
-      scss = true,
-      sh = true,
-      sql = true,
-      typescript = true,
-      typescriptreact = true,
-      vue = true,
-      yaml = true,
-    }
-    if enabled_filetypes[vim.bo[bufnr].filetype] then
+    if format_on_save_ft[vim.bo[bufnr].filetype] then
       return { timeout_ms = 3000 }
     end
     return nil
@@ -127,31 +122,7 @@ require('conform').setup {
       args = { 'format', '--dialect=ansi', '-' },
     },
   },
-  formatters_by_ft = {
-    css = { 'prettier' },
-    graphql = { 'prettier' },
-    handlebars = { 'prettier' },
-    html = { 'prettier' },
-    htmlangular = { 'prettier' },
-    javascript = { 'prettier' },
-    javascriptreact = { 'prettier' },
-    json = { 'prettier' },
-    jsonc = { 'prettier' },
-    less = { 'prettier' },
-    lua = { 'stylua' },
-    markdown = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
-    ['markdown.mdx'] = { 'prettier', 'markdownlint-cli2', 'markdown-toc' },
-    mysql = { 'sqlfluff' },
-    plsql = { 'sqlfluff' },
-    scss = { 'prettier' },
-    sql = { 'sqlfluff' },
-    sh = { 'shfmt' },
-    fish = { 'fish_indent' },
-    typescript = { 'prettier' },
-    typescriptreact = { 'prettier' },
-    vue = { 'prettier' },
-    yaml = { 'prettier' },
-  },
+  formatters_by_ft = formatters_by_ft,
 }
 
 -- Format lives on <leader>cf (LazyVim-style) so <leader>ff can be "find files"
