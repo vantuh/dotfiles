@@ -89,7 +89,9 @@ function findLabeledTab(ws: string, label: string): Tab | null {
   const tabs = listed?.result?.tabs;
   if (!Array.isArray(tabs)) return null;
   const want = label.toLowerCase();
-  const matches = tabs.filter((t) => String(t.label || "").toLowerCase() === want);
+  const matches = tabs.filter(
+    (t) => String(t.label || "").toLowerCase() === want,
+  );
   if (!matches.length) return null;
   matches.sort((a, b) => a.tab_id.localeCompare(b.tab_id));
   return matches[0]!;
