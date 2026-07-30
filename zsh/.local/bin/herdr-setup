@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Thin shim: full logic lives in scripts/herdr-setup.ts (nub).
+set -euo pipefail
+
+_self=$(realpath "$0" 2>/dev/null || echo "$0")
+_dotfiles=$(cd "$(dirname "$_self")/../../.." && pwd)
+_ts="$_dotfiles/scripts/herdr-setup.ts"
+
+NUB="${NUB:-$(command -v nub 2>/dev/null || true)}"
+if [[ -z "$NUB" && -x "${HOME}/.nub/bin/nub" ]]; then
+  NUB="${HOME}/.nub/bin/nub"
+fi
+if [[ -z "$NUB" ]]; then
+  echo "herdr-setup: nub not found (https://nubjs.com/)" >&2
+  exit 1
+fi
+
+exec "$NUB" "$_ts" "$@"
