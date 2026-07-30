@@ -43,6 +43,12 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-07-30
 
+- **Removed ESLint format-on-save.** Dropped the synchronous `BufWritePre`
+  `vim.lsp.buf.format { name = 'eslint', async = false, timeout_ms = 3000 }`
+  (`lua/lsp/conform.lua`). It blocked the UI thread on every `:w` in TS files
+  and surfaced "LSP timeout" when the ESLint server was slow. Prettier stays
+  the sole formatter; ESLint remains a linter (fix manually via `<leader>ca`
+  / `source.fixAll`). Diverges from LazyVim, which runs ESLint fix-on-save.
 - **Removed scratch buffers:** dropped `<leader>.` (toggle) and `<leader>S`
   (select), the scratch picker `<C-a>`/`<C-d>` keymaps, and the which-key
   `scratch` icon rule. Not used. (Reverts the "Scratch buffers enabled" /
