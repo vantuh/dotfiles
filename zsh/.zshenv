@@ -43,6 +43,7 @@ export PATH="$HOME/.nvm/current/bin:$PATH"
 export PATH="$BUN_INSTALL/bin:$PATH"
 export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.nub/bin:$PATH"
 
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
