@@ -25,6 +25,6 @@
   "subagents": {
     "disableBuiltins": true
   },
-  "showHardwareCursor": true,
+  "showHardwareCursor": false,
   "collapseChangelog": true
 }
