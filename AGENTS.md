@@ -33,4 +33,5 @@ Brewfile            Homebrew dependencies
 - When adding a new stow package, add it to `COMMON_PACKAGES` or platform-specific list in `install.sh`.
 - When adding a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add targets to `agents/links.json`.
 - Keep shell scripts POSIX-compatible where possible; bash-specific features are fine in `.sh` files with `#!/bin/bash`.
+- Don't write executable helper scripts in Python. For anything more than a couple of lines, use nub + TypeScript (`#!/usr/bin/env nub` in `scripts/*.ts`, with a thin bash shim in `zsh/.local/bin/` — see `scripts/herdr-*.ts`). For trivial one-liners, use Node.js + JS (`node -e '...'`).
 - Test `install.sh` changes with `--dry-run` flag on `link.sh` before committing.
