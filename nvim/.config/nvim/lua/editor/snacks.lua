@@ -22,7 +22,7 @@ end)
 
 require('snacks').setup {
   explorer = { enabled = true },
-  lazygit = { enabled = true },
+  lazygit = { enabled = false },
   indent = { enabled = true },
   scope = { enabled = true },
   words = { enabled = true },
@@ -290,23 +290,30 @@ vim.keymap.set({ 'n', 'x' }, '<leader>gY', function()
   }
 end, { desc = 'Git Browse (copy URL)' })
 vim.keymap.set('n', '<leader>gg', function()
-  Snacks.lazygit { cwd = git_root() }
-end, { desc = 'Lazygit (Root Dir)' })
-vim.keymap.set('n', '<leader>gG', function()
-  Snacks.lazygit()
-end, { desc = 'Lazygit (cwd)' })
+  if vim.env.HERDR_ENV ~= '1' then
+    vim.notify('Not in Herdr — open lazygit in a terminal tab (lg)', vim.log.levels.WARN)
+    return
+  end
+  local cwd = git_root() or vim.uv.cwd() or vim.fn.getcwd()
+  vim.fn.jobstart({ 'herdr-focus-tab', 'lg', '--cwd', cwd, '--', 'lazygit' }, { detach = true })
+end, { desc = 'Lazygit (Herdr tab lg)' })
 vim.keymap.set('n', '<leader>gH', function()
-  Snacks.terminal.toggle({ 'hunk', 'diff', '--watch' }, {
-    cwd = git_root() or vim.uv.cwd(),
-    win = {
-      position = 'float',
-      width = 0.95,
-      height = 0.9,
-      border = 'rounded',
-      backdrop = 60,
-    },
-  })
-end, { desc = 'Hunk Review' })
+  if vim.env.HERDR_ENV ~= '1' then
+    vim.notify('Not in Herdr — open hunk in a terminal tab (hunk)', vim.log.levels.WARN)
+    return
+  end
+  local cwd = git_root() or vim.uv.cwd() or vim.fn.getcwd()
+  vim.fn.jobstart({
+    'herdr-focus-tab',
+    'hunk',
+    '--cwd',
+    cwd,
+    '--',
+    'hunk',
+    'diff',
+    '--watch',
+  }, { detach = true })
+end, { desc = 'Hunk Review (Herdr tab hunk)' })
 
 -- Toggles
 Snacks.toggle.option('spell', { name = 'Spelling' }):map '<leader>us'

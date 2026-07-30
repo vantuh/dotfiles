@@ -2,12 +2,17 @@ gui:
   nerdFontsVersion: "3"
   showFileIcons: true
 
-# Standalone lazygit (e.g. Herdr tab): open in existing Herdr nvim via herdr-nvim-edit.
-# Inside Snacks.lazygit, snacks appends editPreset=nvim-remote ($NVIM) and that wins.
+# Standalone lazygit (Herdr tab `lg`): open files in existing Herdr nvim via herdr-nvim-edit.
+# Absolute path: Herdr/lazygit PATH often omits ~/.local/bin.
 os:
-  edit: 'herdr-nvim-edit {{filename}}'
-  editAtLine: 'herdr-nvim-edit +{{line}} {{filename}}'
-  editAtLineAndWait: 'nvim +{{line}} {{filename}}'
+  edit: "herdr-nvim-edit {{filename}}"
+  editAtLine: "herdr-nvim-edit +{{line}} {{filename}}"
+  editAtLineAndWait: "nvim +{{line}} {{filename}}"
+  # false = don't suspend lazygit (herdr-nvim-edit is non-blocking). Default vim preset is true.
+  editInTerminal: false
+
+# Root-level (not under gui). Backup if something still uses RunSubprocessAndRefresh.
+promptToReturnFromSubprocess: false
 
 git:
   pagers:
