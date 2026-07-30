@@ -150,8 +150,8 @@ LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
 | `␣gl` | git log |
 | `␣gb` | blame поточного рядка |
 | `␣gf` | історія поточного файлу |
-| `␣gg` | **Lazygit** (UI) |
-| `␣gG` | Lazygit у cwd |
+| `␣gg` | focus Herdr tab `lg` (lazygit); створити якщо немає |
+| `␣gH` | focus Herdr tab `hunk` (`hunk diff --watch`); створити якщо немає |
 | `␣gB` | відкрити файл у браузері (GitHub тощо) |
 
 ### LSP / код

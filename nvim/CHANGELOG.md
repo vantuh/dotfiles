@@ -43,11 +43,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-07-30
 
-- **herdr-nvim-edit:** opens files in a running Herdr nvim in the **current**
-  workspace only (same git root preferred) via `Ctrl-\ Ctrl-n` + `:edit`. If
-  none: reuse a tab labeled `nvim` in that workspace, else create one and
-  `pane run nvim`. Standalone Herdr lazygit uses it via `lazygit/config.yml`.
-  Snacks `<leader>gg` keeps default `nvim-remote`.
+- **Unix split for lazygit/hunk:** snacks float lazygit disabled. `<leader>gg`
+  / `<leader>gH` focus Herdr tabs `lg` / `hunk` via `herdr-focus-tab` (create +
+  run if needed, current workspace only). `herdr-nvim-edit` opens files from
+  standalone lazygit into the current-workspace `nvim` tab.
 
 ### 2026-07-29
 

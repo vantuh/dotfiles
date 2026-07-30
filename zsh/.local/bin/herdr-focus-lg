@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Compat wrapper → herdr-focus-tab lg -- lazygit
+set -euo pipefail
+cwd="${1:-$PWD}"
+exec herdr-focus-tab lg --cwd "$cwd" -- lazygit
