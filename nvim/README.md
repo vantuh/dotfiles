@@ -18,6 +18,19 @@ setup lives at `~/.config/lazyvim` — run it with `nvim-lazy`
 (`NVIM_APPNAME=lazyvim nvim`). Separate `NVIM_APPNAME` values keep config,
 plugins, state, and cache of the two setups apart.
 
+## First run on a new machine
+
+`mason-tool-installer` runs with `run_on_start = false` to avoid a registry scan
+on every startup. On a fresh machine the LSP servers and formatters/linters are
+therefore **not** installed automatically — run this once after plugins sync:
+
+```vim
+:MasonToolsInstall
+```
+
+This installs everything listed in `ensure_installed` (see `lua/lsp/lsp.lua`).
+Track progress with `:MasonToolsUpdate` or the Mason UI (`<leader>pm`).
+
 ## Plugin management
 
 Plugins are managed by Neovim's built-in `vim.pack`. The lockfile

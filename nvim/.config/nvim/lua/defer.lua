@@ -18,6 +18,18 @@ vim.api.nvim_create_autocmd('VimEnter', {
   callback = drain_vim_enter_queue,
 })
 
+---Require a module, surfacing load errors without aborting other deferred loads.
+---A single broken module notifies instead of throwing and stopping the queue.
+---@param module string
+function M.safe_require(module)
+  local ok, err = xpcall(require, debug.traceback, module)
+  if not ok then
+    vim.schedule(function()
+      vim.notify(('Failed to load module %q:\n%s'):format(module, err), vim.log.levels.ERROR)
+    end)
+  end
+end
+
 ---@param events string|string[]
 ---@param module string
 ---@param opts? { pattern?: string|string[] }
@@ -30,7 +42,7 @@ function M.on(events, module, opts)
     pattern = opts.pattern,
     once = true,
     callback = function()
-      require(module)
+      M.safe_require(module)
     end,
   })
 end

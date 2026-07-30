@@ -52,7 +52,7 @@ local after_ui = {
 
 for _, module in ipairs(after_ui) do
   defer.on_vim_enter(function()
-    require(module)
+    defer.safe_require(module)
   end)
 end
 

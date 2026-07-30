@@ -43,6 +43,20 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-07-30
 
+- **Isolated deferred module load errors.** Added `defer.safe_require` (xpcall +
+  `debug.traceback`, notifies on failure) and routed both the event-based
+  loader (`defer.on`) and the `after_ui` VimEnter queue (`init.lua`) through it.
+  A single broken module now surfaces an error notification instead of aborting
+  the rest of the deferred startup queue.
+- **Deduplicated conform filetype lists.** `lua/lsp/conform.lua` had three
+  overlapping filetype tables (`prettier_supported`, the `format_on_save`
+  `enabled_filetypes`, and `formatters_by_ft`). `formatters_by_ft` is now the
+  single source of truth; `format_on_save_ft` (all keys) and `prettier_ft`
+  (entries whose formatter list contains `prettier`) are derived from it. No
+  behavior change — derived sets are identical to the previous hand-written ones.
+- **Docs:** documented the one-time `:MasonToolsInstall` step for a fresh
+  machine in `README.md` (`mason-tool-installer` runs with `run_on_start = false`).
+
 - **Removed ESLint format-on-save.** Dropped the synchronous `BufWritePre`
   `vim.lsp.buf.format { name = 'eslint', async = false, timeout_ms = 3000 }`
   (`lua/lsp/conform.lua`). It blocked the UI thread on every `:w` in TS files
