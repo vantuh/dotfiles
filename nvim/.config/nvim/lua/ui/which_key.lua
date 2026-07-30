@@ -34,7 +34,6 @@ require('which-key').setup {
       { pattern = 'symbol', icon = ' ', color = 'cyan' },
       { pattern = 'reference', icon = '󰈇 ', color = 'cyan' },
       { pattern = 'inspect', icon = '󱔁 ', color = 'cyan' },
-      { pattern = 'scratch', icon = '󰩬 ', color = 'purple' },
       { pattern = 'pin', icon = '󰐃 ', color = 'azure' },
       { pattern = 'delete', icon = '󰧧 ', color = 'red' },
       { pattern = 'explorer', icon = '󰙅 ', color = 'green' },

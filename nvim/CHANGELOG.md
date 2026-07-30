@@ -43,6 +43,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-07-30
 
+- **Removed scratch buffers:** dropped `<leader>.` (toggle) and `<leader>S`
+  (select), the scratch picker `<C-a>`/`<C-d>` keymaps, and the which-key
+  `scratch` icon rule. Not used. (Reverts the "Scratch buffers enabled" /
+  "Scratch picker keymaps" entries below.)
 - **Unix split for lazygit/hunk:** snacks float lazygit disabled. `<leader>gg`
   / `<leader>gH` focus Herdr tabs `lg` / `hunk` via `herdr-focus-tab` (create +
   run if needed, current workspace only). `herdr-nvim-edit` opens files from
