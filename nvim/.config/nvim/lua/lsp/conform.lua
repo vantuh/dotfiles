@@ -59,22 +59,6 @@ do
   end
 end
 
--- ESLint is a secondary formatter. Register it before Conform so ESLint fixes run
--- first and Prettier gets the final formatting pass, matching LazyVim's priorities.
-vim.api.nvim_create_autocmd('BufWritePre', {
-  group = vim.api.nvim_create_augroup('eslint-format-on-save', { clear = true }),
-  callback = function(event)
-    if vim.g.autoformat == false or vim.b[event.buf].autoformat == false then
-      return
-    end
-    local clients = vim.lsp.get_clients { bufnr = event.buf, name = 'eslint' }
-    if #clients == 0 then
-      return
-    end
-    vim.lsp.buf.format { bufnr = event.buf, name = 'eslint', timeout_ms = 3000, async = false }
-  end,
-})
-
 require('conform').setup {
   notify_on_error = false,
   format_on_save = function(bufnr)
