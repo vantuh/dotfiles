@@ -12,11 +12,20 @@ import { dirname } from "node:path";
 type Pane = {
   pane_id: string;
   tab_id: string;
+  workspace_id?: string;
   cwd?: string;
   foreground_cwd?: string;
   terminal_title?: string;
   terminal_title_stripped?: string;
 };
+
+type Tab = {
+  tab_id: string;
+  workspace_id: string;
+  label?: string;
+};
+
+const quiet = { stdio: ["ignore", "ignore", "ignore"] as const };
 
 function run(
   cmd: string,
@@ -106,14 +115,27 @@ function openRemote(server: string, file: string, line: string): void {
   }
 }
 
+function paneHasNvim(paneId: string): boolean {
+  const info = runJson<{ result: { process_info: { shell_pid?: number } } }>(
+    "herdr",
+    ["pane", "process-info", "--pane", paneId],
+  )?.result?.process_info;
+  if (!info?.shell_pid) return false;
+  return descendants(Number(info.shell_pid)).some((p) => procComm(p) === "nvim");
+}
+
 function findNvimPane(
   fileRoot: string,
 ): { tab_id: string; pane_id: string } | null {
-  const ws = process.env.HERDR_WORKSPACE_ID || "";
-  const listArgs = ["pane", "list"];
-  if (ws) listArgs.push("--workspace", ws);
+  const currentWs = process.env.HERDR_WORKSPACE_ID || "";
+  if (!currentWs) return null;
 
-  const listed = runJson<{ result: { panes: Pane[] } }>("herdr", listArgs);
+  const listed = runJson<{ result: { panes: Pane[] } }>("herdr", [
+    "pane",
+    "list",
+    "--workspace",
+    currentWs,
+  ]);
   const panes = listed?.result?.panes;
   if (!Array.isArray(panes)) return null;
 
@@ -121,31 +143,17 @@ function findNvimPane(
   const candidates: Candidate[] = [];
 
   for (const pane of panes) {
-    const info = runJson<{ result: { process_info: { shell_pid?: number } } }>(
-      "herdr",
-      ["pane", "process-info", "--pane", pane.pane_id],
-    )?.result?.process_info;
-    if (!info?.shell_pid) continue;
+    if (!paneHasNvim(pane.pane_id)) continue;
 
     const title = String(
       pane.terminal_title_stripped || pane.terminal_title || "",
     ).toLowerCase();
-    const hasNvim = descendants(Number(info.shell_pid)).some(
-      (p) => procComm(p) === "nvim",
-    );
-    if (!hasNvim && !title.includes("nvim")) continue;
-
     const paneCwd = pane.cwd || pane.foreground_cwd || "";
     const nvimRoot = gitRoot(paneCwd);
     const sameRoot = Boolean(fileRoot && nvimRoot && fileRoot === nvimRoot);
     const titleNvim = title.includes("nvim");
     candidates.push({
-      score: [
-        sameRoot ? 0 : 1,
-        titleNvim ? 0 : 1,
-        hasNvim ? 0 : 1,
-        pane.pane_id || "",
-      ],
+      score: [sameRoot ? 0 : 1, titleNvim ? 0 : 1, pane.pane_id || ""],
       pane,
     });
   }
@@ -164,13 +172,47 @@ function findNvimPane(
   return { tab_id: pane.tab_id, pane_id: pane.pane_id };
 }
 
+function findNvimLabeledTab(): Tab | null {
+  const currentWs = process.env.HERDR_WORKSPACE_ID || "";
+  if (!currentWs) return null;
+
+  const listed = runJson<{ result: { tabs: Tab[] } }>("herdr", [
+    "tab",
+    "list",
+    "--workspace",
+    currentWs,
+  ]);
+  const tabs = listed?.result?.tabs;
+  if (!Array.isArray(tabs)) return null;
+
+  const matches = tabs.filter(
+    (t) => String(t.label || "").toLowerCase() === "nvim",
+  );
+  if (!matches.length) return null;
+
+  matches.sort((a, b) => a.tab_id.localeCompare(b.tab_id));
+  return matches[0]!;
+}
+
+function firstPaneOfTab(tabId: string): Pane | null {
+  const listed = runJson<{ result: { panes: Pane[] } }>("herdr", [
+    "pane",
+    "list",
+  ]);
+  const panes = listed?.result?.panes;
+  if (!Array.isArray(panes)) return null;
+  const inTab = panes.filter((p) => p.tab_id === tabId);
+  if (!inTab.length) return null;
+  inTab.sort((a, b) => a.pane_id.localeCompare(b.pane_id));
+  return inTab[0]!;
+}
+
 function openInHerdrPane(
   pane: { tab_id: string; pane_id: string },
   file: string,
   line: string,
 ): void {
   const escaped = vimEscape(file);
-  const quiet = { stdio: ["ignore", "ignore", "ignore"] as const };
 
   execFileSync("herdr", ["tab", "focus", pane.tab_id], quiet);
   // Exit terminal mode without Esc — Esc cancels snacks explorer (picker).
@@ -193,6 +235,67 @@ function openInHerdrPane(
     );
     execFileSync("herdr", ["pane", "send-keys", pane.pane_id, "enter"], quiet);
   }
+}
+
+function launchNvimInPane(
+  pane: { tab_id: string; pane_id: string },
+  file: string,
+  line: string,
+): void {
+  const args = ["pane", "run", pane.pane_id, "nvim"];
+  if (line) args.push(`+${line}`);
+  args.push("--", file);
+  execFileSync("herdr", ["tab", "focus", pane.tab_id], quiet);
+  execFileSync("herdr", args, quiet);
+}
+
+/** No running nvim: reuse tab labeled "nvim", else create one. */
+function openInNewOrLabeledNvimTab(
+  file: string,
+  line: string,
+  cwd: string,
+): void {
+  const labeled = findNvimLabeledTab();
+  if (labeled) {
+    const pane = firstPaneOfTab(labeled.tab_id);
+    if (!pane) {
+      runNvim([...(line ? [`+${line}`] : []), "--", file]);
+    }
+    if (paneHasNvim(pane.pane_id)) {
+      openInHerdrPane(
+        { tab_id: labeled.tab_id, pane_id: pane.pane_id },
+        file,
+        line,
+      );
+      return;
+    }
+    launchNvimInPane(
+      { tab_id: labeled.tab_id, pane_id: pane.pane_id },
+      file,
+      line,
+    );
+    return;
+  }
+
+  const createArgs = ["tab", "create", "--label", "nvim", "--focus"];
+  if (cwd) createArgs.push("--cwd", cwd);
+  const ws = process.env.HERDR_WORKSPACE_ID || "";
+  if (ws) createArgs.push("--workspace", ws);
+
+  const created = runJson<{
+    result: { root_pane: Pane; tab: Tab };
+  }>("herdr", createArgs);
+  const root = created?.result?.root_pane;
+  const tab = created?.result?.tab;
+  if (!root?.pane_id || !tab?.tab_id) {
+    runNvim([...(line ? [`+${line}`] : []), "--", file]);
+  }
+
+  launchNvimInPane(
+    { tab_id: tab.tab_id, pane_id: root.pane_id },
+    file,
+    line,
+  );
 }
 
 function parseArgs(argv: string[]): {
@@ -254,11 +357,16 @@ function main(): void {
 
   const fileRoot = gitRoot(dirname(file)) || gitRoot(file);
   const pane = findNvimPane(fileRoot);
-  if (!pane) {
-    runNvim([...(line ? [`+${line}`] : []), "--", file, ...rest]);
+  if (pane) {
+    openInHerdrPane(pane, file, line);
+    return;
   }
 
-  openInHerdrPane(pane, file, line);
+  openInNewOrLabeledNvimTab(
+    file,
+    line,
+    fileRoot || dirname(file) || process.cwd(),
+  );
 }
 
 main();
