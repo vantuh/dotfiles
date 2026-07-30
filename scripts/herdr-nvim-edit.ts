@@ -121,7 +121,9 @@ function paneHasNvim(paneId: string): boolean {
     ["pane", "process-info", "--pane", paneId],
   )?.result?.process_info;
   if (!info?.shell_pid) return false;
-  return descendants(Number(info.shell_pid)).some((p) => procComm(p) === "nvim");
+  return descendants(Number(info.shell_pid)).some(
+    (p) => procComm(p) === "nvim",
+  );
 }
 
 function findNvimPane(
@@ -291,11 +293,7 @@ function openInNewOrLabeledNvimTab(
     runNvim([...(line ? [`+${line}`] : []), "--", file]);
   }
 
-  launchNvimInPane(
-    { tab_id: tab.tab_id, pane_id: root.pane_id },
-    file,
-    line,
-  );
+  launchNvimInPane({ tab_id: tab.tab_id, pane_id: root.pane_id }, file, line);
 }
 
 function parseArgs(argv: string[]): {
