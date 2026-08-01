@@ -1,18 +1,7 @@
--- Snippets (LuaSnip) + autocomplete (blink.cmp).
+-- Native snippets + autocomplete (blink.cmp).
 
-vim.pack.add {
-  { src = 'https://github.com/L3MON4D3/LuaSnip', version = vim.version.range '2.*' },
-}
-require('luasnip').setup {}
-
--- Premade snippets: pack is cheap; scanning 144 JSON files is not — wait until insert.
+-- Blink's native snippets source loads friendly-snippets automatically.
 vim.pack.add { 'https://github.com/rafamadriz/friendly-snippets' }
-vim.api.nvim_create_autocmd('InsertEnter', {
-  once = true,
-  callback = function()
-    require('luasnip.loaders.from_vscode').lazy_load()
-  end,
-})
 
 require('completion.blink').setup {
   keymap = {
@@ -99,7 +88,6 @@ require('completion.blink').setup {
       ghost_text = { enabled = true },
     },
   },
-  snippets = { preset = 'luasnip' },
   fuzzy = { implementation = 'lua' },
   signature = { enabled = true },
 }
