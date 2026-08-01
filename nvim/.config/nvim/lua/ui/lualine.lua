@@ -5,9 +5,6 @@ require('lualine').setup {
   options = {
     theme = 'auto',
     globalstatus = true,
-    disabled_filetypes = {
-      statusline = { 'dashboard', 'alpha', 'ministarter', 'snacks_dashboard' },
-    },
   },
   sections = {
     lualine_a = { 'mode' },

@@ -76,7 +76,7 @@ disabled.
 
 ## Personal-only features
 
-- `fidget.nvim` — LSP progress in the statusline
+- `fidget.nvim` — LSP progress UI
 - `guess-indent.nvim` — automatic indentation detection
 - `mini.surround` — surround textobjects (not present in LazyVim)
 - Persistence safety hook — the session is not restored if arguments were passed
@@ -97,12 +97,12 @@ lua/
     bufferline.lua    tabline
     noice.lua         cmdline/messages UI
     which_key.lua     which-key
-    ui_extras.lua     virt-column, mini.icons
+    ui_extras.lua     virt-column, hardtime
   editor/
     snacks.lua        Snacks: picker, explorer, terminal, git, toggles
     gitsigns.lua      Gitsigns + keymaps
     flash.lua         Flash motions
-    mini.lua          mini.ai textobjects + mini.surround
+    mini.lua          mini.ai, mini.surround, mini.pairs, mini.icons
     todo_comments.lua TODO/FIXME highlights + pickers
     grug_far.lua      Search & replace
     autosave.lua      auto-save
@@ -121,11 +121,9 @@ lua/
     trouble.lua       diagnostics UI
   completion/
     blink.lua         blink.cmp
-    completion.lua    cmdline completion
-  defer.lua           deferred setup (SSH clipboard)
+    completion.lua    snippets + Blink setup
+  defer.lua           event/VimEnter module loader
   pack.lua            vim.pack keymaps + build hooks
-ftplugin/
-  lua.lua             Lua filetype overrides
 nvim-pack-lock.json   lockfile (tracked in git)
 ```
 
