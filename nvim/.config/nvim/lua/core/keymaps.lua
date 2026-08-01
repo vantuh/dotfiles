@@ -2,10 +2,6 @@
 
 vim.keymap.set({ 'i', 'n', 's' }, '<Esc>', function()
   vim.cmd 'nohlsearch'
-  local ok, luasnip = pcall(require, 'luasnip')
-  if ok and luasnip.session.current_nodes[vim.api.nvim_get_current_buf()] then
-    luasnip.unlink_current()
-  end
   return '<Esc>'
 end, { expr = true, desc = 'Escape and clear search' })
 vim.keymap.set('i', 'jj', '<Esc>', { desc = 'Exit insert mode' })

@@ -43,6 +43,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-08-01
 
+- **Replaced LuaSnip with native snippets.** Blink now uses Neovim's built-in
+  `vim.snippet` engine and loads `friendly-snippets` directly. Removed LuaSnip,
+  its jsregexp build hook, InsertEnter loader, Blink preset, and `<Esc>` state
+  cleanup. No custom or dynamic LuaSnip snippets were configured.
 - **Removed stale configuration metadata.** Deleted close-with-`q` filetypes
   for removed DAP/Neotest/Spectre/startup-profiler components and lualine
   exclusions for absent dashboards. Runtime behavior for active plugins is
