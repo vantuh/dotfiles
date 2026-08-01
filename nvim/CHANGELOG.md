@@ -47,10 +47,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   `vim.snippet` engine and loads `friendly-snippets` directly. Removed LuaSnip,
   its jsregexp build hook, InsertEnter loader, Blink preset, and `<Esc>` state
   cleanup. No custom or dynamic LuaSnip snippets were configured.
-- **Removed stale configuration metadata.** Deleted close-with-`q` filetypes
-  for removed DAP/Neotest/Spectre/startup-profiler components and lualine
-  exclusions for absent dashboards. Runtime behavior for active plugins is
-  unchanged.
+- **Removed stale configuration metadata.** Deleted the leftover
+  `vim-dadbod-ui` lockfile/package entry, close-with-`q` filetypes for removed
+  DAP/Neotest/Spectre/startup-profiler components, and lualine exclusions for
+  absent dashboards. Runtime behavior for active plugins is unchanged.
 - **Refreshed personal-config docs.** Removed deleted tab, Lazy/Extras, and
   terminal mappings from `COMMANDS.md`; documented the current `vim.pack`
   mappings; and corrected module ownership, Fidget UI, and the nonexistent
