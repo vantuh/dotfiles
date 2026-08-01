@@ -20,13 +20,13 @@ require('lazydev').setup {
 }
 
 vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
-vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, { desc = 'Rename' })
+vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, { desc = 'Code Rename' })
 vim.keymap.set('n', '<leader>ss', function()
   Snacks.picker.lsp_symbols()
-end, { desc = 'LSP Symbols' })
+end, { desc = 'Code LSP Symbols' })
 vim.keymap.set('n', '<leader>sS', function()
   Snacks.picker.lsp_workspace_symbols()
-end, { desc = 'LSP Workspace Symbols' })
+end, { desc = 'Code LSP Workspace Symbols' })
 
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),

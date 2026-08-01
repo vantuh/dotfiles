@@ -43,6 +43,11 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ### 2026-08-01
 
+- **Removed custom which-key icon rules.** Dropped 88 description-pattern
+  overrides and aligned keymap descriptions with which-key's maintained
+  built-in categories. Exact-key icons remain only where upstream matching is
+  too generic or misleading (`pack`, diagnostics/quickfix actions, Herdr git
+  helpers, and Resume); mappings and behavior are unchanged.
 - **Replaced LuaSnip with native snippets.** Blink now uses Neovim's built-in
   `vim.snippet` engine and loads `friendly-snippets` directly. Removed LuaSnip,
   its jsregexp build hook, InsertEnter loader, Blink preset, and `<Esc>` state

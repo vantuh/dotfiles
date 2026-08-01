@@ -10,10 +10,10 @@ trouble.setup {
   },
 }
 
-vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<CR>', { desc = 'Diagnostics (Trouble)' })
-vim.keymap.set('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>', { desc = 'Buffer Diagnostics (Trouble)' })
-vim.keymap.set('n', '<leader>cs', '<cmd>Trouble symbols toggle<CR>', { desc = 'Symbols (Trouble)' })
-vim.keymap.set('n', '<leader>cS', '<cmd>Trouble lsp toggle<CR>', { desc = 'LSP references/definitions/... (Trouble)' })
+vim.keymap.set('n', '<leader>xx', '<cmd>Trouble diagnostics toggle<CR>', { desc = 'Workspace Diagnostics' })
+vim.keymap.set('n', '<leader>xX', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>', { desc = 'Buffer Diagnostics' })
+vim.keymap.set('n', '<leader>cs', '<cmd>Trouble symbols toggle<CR>', { desc = 'Code Symbols (Trouble)' })
+vim.keymap.set('n', '<leader>cS', '<cmd>Trouble lsp toggle<CR>', { desc = 'Code References/Definitions (Trouble)' })
 vim.keymap.set('n', '<leader>xL', '<cmd>Trouble loclist toggle<CR>', { desc = 'Location List (Trouble)' })
 vim.keymap.set('n', '<leader>xQ', '<cmd>Trouble qflist toggle<CR>', { desc = 'Quickfix List (Trouble)' })
 local function todo_trouble(command)
@@ -23,8 +23,8 @@ local function todo_trouble(command)
   end
 end
 
-vim.keymap.set('n', '<leader>xt', todo_trouble 'Trouble todo toggle', { desc = 'TODO Comments (Trouble)' })
-vim.keymap.set('n', '<leader>xT', todo_trouble 'Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}', { desc = 'TODO/FIX/FIXME (Trouble)' })
+vim.keymap.set('n', '<leader>xt', todo_trouble 'Trouble todo toggle', { desc = 'Todo Comments' })
+vim.keymap.set('n', '<leader>xT', todo_trouble 'Trouble todo toggle filter = {tag = {TODO,FIX,FIXME}}', { desc = 'Todo/Fix/Fixme' })
 
 local function quickfix_item(next)
   return function()

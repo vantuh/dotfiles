@@ -96,7 +96,7 @@ vim.keymap.set('n', '<leader>xl', function()
   if not ok then
     vim.notify(err, vim.log.levels.ERROR)
   end
-end, { desc = 'Location list' })
+end, { desc = 'Location List' })
 
 vim.keymap.set('n', '<leader>xq', function()
   local open = vim.fn.getqflist({ winid = 0 }).winid ~= 0
@@ -104,7 +104,7 @@ vim.keymap.set('n', '<leader>xq', function()
   if not ok then
     vim.notify(err, vim.log.levels.ERROR)
   end
-end, { desc = 'Quickfix list' })
+end, { desc = 'Quickfix List' })
 vim.keymap.set('n', '<leader>qq', '<cmd>qa<CR>', { desc = 'Quit All' })
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
@@ -119,8 +119,8 @@ vim.keymap.set('n', '<leader>|', '<C-w>v', { remap = true, desc = 'Split window 
 vim.keymap.set('n', '<leader>wd', '<C-w>c', { remap = true, desc = 'Delete window' })
 
 -- Inspect (plugin-free)
-vim.keymap.set('n', '<leader>ui', vim.show_pos, { desc = 'Inspect Position' })
+vim.keymap.set('n', '<leader>ui', vim.show_pos, { desc = 'Code Inspect Position' })
 vim.keymap.set('n', '<leader>uI', function()
   vim.treesitter.inspect_tree()
   vim.api.nvim_input 'I'
-end, { desc = 'Inspect Tree' })
+end, { desc = 'Code Inspect Tree' })
