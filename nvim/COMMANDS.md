@@ -86,7 +86,7 @@ LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
 
 ## 3. Вкладки і буфери (навігація)
 
-У LazyVim зверху зазвичай **буфери** (bufferline), не класичні vim-tabs. Обидва варіанти:
+Зверху показані **буфери** (bufferline), не класичні vim-tabs:
 
 ### Буфери (схоже на вкладки зверху)
 
@@ -98,18 +98,6 @@ LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
 | `␣bd` | закрити поточний буфер |
 | `␣bo` | закрити інші буфери |
 | `␣bb` / `␣\`` | перемкнутись на попередній |
-
-### Справжні vim tabs
-
-| Клавіша | Дія |
-|--------|-----|
-| `␣<Tab><Tab>` | нова вкладка |
-| `␣<Tab>]` / `␣<Tab>[` | наступна / попередня |
-| `␣<Tab>d` | закрити вкладку |
-| `␣<Tab>o` | закрити інші |
-| `␣<Tab>f` / `␣<Tab>l` | перша / остання |
-
-(`␣` = Space, потім клавіша Tab)
 
 ### Вікна всередині вкладки
 
@@ -123,7 +111,7 @@ LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
 
 ---
 
-## 4. LazyVim: найкорисніші скорочення
+## 4. Personal config: найкорисніші скорочення
 
 ### Навігація по проєкту
 
@@ -176,10 +164,11 @@ LazyVim: `nvim-lazy` (`NVIM_APPNAME=lazyvim`, `~/.config/lazyvim`).
 
 | Клавіша | Дія |
 |--------|-----|
-| `␣l` | Lazy (плагіни) |
-| `:LazyExtras` | увімкнути/вимкнути extras (`x` на рядку) |
-| `:Mason` | LSP / formatters / linters |
-| `␣ft` / `Ctrl-/` | термінал |
+| `␣pu` | оновити plugins (`vim.pack`) |
+| `␣pi` | синхронізувати plugins із lockfile |
+| `␣po` | перевірити оновлення offline |
+| `␣pc` | видалити неактивні plugins |
+| `␣pm` / `:Mason` | LSP / formatters / linters |
 | `␣uC` | вибір colorscheme |
 | `␣un` | dismiss notifications (якщо є) |
 | `␣sm` | marks |

@@ -29,9 +29,9 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ## Personal-only features
 
-- **Custom hunk review** — `<leader>gH` runs `hunk diff --watch` in a float
-  terminal (`Snacks.terminal.toggle`). Not present in LazyVim.
-- `fidget.nvim` — LSP progress in the statusline.
+- **Custom hunk review** — `<leader>gH` focuses a Herdr tab running
+  `hunk diff --watch`. Not present in LazyVim.
+- `fidget.nvim` — LSP progress UI.
 - `guess-indent.nvim` — automatic indentation detection.
 - `mini.surround` — surround textobjects.
 - Persistence safety hook — the session is not restored if nvim was started with arguments.
@@ -40,6 +40,17 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 ---
 
 ## Iterative changes
+
+### 2026-08-01
+
+- **Removed stale configuration metadata.** Deleted close-with-`q` filetypes
+  for removed DAP/Neotest/Spectre/startup-profiler components and lualine
+  exclusions for absent dashboards. Runtime behavior for active plugins is
+  unchanged.
+- **Refreshed personal-config docs.** Removed deleted tab, Lazy/Extras, and
+  terminal mappings from `COMMANDS.md`; documented the current `vim.pack`
+  mappings; and corrected module ownership, Fidget UI, and the nonexistent
+  `ftplugin/` references in `README.md` / `AGENTS.md`.
 
 ### 2026-07-30
 
