@@ -47,7 +47,7 @@ vim.keymap.set('n', '<leader>sna', function()
 end, { desc = 'Noice All' })
 vim.keymap.set('n', '<leader>snd', function()
   require('noice').cmd 'dismiss'
-end, { desc = 'Dismiss All Messages' })
+end, { desc = 'Noice Dismiss All Messages' })
 
 -- Scroll LSP / Noice popups in normal mode
 vim.keymap.set({ 'i', 's' }, '<C-f>', function()

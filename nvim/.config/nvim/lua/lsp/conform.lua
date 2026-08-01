@@ -128,7 +128,7 @@ require('conform').setup {
 -- Format lives on <leader>cf (LazyVim-style) so <leader>ff can be "find files"
 vim.keymap.set({ 'n', 'v' }, '<leader>cf', function()
   require('conform').format { async = true }
-end, { desc = 'Format Buffer' })
+end, { desc = 'Format Current Document' })
 
 vim.keymap.set('n', '<leader>uf', function()
   vim.g.autoformat = not vim.g.autoformat
@@ -139,4 +139,4 @@ vim.keymap.set('n', '<leader>uF', function()
   local enabled = vim.b.autoformat ~= false
   vim.b.autoformat = not enabled
   vim.notify('Buffer auto format: ' .. (vim.b.autoformat and 'enabled' or 'disabled'))
-end, { desc = 'Toggle buffer auto format' })
+end, { desc = 'Toggle Local Auto Format' })
