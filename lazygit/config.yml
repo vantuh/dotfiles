@@ -24,3 +24,6 @@ customCommands:
     command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
     output: terminal
     loadingText: "Generating commit message..."
+
+services:
+  "gitlab.foodtech.team": "gitlab:gitlab.foodtech.team"
