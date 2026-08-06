@@ -1,7 +1,6 @@
 gui:
   nerdFontsVersion: "3"
   showFileIcons: true
-
 # Standalone lazygit (Herdr tab `lg`): open files in existing Herdr nvim via herdr-nvim-edit.
 # Absolute path: Herdr/lazygit PATH often omits ~/.local/bin.
 os:
@@ -10,13 +9,11 @@ os:
   editAtLineAndWait: "nvim +{{line}} {{filename}}"
   # false = don't suspend lazygit (herdr-nvim-edit is non-blocking). Default vim preset is true.
   editInTerminal: false
-
 # Root-level (not under gui). Backup if something still uses RunSubprocessAndRefresh.
 promptToReturnFromSubprocess: false
-
 git:
-  pagers:
-    - pager: delta --side-by-side --line-numbers --paging=never
+  diffRenderers:
+    - command: delta --side-by-side --line-numbers --paging=never
 customCommands:
   - key: "<c-g>"
     context: "files"
@@ -24,6 +21,5 @@ customCommands:
     command: "~/dotfiles/scripts/pi-commit-msg.sh > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
     output: terminal
     loadingText: "Generating commit message..."
-
 services:
   "gitlab.foodtech.team": "gitlab:gitlab.foodtech.team"
