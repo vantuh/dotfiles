@@ -88,6 +88,10 @@ require('snacks').setup {
           sort_empty = true,
         },
       },
+      grep = {
+        hidden = true,
+        exclude = { 'node_modules', '.git', 'dist', 'build', '.next', '.nuxt' },
+      },
     },
   },
 }
