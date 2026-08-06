@@ -41,6 +41,7 @@ local after_ui = {
   'editor.gitsigns',
   'lsp.lint',
   'editor.todo_comments',
+  'editor.colorizer',
   'ui.which_key',
   'lsp.trouble',
   'editor.grug_far',
