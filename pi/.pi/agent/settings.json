@@ -5,7 +5,7 @@
     "npm:pi-web-access",
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "0.83.0",
+  "lastChangelogVersion": "0.84.1",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -26,5 +26,6 @@
     "disableBuiltins": true
   },
   "showHardwareCursor": false,
-  "collapseChangelog": true
+  "collapseChangelog": true,
+  "tuiMode": "fullscreen"
 }
