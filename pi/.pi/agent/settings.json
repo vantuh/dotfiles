@@ -5,7 +5,7 @@
     "npm:pi-web-access",
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "0.84.1",
+  "lastChangelogVersion": "0.84.2",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
