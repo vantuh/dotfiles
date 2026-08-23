@@ -24,7 +24,7 @@ providers:
     - mojeek
     - public
 modelRoles: 
-  default: cursor/cursor-grok-4.6-medium
+  default: kiro/claude-opus-4.8:medium
 defaultThinkingLevel: medium
 hideThinkingBlock: true
 showHardwareCursor: false

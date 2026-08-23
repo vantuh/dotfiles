@@ -129,7 +129,7 @@ fi
 
 # Remove absolute extensions symlink that conflicts with stow --no-folding
 # (stow sees it as "not owned by stow" and aborts the entire pi/omp package)
-for agent_ext in "$HOME/.pi/agent/extensions"; do
+for agent_ext in "$HOME/.pi/agent/extensions" "$HOME/.omp/agent/extensions"; do
   if [[ -L "$agent_ext" ]]; then
     rm -f "$agent_ext"
   fi
