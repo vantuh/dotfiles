@@ -13,6 +13,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | starship  | Starship prompt theme             |   ✓   |  ✓  |
 | yazi      | Yazi file manager config          |   ✓   |  ✓  |
 | pi        | Pi coding agent config            |   ✓   |  ✓  |
+| omp        | Oh My Pi (omp) coding agent config |   ✓   |  ✓  |
 | alacritty | Alacritty terminal config         |   ✓   | ✓\* |
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
 | zed       | Zed editor settings + keymap      |   ✓   |     |
@@ -71,7 +72,7 @@ To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` and a
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi alacritty karabiner zed nvim
+stow -D zsh tmux starship yazi pi omp alacritty karabiner zed nvim
 ```
 
 ## Manual stow usage
