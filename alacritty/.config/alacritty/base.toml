@@ -1,4 +1,3 @@
-# Theme - Catppuccin Mocha
 [colors.primary]
 background = "#1e1e2e"
 foreground = "#cdd6f4"
@@ -49,5 +48,9 @@ bindings = [
   { key = "C", mods = "Control|Shift", action = "Copy" },
   { key = "С", mods = "Control|Shift", action = "Copy" },
   { key = "Return", mods = "Shift", chars = "\u001b[13;2u" },
-  { key = "Space", mods = "Super", action = "None" }
+  { key = "Space", mods = "Super", action = "None" },
+  { key = "Up", chars = "\u001b[A" },
+  { key = "Down", chars = "\u001b[B" },
+  { key = "Right", chars = "\u001b[C" },
+  { key = "Left", chars = "\u001b[D" }
 ]
