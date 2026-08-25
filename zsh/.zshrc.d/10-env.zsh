@@ -16,5 +16,10 @@ export PI_CURSOR_MCP_TOOL_TIMEOUT_SECONDS=3600
 # export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG_FILE=/tmp/pi-cursor-bridge.ndjson
 # export PI_CURSOR_SDK_EVENT_DEBUG=1
 
-# kiro-acp pi extension debug logging (0 = off). Set to 1 to write /tmp/kiro-acp-debug.log
-export PI_KIRO_ACP_DEBUG=0
+# kiro-acp pi extension debug logging (0 = off). Set to 1 to write $TMPDIR/kiro-acp-debug.log
+export PI_KIRO_ACP_DEBUG=1
+# kiro-cli's own -v verbosity (0 = off, max 3), captured into the same log.
+# Off by default: kiro-cli writes those logs to stdout, the same pipe as JSON-RPC,
+# so a large frame can get interleaved. Enable per run when hunting a hang:
+#   PI_KIRO_ACP_VERBOSE=2 pi
+export PI_KIRO_ACP_VERBOSE=0
