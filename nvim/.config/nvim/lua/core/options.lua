@@ -86,7 +86,7 @@ opt.showcmdloc = 'last' -- Display partial commands in the last line of the scre
 
 -- Initialize the system clipboard later because detecting a clipboard provider can slow startup.
 vim.schedule(function()
-  opt.clipboard = vim.env.SSH_CONNECTION and '' or 'unnamedplus' -- Use the OS clipboard locally but preserve OSC 52 behavior over SSH.
+  opt.clipboard = 'unnamedplus' -- Use the OS clipboard; Neovim picks pbcopy/xclip locally and falls back to OSC 52 over SSH.
 end)
 
 vim.g.markdown_recommended_style = 0 -- Prevent Neovim's Markdown runtime from overriding the configured indentation.
