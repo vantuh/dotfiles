@@ -8,6 +8,10 @@ else
   typeset -g DOTFILES_PLATFORM=wsl DOTFILES_USER=Ivan
 fi
 
+if [[ -n "${HERDR_ENV:-}" ]]; then
+  export PROCESS_LAUNCHED_BY_Q=1
+fi
+
 # Environment
 export LANG=en_US.UTF-8
 export LC_TIME=uk_UA.UTF-8
