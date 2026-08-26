@@ -22,4 +22,4 @@ export PI_KIRO_ACP_DEBUG=1
 # Off by default: kiro-cli writes those logs to stdout, the same pipe as JSON-RPC,
 # so a large frame can get interleaved. Enable per run when hunting a hang:
 #   PI_KIRO_ACP_VERBOSE=2 pi
-export PI_KIRO_ACP_VERBOSE=0
+export PI_KIRO_ACP_VERBOSE=1
