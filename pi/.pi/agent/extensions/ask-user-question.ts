@@ -5,6 +5,7 @@ import {
   Key,
   Text,
   matchesKey,
+  stripTerminalSequences,
   truncateToWidth,
   wrapTextWithAnsi,
 } from "@earendil-works/pi-tui";
@@ -12,7 +13,6 @@ import { Type } from "@sinclair/typebox";
 
 interface AskOption {
   label: string;
-  value: string;
   description?: string;
 }
 
@@ -26,25 +26,24 @@ interface DisplayOption extends AskOption {
 interface TextAnswer {
   type: "text";
   label: string;
-  value: string;
 }
 
 interface OptionAnswer {
   type: "option";
   label: string;
-  value: string;
   index: number;
 }
 
 interface OtherAnswer {
   type: "other";
   label: string;
-  value: string;
 }
 
 type AskAnswer = TextAnswer | OptionAnswer | OtherAnswer;
 type AskUserQuestionStatus = "answered" | "cancelled" | "unavailable";
 type AskUserQuestionMode = "text" | "single-select" | "multi-select";
+
+const CANCEL_KEY = Key.ctrl("c");
 
 interface AskUserQuestionResultDetails {
   status: AskUserQuestionStatus;
@@ -58,14 +57,8 @@ interface AskUserQuestionResultDetails {
 const OptionSchema = Type.Object({
   label: Type.String({
     description:
-      'Display label for the option. If you recommend an option, place it first and append "(Recommended)" to the label.',
+      'Short display label, 1-5 words. If you recommend an option, place it first and append "(Recommended)" to the label.',
   }),
-  value: Type.Optional(
-    Type.String({
-      description:
-        "Optional machine-readable value returned for the option. Defaults to the label.",
-    }),
-  ),
   description: Type.Optional(
     Type.String({
       description: "Optional extra detail shown below the option.",
@@ -75,8 +68,7 @@ const OptionSchema = Type.Object({
 
 const AskUserQuestionParams = Type.Object({
   question: Type.String({
-    description:
-      "The single question to ask the user. Ask exactly one question per tool call.",
+    description: "The question to ask the user.",
   }),
   details: Type.Optional(
     Type.String({
@@ -87,26 +79,51 @@ const AskUserQuestionParams = Type.Object({
   options: Type.Optional(
     Type.Array(OptionSchema, {
       description:
-        "Optional multiple-choice options. Omit or pass an empty array for free-form text input. Users will always be able to choose Other and type a custom answer when options are provided.",
+        'Multiple-choice options. Omit for free-form text input. An "Other" row is always added so the user can type a custom answer instead.',
     }),
   ),
   multiSelect: Type.Optional(
     Type.Boolean({
       description:
-        "Set to true to allow multiple answers to be selected for a question.",
+        "Set to true to let the user pick several of the options. Ignored when options is omitted.",
     }),
   ),
 });
 
+// Labels come straight from the model, and the "Other" answer comes straight
+// from the user's multi-line editor. Both are rendered as single TUI lines.
+// truncateToWidth() measures visible width, and control characters including
+// "\n" count as zero width, so they would slip past the over-wide-line guard
+// and desync the renderer. Strip escape sequences and remaining control bytes,
+// then collapse whitespace, to keep the text exactly one line.
+function stripControls(text: unknown): string {
+  if (typeof text !== "string") return "";
+  return stripTerminalSequences(text).replace(
+    /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g,
+    "",
+  );
+}
+
+function sanitizeLine(text: unknown): string {
+  return stripControls(text).replace(/\s+/g, " ").trim();
+}
+
+// Descriptions render through wrapTextWithAnsi, which splits on newlines
+// itself, so intentional line breaks are safe to keep here.
+function sanitizeBlock(text: unknown): string {
+  return stripControls(text)
+    .replace(/\r\n?/g, "\n")
+    .replace(/[^\S\n]+/g, " ")
+    .trim();
+}
+
 function normalizeOptions(
-  options:
-    Array<{ label: string; value?: string; description?: string }> | undefined,
+  options: Array<{ label?: string; description?: string }> | undefined,
 ): AskOption[] {
   return (options || [])
     .map((option) => ({
-      label: option.label.trim(),
-      value: option.value?.trim() || option.label.trim(),
-      description: option.description?.trim() || undefined,
+      label: sanitizeLine(option?.label),
+      description: sanitizeBlock(option?.description) || undefined,
     }))
     .filter((option) => option.label.length > 0);
 }
@@ -191,7 +208,8 @@ function cancelledResult(
   mode: AskUserQuestionMode,
   context?: string,
 ) {
-  const message = "User cancelled the question";
+  const message =
+    "User cancelled without answering. Do not repeat this question in this turn — continue with the most reasonable assumption and state it explicitly.";
   return {
     content: [{ type: "text" as const, text: message }],
     details: buildStructuredResult(
@@ -260,6 +278,7 @@ async function askSingleChoice(
   question: string,
   context: string | undefined,
   options: AskOption[],
+  signal: AbortSignal | undefined,
 ): Promise<AskAnswer | null> {
   const otherLabel = getOtherLabel(options);
   const allOptions: DisplayOption[] = [
@@ -268,7 +287,7 @@ async function askSingleChoice(
       id: `option:${index}`,
       index: index + 1,
     })),
-    { id: "other", label: otherLabel, value: "__other__", isOther: true },
+    { id: "other", label: otherLabel, isOther: true },
   ];
 
   return ctx.ui.custom<AskAnswer | null>(
@@ -284,10 +303,22 @@ async function askSingleChoice(
       let cachedWidth = -1;
       const editor = new Editor(tui, createEditorTheme(theme));
 
+      // The turn can be aborted while this dialog is open. done() is an
+      // idempotent external resolver, so closing on abort is what stops
+      // execute() from hanging until the user notices the dialog.
+      const onAbort = () => done(null);
+      signal?.addEventListener("abort", onAbort, { once: true });
+
       editor.onSubmit = (value) => {
         const trimmed = value.trim();
-        if (!trimmed) return;
-        done({ type: "other", label: trimmed, value: trimmed });
+        if (!trimmed) {
+          // Editor already cleared its buffer, so leaving editMode on is a
+          // dead end with no visible feedback. Fall back to the option list.
+          editMode = false;
+          refresh();
+          return;
+        }
+        done({ type: "other", label: sanitizeLine(trimmed) });
       };
 
       function refresh() {
@@ -296,6 +327,14 @@ async function askSingleChoice(
       }
 
       function handleInput(data: string) {
+        // pi-tui forwards Ctrl+C to the focused component and lets it decide.
+        // Cancelling matches the default tui.select.cancel binding and the
+        // reflex of interrupting the agent.
+        if (matchesKey(data, CANCEL_KEY)) {
+          done(null);
+          return;
+        }
+
         if (editMode) {
           if (matchesKey(data, Key.escape)) {
             editMode = false;
@@ -329,7 +368,6 @@ async function askSingleChoice(
           done({
             type: "option",
             label: selected.label,
-            value: selected.value,
             index: selected.index!,
           });
           return;
@@ -343,7 +381,9 @@ async function askSingleChoice(
         // The cache MUST be keyed on width: pi-tui calls requestRender() but NOT
         // invalidate() on terminal resize, so render() can be re-entered with a
         // new width. Returning stale wider lines trips the TUI width guard and
-        // crashes the process.
+        // crashes the process. invalidate() is still needed too — theme changes
+        // call it without changing the width, and the cached lines have theme
+        // ANSI baked in.
         if (cachedLines && cachedWidth === width) return cachedLines;
 
         const lines: string[] = [];
@@ -403,6 +443,7 @@ async function askSingleChoice(
           cachedLines = undefined;
         },
         handleInput,
+        dispose: () => signal?.removeEventListener("abort", onAbort),
       };
     },
   );
@@ -413,6 +454,7 @@ async function askMultiChoice(
   question: string,
   context: string | undefined,
   options: AskOption[],
+  signal: AbortSignal | undefined,
 ): Promise<AskAnswer[] | null> {
   const otherLabel = getOtherLabel(options);
   const choiceItems: DisplayOption[] = options.map((option, index) => ({
@@ -420,16 +462,10 @@ async function askMultiChoice(
     id: `option:${index}`,
     index: index + 1,
   }));
-  const submitItem: DisplayOption = {
-    id: "submit",
-    label: "Submit",
-    value: "__submit__",
-    isSubmit: true,
-  };
   const allItems: DisplayOption[] = [
     ...choiceItems,
-    { id: "other", label: otherLabel, value: "__other__", isOther: true },
-    submitItem,
+    { id: "other", label: otherLabel, isOther: true },
+    { id: "submit", label: "Submit", isSubmit: true },
   ];
 
   return ctx.ui.custom<AskAnswer[] | null>(
@@ -446,14 +482,22 @@ async function askMultiChoice(
       const selected = new Map<string, AskAnswer>();
       const editor = new Editor(tui, createEditorTheme(theme));
 
+      // See askSingleChoice: closing on abort keeps an aborted turn from
+      // waiting on a dialog nobody is looking at any more.
+      const onAbort = () => done(null);
+      signal?.addEventListener("abort", onAbort, { once: true });
+
       editor.onSubmit = (value) => {
         const trimmed = value.trim();
-        if (!trimmed) return;
-        selected.set("other", {
-          type: "other",
-          label: trimmed,
-          value: trimmed,
-        });
+        if (!trimmed) {
+          // Empty submit means "no custom answer" — clear it instead of
+          // leaving a stale saved value selected behind an empty editor.
+          selected.delete("other");
+          editMode = false;
+          refresh();
+          return;
+        }
+        selected.set("other", { type: "other", label: sanitizeLine(trimmed) });
         editMode = false;
         refresh();
       };
@@ -470,7 +514,6 @@ async function askMultiChoice(
           selected.set(item.id, {
             type: "option",
             label: item.label,
-            value: item.value,
             index: item.index!,
           });
         }
@@ -478,6 +521,12 @@ async function askMultiChoice(
       }
 
       function handleInput(data: string) {
+        // See askSingleChoice: Ctrl+C cancels the whole dialog.
+        if (matchesKey(data, CANCEL_KEY)) {
+          done(null);
+          return;
+        }
+
         if (editMode) {
           if (matchesKey(data, Key.escape)) {
             editMode = false;
@@ -545,7 +594,9 @@ async function askMultiChoice(
         // The cache MUST be keyed on width: pi-tui calls requestRender() but NOT
         // invalidate() on terminal resize, so render() can be re-entered with a
         // new width. Returning stale wider lines trips the TUI width guard and
-        // crashes the process.
+        // crashes the process. invalidate() is still needed too — theme changes
+        // call it without changing the width, and the cached lines have theme
+        // ANSI baked in.
         if (cachedLines && cachedWidth === width) return cachedLines;
 
         const lines: string[] = [];
@@ -645,16 +696,18 @@ async function askMultiChoice(
           cachedLines = undefined;
         },
         handleInput,
+        dispose: () => signal?.removeEventListener("abort", onAbort),
       };
     },
   );
 }
 
 // Shared UI mutex. ctx.ui.custom()/editor can only handle one active call at
-// a time, so ALL pop-up-style tools (ask_user_question, quiz, ...) must
-// serialize against each other, not just against themselves. We stash one
-// mutex on globalThis so separate extension files can share it without
-// importing each other.
+// a time, so any pop-up-style tool added later must serialize against this one,
+// not just against itself. The mutex lives on globalThis so separate extension
+// files can share it without importing each other. Command-driven ctx.ui.custom
+// callers elsewhere in this config do not take it — they are user-initiated and
+// cannot overlap with a tool call.
 const SHARED_UI_LOCK_KEY = "__piSharedUiLock";
 function getSharedUiLock() {
   const g = globalThis as any;
@@ -686,17 +739,12 @@ export default function askUserQuestion(pi: ExtensionAPI) {
     name: "ask_user_question",
     label: "ask_user_question",
     description:
-      "Ask the user a single question and pause execution until they answer. Use this when requirements are ambiguous, user preferences are needed, a decision would materially affect implementation, or you need confirmation before proceeding. Ask exactly one question per tool call, and prefer multiple separate tool calls over bundling unrelated questions together.",
+      "Ask the user a question and pause execution until they answer. Use this when requirements are ambiguous, user preferences are needed, a decision would materially affect implementation, or you need confirmation before proceeding. Pass options for a multiple-choice question, or omit them for free-form text.",
     promptSnippet:
-      "Use this tool to ask exactly one clarifying question, missing-requirement question, preference question, or decision question before continuing.",
+      "Use ask_user_question to ask the user one clarifying question and wait for their answer.",
     promptGuidelines: [
-      "Ask exactly one question per tool call.",
-      "If you need answers to multiple questions, make multiple separate ask_user_question tool calls instead of combining them into one prompt.",
-      'Users will always be able to select "Other" to provide custom text input when options are provided.',
-      "Use multiSelect: true only when you need multiple answers to the same question.",
-      'If you recommend a specific option, make it the first option in the list and add "(Recommended)" at the end of the label.',
-      "Prefer this tool over guessing when requirements, preferences, or implementation choices are unclear.",
-      "Use this tool when multiple valid implementation paths exist and the preferred path depends on user choice.",
+      "Call ask_user_question instead of guessing when requirements, preferences, or the implementation path are ambiguous, or when several valid approaches exist and the choice is the user's to make.",
+      "Send one question per ask_user_question call; make separate calls for separate questions.",
     ],
     parameters: AskUserQuestionParams,
 
@@ -714,16 +762,25 @@ export default function askUserQuestion(pi: ExtensionAPI) {
         return cancelledResult(params.question, mode, context);
       }
 
-      if (!ctx.hasUI) {
+      // ctx.ui.editor() works in TUI and RPC, but ctx.ui.custom() is a no-op
+      // outside the TUI (it resolves to undefined). Guarding the select modes
+      // on ctx.hasUI would report "cancelled" for a question never shown.
+      if (!ctx.hasUI || (mode !== "text" && ctx.mode !== "tui")) {
         return unavailableResult(
           params.question,
           mode,
-          "ask_user_question requires interactive mode UI",
+          "ask_user_question is unavailable in this mode. Ask the question in your reply text instead.",
           context,
         );
       }
 
       return withUILock(async () => {
+        // The lock may have been held for a while; the turn can be aborted
+        // in the meantime.
+        if (signal?.aborted) {
+          return cancelledResult(params.question, mode, context);
+        }
+
         if (mode === "text") {
           const editorTitle = context
             ? `${params.question}\n\n${context}`
@@ -733,7 +790,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
             return cancelledResult(params.question, mode, context);
           }
           return buildResult(params.question, context, mode, [
-            { type: "text", label: answer.trim(), value: answer.trim() },
+            { type: "text", label: answer.trim() },
           ]);
         }
 
@@ -743,6 +800,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
             params.question,
             context,
             options,
+            signal,
           );
           if (!answer) {
             return cancelledResult(params.question, mode, context);
@@ -755,6 +813,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
           params.question,
           context,
           options,
+          signal,
         );
         if (!answers) {
           return cancelledResult(params.question, mode, context);
@@ -766,7 +825,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
     renderCall(args, theme) {
       const options = normalizeOptions(
         args.options as
-          | Array<{ label: string; value?: string; description?: string }>
+          | Array<{ label?: string; description?: string }>
           | undefined,
       );
       let text =
