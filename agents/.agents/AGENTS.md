@@ -92,4 +92,4 @@ When the environment provides specialized agents, delegate only when fresh or is
 
 Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Planner** (multi-file approach after requirements are clear); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract).
 
-Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). The parent synthesizes agent output and owns the next decision. Parallelize only independent read work or explicitly disjoint write slices; keep to 2–3 agents; no overlapping write areas.
+Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). The parent synthesizes agent output and owns the next decision. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
