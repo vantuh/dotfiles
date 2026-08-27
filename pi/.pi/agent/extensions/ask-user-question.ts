@@ -825,8 +825,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
     renderCall(args, theme) {
       const options = normalizeOptions(
         args.options as
-          | Array<{ label?: string; description?: string }>
-          | undefined,
+          Array<{ label?: string; description?: string }> | undefined,
       );
       let text =
         theme.fg("toolTitle", theme.bold("ask_user_question ")) +
