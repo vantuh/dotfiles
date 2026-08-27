@@ -20,7 +20,9 @@
     "kiro-acp/auto",
     "cursor/grok-4.6:slow",
     "kiro-acp/claude-sonnet-5",
-    "kiro-acp/claude-opus-5"
+    "kiro-acp/claude-opus-5",
+    "openrouter/z-ai/glm-5.3-flash",
+    "openrouter/z-ai/glm-5.3"
   ],
   "defaultThinkingLevel": "medium",
   "subagents": {
