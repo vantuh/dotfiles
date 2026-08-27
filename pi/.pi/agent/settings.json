@@ -22,9 +22,6 @@
     "openrouter/z-ai/glm-5.3"
   ],
   "defaultThinkingLevel": "medium",
-  "subagents": {
-    "disableBuiltins": true
-  },
   "kiroSubagentsBridge": {
     "enabled": false
   },
