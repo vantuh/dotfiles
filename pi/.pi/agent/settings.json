@@ -1,10 +1,7 @@
 {
   "defaultProvider": "kiro-acp",
   "defaultModel": "claude-opus-5",
-  "packages": [
-    "npm:pi-web-access",
-    "npm:pi-cursor-sdk"
-  ],
+  "packages": ["npm:pi-web-access", "npm:pi-cursor-sdk"],
   "lastChangelogVersion": "0.84.3",
   "hideThinkingBlock": false,
   "compaction": {
@@ -27,6 +24,9 @@
   "defaultThinkingLevel": "medium",
   "subagents": {
     "disableBuiltins": true
+  },
+  "kiroSubagentsBridge": {
+    "enabled": false
   },
   "showHardwareCursor": false,
   "collapseChangelog": true,

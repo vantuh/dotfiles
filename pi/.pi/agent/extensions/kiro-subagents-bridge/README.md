@@ -23,6 +23,16 @@ Loads company **Kiro CLI agents** (`*.json`) into **pi-subagents** without modif
 
 ## Setup
 
+Toggle in `~/.pi/agent/settings.json` (defaults to `true` if omitted):
+
+```json
+"kiroSubagentsBridge": {
+  "enabled": false
+}
+```
+
+When disabled, the extension registers no handlers and skips sync/cleanup entirely.
+
 ```json
 "packages": [
   { "source": "extensions/kiro-subagents-bridge" },

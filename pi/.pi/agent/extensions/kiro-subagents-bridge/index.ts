@@ -1,10 +1,25 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import * as fs from "node:fs";
+import * as path from "node:path";
 
 import { formatKiroContextReport, gatherKiroContextForCwd } from "./context-report.ts";
 import { log, LOG_FILE } from "./logging.ts";
-import { findNearestKiroRoot, getProjectSyncOutDir } from "./paths.ts";
+import { findNearestKiroRoot, getAgentDir, getProjectSyncOutDir } from "./paths.ts";
 import { syncKiroAgentsForCwd } from "./sync.ts";
+
+/** Reads `kiroSubagentsBridge.enabled` from settings.json (defaults to true). */
+function isExtensionEnabled(): boolean {
+	const settingsPath = path.join(getAgentDir(), "settings.json");
+	try {
+		const raw = fs.readFileSync(settingsPath, "utf8");
+		const settings = JSON.parse(raw) as { kiroSubagentsBridge?: { enabled?: boolean } };
+		return settings.kiroSubagentsBridge?.enabled !== false;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		log("settings read failed, assuming enabled", { settingsPath, error: message });
+		return true;
+	}
+}
 
 function runSync(cwd: string, reason = "session_start"): void {
 	const result = syncKiroAgentsForCwd(cwd);
@@ -42,7 +57,10 @@ function runSync(cwd: string, reason = "session_start"): void {
 }
 
 export default function (pi: ExtensionAPI) {
-	log("extension loaded", { pid: process.pid, logFile: LOG_FILE });
+	const enabled = isExtensionEnabled();
+	log("extension loaded", { pid: process.pid, logFile: LOG_FILE, enabled });
+	if (!enabled) return;
+
 
 	pi.on("session_start", (_event, ctx) => {
 		log("session_start", { cwd: ctx.cwd });
