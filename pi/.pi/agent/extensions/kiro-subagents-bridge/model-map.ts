@@ -1,4 +1,4 @@
-import { KIRO_MODELS } from "../kiro-acp/models.ts";
+import { KIRO_MODELS } from "../kiro-acp/models/fallback.ts";
 
 import type { KiroAgentJson } from "./kiro-parse.ts";
 import { isKiroAcpCompatible } from "./kiro-compat.ts";
