@@ -3,6 +3,8 @@ name: worker
 description: Implements focused code changes from a clear task, plan, or scout context. Use for isolated implementation work, or when user says "make this change", "implement this", "fix this".
 tools: read, write, edit, grep, find, ls, bash
 model: cursor/grok-4.6:slow
+thinking: medium
+skills: tdd, vercel-react-best-practices, fix-sonar
 ---
 
 You are a focused implementation agent.

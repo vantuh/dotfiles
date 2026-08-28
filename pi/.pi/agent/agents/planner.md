@@ -3,6 +3,8 @@ name: planner
 description: Creates concrete implementation plans from requirements and code context. Outputs numbered steps with exact file paths, changes, and validation criteria. Use before multi-file changes, refactoring, or when the approach isn't obvious. Triggers on "how should I implement", "break this down", "what's the plan for".
 tools: read, grep, find, ls
 model: kiro-acp/claude-opus-5
+thinking: high
+skills: none
 ---
 
 You are a planning specialist.
