@@ -11,8 +11,8 @@ local formatters_by_ft = {
   handlebars = { 'prettier' },
   html = { 'prettier' },
   htmlangular = { 'prettier' },
-  javascript = { 'prettier' },
-  javascriptreact = { 'prettier' },
+  javascript = { 'prettier', 'oxfmt', stop_after_first = true },
+  javascriptreact = { 'prettier', 'oxfmt', stop_after_first = true },
   json = { 'prettier' },
   jsonc = { 'prettier' },
   less = { 'prettier' },
@@ -25,8 +25,8 @@ local formatters_by_ft = {
   sql = { 'sqlfluff' },
   sh = { 'shfmt' },
   fish = { 'fish_indent' },
-  typescript = { 'prettier' },
-  typescriptreact = { 'prettier' },
+  typescript = { 'prettier', 'oxfmt', stop_after_first = true },
+  typescriptreact = { 'prettier', 'oxfmt', stop_after_first = true },
   vue = { 'prettier' },
   yaml = { 'prettier' },
 }
@@ -44,9 +44,23 @@ end
 ---@alias ConformCtx {buf: number, filename: string, dirname: string}
 local prettier = {}
 
+-- Same executable as Conform formatting (project-local node_modules/.bin, then PATH).
+---@param ctx ConformCtx
+function prettier.command(ctx)
+  local config = require('conform').get_formatter_config('prettier', ctx.buf)
+  if not config then
+    return 'prettier'
+  end
+  local command = config.command
+  if type(command) == 'function' then
+    command = command(config, ctx)
+  end
+  return command or 'prettier'
+end
+
 ---@param ctx ConformCtx
 function prettier.has_config(ctx)
-  vim.fn.system { 'prettier', '--find-config-path', ctx.filename }
+  vim.fn.system { prettier.command(ctx), '--find-config-path', ctx.filename }
   return vim.v.shell_error == 0
 end
 
@@ -56,27 +70,11 @@ function prettier.has_parser(ctx)
   if prettier_ft[ft] then
     return true
   end
-  local ret = vim.fn.system { 'prettier', '--file-info', ctx.filename }
+  local ret = vim.fn.system { prettier.command(ctx), '--file-info', ctx.filename }
   local ok, parser = pcall(function()
     return vim.fn.json_decode(ret).inferredParser
   end)
   return ok and parser and parser ~= vim.NIL
-end
-
-do
-  -- memoize: cache results per unique argument set
-  local cache = {}
-  for _, fn_name in ipairs { 'has_config', 'has_parser' } do
-    local orig = prettier[fn_name]
-    prettier[fn_name] = function(...)
-      local key = vim.inspect { ... }
-      cache[fn_name] = cache[fn_name] or {}
-      if cache[fn_name][key] == nil then
-        cache[fn_name][key] = orig(...)
-      end
-      return cache[fn_name][key]
-    end
-  end
 end
 
 require('conform').setup {
@@ -97,6 +95,11 @@ require('conform').setup {
   formatters = {
     prettier = {
       condition = function(_, ctx)
+        -- JS/TS lists prettier then oxfmt with stop_after_first; config alone
+        -- selects prettier (has_parser is always true for these filetypes).
+        if vim.tbl_contains(formatters_by_ft[vim.bo[ctx.buf].filetype] or {}, 'oxfmt') then
+          return prettier.has_config(ctx)
+        end
         return prettier.has_parser(ctx) and (vim.g.lazyvim_prettier_needs_config ~= true or prettier.has_config(ctx))
       end,
     },

@@ -182,9 +182,45 @@ local servers = {
   docker_compose_language_service = {},
   eslint = {
     settings = {
-      workingDirectories = { mode = 'auto' },
-      format = true,
+      format = false,
     },
+    -- Copy markers before insert_package_json: lspconfig mutates the table, so a prior
+    -- package.json with eslintConfig would otherwise attach ESLint in later projects.
+    root_dir = function(bufnr, on_dir)
+      local filename = vim.api.nvim_buf_get_name(bufnr)
+      if filename == '' or vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc', 'deno.lock' }) then
+        return
+      end
+      local root_markers = { 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb', 'bun.lock' }
+      root_markers = vim.fn.has 'nvim-0.11.3' == 1 and { root_markers, { '.git' } } or vim.list_extend(root_markers, { '.git' })
+      local project_root = vim.fs.root(bufnr, root_markers) or vim.fn.getcwd()
+      local eslint_config_files = {
+        '.eslintrc',
+        '.eslintrc.js',
+        '.eslintrc.cjs',
+        '.eslintrc.yaml',
+        '.eslintrc.yml',
+        '.eslintrc.json',
+        'eslint.config.js',
+        'eslint.config.mjs',
+        'eslint.config.cjs',
+        'eslint.config.ts',
+        'eslint.config.mts',
+        'eslint.config.cts',
+      }
+      local markers = require('lspconfig.util').insert_package_json(vim.list_extend({}, eslint_config_files), 'eslintConfig', filename)
+      if
+        vim.fs.find(markers, {
+          path = filename,
+          type = 'file',
+          limit = 1,
+          upward = true,
+          stop = vim.fs.dirname(project_root),
+        })[1]
+      then
+        on_dir(project_root)
+      end
+    end,
   },
   tailwindcss = {
     before_init = function(_, config)
@@ -278,6 +314,8 @@ vim.list_extend(ensure_installed, {
   'hadolint',
   'markdown-toc',
   'markdownlint-cli2',
+  'oxfmt',
+  'oxlint',
   'prettier',
   'shfmt',
   'sqlfluff',
