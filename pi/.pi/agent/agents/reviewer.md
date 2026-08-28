@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews code changes, plans, and proposed solutions for correctness, security, regressions, and maintainability. Use after non-trivial changes, before risky implementation, or when user asks "check my work", "is this correct", "did I miss anything".
 tools: read, grep, find, ls, bash
-model: kiro-acp/claude-opus-5
+model: openai-codex/gpt-5.6-sol
 thinking: high
 skills: hunk-review
 ---
