@@ -1,9 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxfmt/configuration_schema.json",
   "printWidth": 80,
-  "indentWidth": 2,
-  "lineBreak": "lf",
-  "quoteStyle": "single",
+  "tabWidth": 2,
+  "useTabs": false,
+  "endOfLine": "lf",
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "semi": true,
   "trailingComma": "all",
-  "semi": true
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "bracketSameLine": false
 }
