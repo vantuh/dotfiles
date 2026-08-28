@@ -1,0 +1,13 @@
+{
+  "name": "pi-extensions",
+  "private": true,
+  "type": "module",
+  "description": "Shared deps for single-file pi extensions living in this directory",
+  "devDependencies": {
+    "@types/node": "^26.4.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  }
+}
