@@ -6,7 +6,7 @@
     "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.84.3",
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
@@ -22,7 +22,8 @@
     "kiro-acp/claude-sonnet-5",
     "kiro-acp/claude-opus-5",
     "openrouter/z-ai/glm-5.3-flash",
-    "openrouter/z-ai/glm-5.3"
+    "openrouter/z-ai/glm-5.3",
+    "local/qwen3.8-27b"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
