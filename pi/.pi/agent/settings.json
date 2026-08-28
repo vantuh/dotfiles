@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-opus-5",
+  "defaultProvider": "openrouter",
+  "defaultModel": "z-ai/glm-5.3-flash",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-cursor-sdk"
