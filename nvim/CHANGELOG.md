@@ -41,6 +41,10 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
 
 ## Iterative changes
 
+### 2026-08-28
+
+- **JS/TS format and lint selection.** For javascript/javascriptreact/typescript/typescriptreact, a project Prettier config selects prettier (one `--find-config-path` probe via Conform `stop_after_first`, using Conform's prettier executable including `node_modules/.bin`); otherwise oxfmt runs. Format detection no longer treats `.oxlintrc.json` as an oxfmt config. Lint uses ESLint LSP when an ESLint config exists (copy-safe markers matching nvim-lspconfig, including `package.json` `eslintConfig` and the lockfile/`.git` project boundary, so a prior `eslintConfig` cannot leak into a later package.json-only project); otherwise oxlint. Mason now ensures `oxfmt` and `oxlint`. ESLint `format` is now `false` (was `true`). nvim-lint debounce is per-buffer. oxlint (disk, `stdin=false`) runs on read/write, not `InsertLeave`; stdin linters still run on `InsertLeave`. Adding or removing an ESLint config requires reopening the buffer (or reloading LSP).
+
 ### 2026-08-01
 
 - **Removed custom which-key icon rules.** Dropped 88 description-pattern
