@@ -26,6 +26,43 @@
           }
         },
         {
+          "id": "qwen3.8-27b",
+          "name": "Qwen 3.8 27B (local)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 100000,
+          "maxTokens": 32768,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "xhigh",
+            "xhigh": null,
+            "max": null
+          },
+          "compat": {
+            "thinkingFormat": "chat-template",
+            "chatTemplateKwargs": {
+              "enable_thinking": {
+                "$var": "thinking.enabled"
+              },
+              "reasoning_effort": {
+                "$var": "thinking.effort",
+                "omitWhenOff": true
+              },
+              "preserve_thinking": true
+            }
+          },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        },
+        {
           "id": "gemma-4-26b",
           "name": "Gemma 4 26B A4B QAT (local)",
           "reasoning": true,
