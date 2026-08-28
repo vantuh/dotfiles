@@ -1,0 +1,23 @@
+# Everything except TypeScript sources (oxlint reads this automatically)
+agents/
+alacritty/
+fan_control/
+herdr/
+hunk/
+karabiner/
+lazygit/
+nvim/
+omp/
+starship/
+tmux/
+windows-terminal/
+yazi/
+zed/
+zsh/
+# pi: TS files only (gitignore semantics: dirs must be re-included first)
+pi/*
+pi/**/*
+!pi/**/
+!pi/**/*.ts
+# re-exclude node_modules everywhere (must come after re-inclusion patterns)
+**/node_modules/
