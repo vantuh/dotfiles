@@ -40,7 +40,7 @@ models:
       --model ${models_dir}/Qwen3.8-27B-Ridge-3.7bpw.gguf
       --ctx-size 131072
       --spec-type draft-mtp
-      --spec-draft-n-max 6
+      --spec-draft-n-max 2
       -ngl 99
       --cache-type-k q8_0
       --cache-type-v q8_0
