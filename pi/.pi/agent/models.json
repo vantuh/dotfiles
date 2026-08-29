@@ -1,5 +1,18 @@
 {
   "providers": {
+    "openrouter": {
+      "modelOverrides": {
+        "z-ai/glm-5.3-flash": {
+          "compat": {
+            "openRouterRouting": {
+              "only": [
+                "z-ai"
+              ]
+            }
+          }
+        }
+      }
+    },
     "local": {
       "baseUrl": "http://localhost:8080/v1",
       "api": "openai-completions",
