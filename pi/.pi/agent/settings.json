@@ -6,7 +6,7 @@
     "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.84.4",
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
