@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Shared deps for single-file pi extensions living in this directory",
   "devDependencies": {
-    "@types/node": "^26.4.0"
+    "@types/node": "^26.4.0",
+    "typebox": "^1.3.7"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",

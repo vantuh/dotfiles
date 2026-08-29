@@ -3,10 +3,16 @@ import path from 'node:path';
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import {
+  createEditToolDefinition,
+  createWriteToolDefinition,
   isEditToolResult,
   isWriteToolResult,
   withFileMutationQueue,
 } from '@earendil-works/pi-coding-agent';
+
+import { withNotesRenderer } from './notes-renderer.ts';
+import { parseEslint, parseOxlint } from './parsers.ts';
+import type { Finding } from './parsers.ts';
 
 const TS_RE = /\.(?:ts|tsx|mts|cts)$/;
 const MAX_FINDINGS = 10;
@@ -52,13 +58,6 @@ const ESLINT_CONFIGS = [
   '.eslintrc.cjs',
 ];
 
-interface Finding {
-  line: string;
-  severity: string;
-  rule: string;
-  message: string;
-}
-
 interface Toolchain {
   formatter: 'oxfmt' | 'prettier';
   linter: 'oxlint' | 'eslint';
@@ -72,19 +71,15 @@ const hasPrettierKey = (dir: string): boolean => {
     );
     return typeof pkg === 'object' && pkg !== null && 'prettier' in pkg;
   } catch {
-    return false; // no package.json or invalid JSON
+    return false;
   }
 };
 
-/**
- * ONE upward scan from the file's directory; the nearest directory containing
- * any relevant config decides all roles (oxc > eslint > prettier precedence
- * within that same dir, defaults otherwise). A nearer .prettierrc therefore
- * beats a stray ~/.oxlintrc.json. Cached per directory for the session.
- */
+const scanCache = new Map<string, Toolchain>();
+
+/** ONE upward scan; nearest dir with any relevant config decides all roles. */
 function resolveToolchain(startDir: string): Toolchain {
-  const key = startDir;
-  const cached = scanCache.get(key);
+  const cached = scanCache.get(startDir);
   if (cached) return cached;
 
   let result: Toolchain = {
@@ -115,74 +110,14 @@ function resolveToolchain(startDir: string): Toolchain {
     if (parent === dir) break;
     dir = parent;
   }
-  scanCache.set(key, result);
+  scanCache.set(startDir, result);
   return result;
-}
-const scanCache = new Map<string, Toolchain>();
-
-function parseOxlint(stdout: string): Finding[] {
-  const findings: Finding[] = [];
-  for (const line of stdout.split('\n')) {
-    const m = line.match(
-      /^::(warning|error) file=[^,]+,line=(\d+),.*?title=([^:]*)::(.*)$/,
-    );
-    if (m)
-      findings.push({
-        severity: m[1],
-        line: m[2],
-        rule: m[3],
-        message: m[4].replace(/^[^:]+:\d+:\d+:\s*/, ''),
-      });
-  }
-  return findings;
-}
-
-interface EslintMessage {
-  line?: unknown;
-  severity?: unknown;
-  ruleId?: unknown;
-  message?: unknown;
-}
-const isEslintMessage = (v: unknown): v is EslintMessage =>
-  typeof v === 'object' && v !== null && 'line' in v;
-function parseEslint(stdout: string): Finding[] {
-  let results: unknown;
-  try {
-    results = JSON.parse(stdout);
-  } catch {
-    return [];
-  }
-  const entries: unknown[] = Array.isArray(results) ? results : [];
-  const findings: Finding[] = [];
-  for (const entry of entries) {
-    if (
-      typeof entry !== 'object' ||
-      entry === null ||
-      !('messages' in entry) ||
-      !Array.isArray(entry.messages)
-    )
-      continue;
-    const messages: unknown[] = entry.messages;
-    for (const m of messages) {
-      if (!isEslintMessage(m) || typeof m.line !== 'number' || m.line <= 0)
-        continue; // skips whole-file warnings too
-      findings.push({
-        line: String(m.line),
-        severity: m.severity === 2 ? 'error' : 'warning',
-        rule: typeof m.ruleId === 'string' ? m.ruleId : 'unknown',
-        message: typeof m.message === 'string' ? m.message : '',
-      });
-    }
-  }
-  return findings;
 }
 
 /**
  * After the model edits a .ts file: run the project's linter with --fix, then
  * its formatter, then feed remaining lint findings back into the tool result —
- * so the model sees and fixes its own violations without being asked. Toolchain
- * is chosen from per-project configs (see resolveToolchain). Serialized through
- * pi's file mutation queue so parallel edits can't interleave with rewrites.
+ * so the model sees and fixes its own violations without being asked.
  */
 export default function oxcAuto(pi: ExtensionAPI) {
   pi.on('tool_result', async (event, ctx) => {
@@ -284,4 +219,9 @@ export default function oxcAuto(pi: ExtensionAPI) {
       return undefined; // consistent-return: no findings → keep original result
     });
   });
+
+  // Draw [oxc-auto] notes directly under the built-in edit/write blocks.
+  const cwd = process.cwd();
+  pi.registerTool(withNotesRenderer(createEditToolDefinition(cwd)));
+  pi.registerTool(withNotesRenderer(createWriteToolDefinition(cwd)));
 }
