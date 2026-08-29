@@ -10,22 +10,6 @@
       },
       "models": [
         {
-          "id": "qwen3.6-27b",
-          "name": "Qwen 3.6 27B (local)",
-          "reasoning": true,
-          "input": [
-            "text"
-          ],
-          "contextWindow": 100000,
-          "maxTokens": 32768,
-          "cost": {
-            "input": 0,
-            "output": 0,
-            "cacheRead": 0,
-            "cacheWrite": 0
-          }
-        },
-        {
           "id": "qwen3.8-27b",
           "name": "Qwen 3.8 27B (local)",
           "reasoning": true,
@@ -63,36 +47,34 @@
           }
         },
         {
-          "id": "gemma-4-26b",
-          "name": "Gemma 4 26B A4B QAT (local)",
+          "id": "qwen3.8-27b-ridge",
+          "name": "Qwen 3.8 27B Ridge (local)",
           "reasoning": true,
           "input": [
             "text"
           ],
-          "contextWindow": 196608,
+          "contextWindow": 100000,
           "maxTokens": 32768,
-          "compat": {
-            "supportsDeveloperRole": false
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "xhigh",
+            "xhigh": null,
+            "max": null
           },
-          "cost": {
-            "input": 0,
-            "output": 0,
-            "cacheRead": 0,
-            "cacheWrite": 0
-          }
-        },
-        {
-          "id": "qwythos-9b-v2-mtp",
-          "name": "Qwythos 9B v2 MTP (local)",
-          "reasoning": true,
-          "input": [
-            "text"
-          ],
-          "contextWindow": 160000,
-          "maxTokens": 32768,
           "compat": {
-            "supportsDeveloperRole": false,
-            "thinkingFormat": "qwen-chat-template"
+            "thinkingFormat": "chat-template",
+            "chatTemplateKwargs": {
+              "enable_thinking": {
+                "$var": "thinking.enabled"
+              },
+              "reasoning_effort": {
+                "$var": "thinking.effort",
+                "omitWhenOff": true
+              },
+              "preserve_thinking": true
+            }
           },
           "cost": {
             "input": 0,
