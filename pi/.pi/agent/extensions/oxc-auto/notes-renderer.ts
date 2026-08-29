@@ -34,8 +34,10 @@ const isChildMount = (c: Component): c is Component & ChildMount =>
  * notes beneath it (the built-in renderResult ignores text content).
  *
  * kiro-acp-style exact-width rows: each line is padded to the render width
- * and bg is applied OUTERMOST. theme.fg resets only fg (\\x1b[39m), so the
- * outer bg survives interior fg codes — no unpainted slivers.
+ * and bg is applied as an open-only SGR prefix (no trailing \x1b[49m — a bg
+ * reset here would also kill the ancestor Box's bg for its trailing pad
+ * cell). theme.fg resets only fg (\\x1b[39m), so the bg survives interior
+ * fg codes — no unpainted slivers.
  */
 export function withNotesRenderer<TParams extends TSchema, TDetails, TState>(
   def: ToolDefinition<TParams, TDetails, TState>,
@@ -47,25 +49,28 @@ export function withNotesRenderer<TParams extends TSchema, TDetails, TState>(
       const comp = builtinRender?.(result, options, theme, context);
       const notes = result.content.filter(isNoteText).map((c) => c.text);
       if (comp && notes.length > 0 && isChildMount(comp)) {
+        const toolName = def.name;
         const notesView: Component = {
           invalidate(): void {},
           render(width: number): string[] {
             const innerWidth = Math.max(1, width - 2);
-            return notes
+            const bgOpen = theme.getBgAnsi('toolSuccessBg');
+            const rows = notes
               .map((note) =>
                 wrapTextWithAnsi(note, innerWidth).map((piece) => {
                   const pad = ' '.repeat(
                     Math.max(0, innerWidth - visibleWidth(piece)),
                   );
                   const row = ` ${theme.fg('warning', piece)}${pad} `;
-                  return theme.bg('toolSuccessBg', row);
+                  return bgOpen + row;
                 }),
               )
-              .reduce<string[]>((all, rows, i) => {
-                if (i > 0)
-                  all.push(theme.bg('toolSuccessBg', ' '.repeat(width)));
-                return all.concat(rows);
+              .reduce<string[]>((all, noteRows, i) => {
+                if (i > 0) all.push(bgOpen + ' '.repeat(width));
+                return all.concat(noteRows);
               }, []);
+            if (toolName === 'edit') rows.push(bgOpen + ' '.repeat(width));
+            return rows;
           },
         };
         comp.addChild(notesView);
