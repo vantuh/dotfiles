@@ -23,7 +23,8 @@
     "kiro-acp/claude-opus-5",
     "openrouter/z-ai/glm-5.3-flash",
     "local/qwen3.8-27b",
-    "local/qwen3.8-27b-ridge"
+    "local/qwen3.8-27b-ridge",
+    "openrouter/deepseek/deepseek-v4-flash-0731"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
