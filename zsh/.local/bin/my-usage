@@ -248,6 +248,66 @@ NODE
 }
 
 
+openrouter_key() {
+  local key="" f="${OPENROUTER_KEY_FILE:-$HOME/.config/my-usage/openrouter-key}"
+  if [[ -f "$f" ]]; then
+    key="$(tr -d '[:space:]' < "$f")"
+  elif [[ -f "$HOME/.pi/agent/auth.json" ]]; then
+    key="$(OPENROUTER_AUTH="$HOME/.pi/agent/auth.json" node -e 'try{const d=require(process.env.OPENROUTER_AUTH);process.stdout.write((d.openrouter&&d.openrouter.key)||"")}catch{}' 2>/dev/null)"
+  elif [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+    key="$OPENROUTER_API_KEY"
+  fi
+  printf '%s' "$key"
+}
+
+run_openrouter_usage() {
+  section "OpenRouter"
+
+  local key
+  key="$(openrouter_key)"
+  if [[ -z "$key" ]]; then
+    skip "openrouter api key missing"
+    return 0
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    skip "curl not installed"
+    return 0
+  fi
+
+  if ! command -v node >/dev/null 2>&1; then
+    skip "node not installed"
+    return 0
+  fi
+
+  local json
+  json="$(curl -sS --max-time 10 'https://openrouter.ai/api/v1/credits' \
+    -H "Authorization: Bearer $key" 2>/dev/null)" || { skip "openrouter request failed"; return 0; }
+
+  OPENROUTER_JSON="$json" node <<'NODE'
+try {
+  const data = JSON.parse(process.env.OPENROUTER_JSON || '{}').data || {};
+  const total = data.total_credits;
+  const used = data.total_usage;
+  if (typeof total !== 'number' || typeof used !== 'number') {
+    console.log('skip: unexpected openrouter response');
+  } else {
+    const left = Math.max(0, total - used);
+    const pct = total > 0 ? (used / total) * 100 : 0;
+    const money = (v) => '$' + v.toFixed(2);
+    const p = Math.max(0, Math.min(100, Math.round(pct)));
+    const f = Math.round((p / 100) * 20);
+    const bar = '█'.repeat(f) + '░'.repeat(20 - f);
+    console.log(`Balance  ${bar} ${p}%  ${money(left)} left of ${money(total)}`);
+  }
+} catch {
+  console.log('skip: unexpected openrouter response');
+}
+NODE
+}
+
+
 run_codex_usage || true
 run_kiro_usage || true
 run_cursor_usage || true
+run_openrouter_usage || true

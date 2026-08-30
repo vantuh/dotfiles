@@ -70,14 +70,14 @@ maybe_refresh_async() {
 }
 
 summarize() {
-  # One segment per "== Section ==" that has a percentage in its lines.
-  # Codex shows its worst window; other sections show the first percentage.
+  # One segment per "== Section ==": Codex shows its worst window (percent),
+  # OpenRouter shows its first dollar amount, others the first percentage.
   awk '
     {
       line = $0
       if (match(line, /== [A-Za-z]+ ==/)) {
         cur = substr(line, RSTART + 3, RLENGTH - 6)
-        if (!(cur in seen)) { order[++n] = cur; seen[cur] = 1; first[cur] = ""; max[cur] = "" }
+        if (!(cur in seen)) { order[++n] = cur; seen[cur] = 1; first[cur] = ""; max[cur] = ""; dollar[cur] = "" }
         next
       }
       if (cur == "") next
@@ -87,14 +87,25 @@ summarize() {
         if (max[cur] == "" || p > max[cur]) max[cur] = p
         line = substr(line, RSTART + RLENGTH)
       }
+      if (cur == "OpenRouter" && dollar[cur] == "" && match(line, /[$][0-9]+(\.[0-9]+)?/)) {
+        dollar[cur] = substr(line, RSTART, RLENGTH)
+      }
     }
     END {
       out = ""
       for (i = 1; i <= n; i++) {
         c = order[i]
-        p = (c == "Codex") ? max[c] : first[c]
-        if (p == "") continue
-        seg = c " " int(p + 0.5) "%"
+        seg = c " "
+        if (c == "Codex") {
+          if (max[c] == "") continue
+          seg = seg int(max[c] + 0.5) "%"
+        } else if (c == "OpenRouter") {
+          if (dollar[c] == "") continue
+          seg = seg dollar[c]
+        } else {
+          if (first[c] == "") continue
+          seg = seg int(first[c] + 0.5) "%"
+        }
         out = out ? out " · " seg : seg
       }
       print out
