@@ -47,7 +47,9 @@
     "defaults": {
       "colorScheme": "Catppuccin Mocha",
       "fontSize": 11,
-      "cellHeight": "1.5"
+      "cellHeight": 1,
+      "scrollbarState": "hidden",
+      "padding": "0"
     },
     "list": [
       {
