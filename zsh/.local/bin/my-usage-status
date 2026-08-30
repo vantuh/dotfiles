@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+# One-line usage summary for the Herdr tab-bar status area (ui.tab_bar_right).
+# Prints the cached summary instantly; refreshes the cache in the background
+# when older than MY_USAGE_STATUS_TTL seconds (default 300).
+set -u
+
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/my-usage/status.txt"
+LOCK_DIR="${CACHE}.lock"
+TTL="${MY_USAGE_STATUS_TTL:-300}"
+
+# Herdr may launch this with a stripped PATH; restore common tool locations.
+for dir in "$HOME/.local/bin" /home/linuxbrew/.linuxbrew/bin /opt/homebrew/bin /usr/local/bin; do
+  [[ -d "$dir" ]] && PATH="$dir:$PATH"
+done
+export PATH
+
+strip_ansi() {
+  LC_ALL=C sed -e 's/\x1B\[[0-?]*[ -/]*[@-~]//g'
+}
+
+resolve_my_usage() {
+  if [[ -n "${MY_USAGE_BIN:-}" ]]; then
+    printf '%s' "$MY_USAGE_BIN"
+    return 0
+  fi
+  if command -v my-usage >/dev/null 2>&1; then
+    command -v my-usage
+    return 0
+  fi
+  if [[ -x "$HOME/.local/bin/my-usage" ]]; then
+    printf '%s' "$HOME/.local/bin/my-usage"
+    return 0
+  fi
+  return 1
+}
+
+refresh() {
+  local bin
+  bin="$(resolve_my_usage)" || return 1
+  mkdir -p "$(dirname "$CACHE")"
+  "$bin" 2>/dev/null | strip_ansi > "$CACHE.tmp.$$" && mv "$CACHE.tmp.$$" "$CACHE"
+}
+
+age_seconds() {
+  local path="${1:-$CACHE}" now mtime
+  now="$(date +%s)"
+  mtime="$(stat -c %Y "$path" 2>/dev/null || stat -f %m "$path" 2>/dev/null || echo "$now")"
+  echo $((now - mtime))
+}
+
+maybe_refresh_async() {
+  local bin script
+  bin="$(resolve_my_usage)" || return 0
+  script="${BASH_SOURCE[0]}"
+  if [[ -d "$LOCK_DIR" ]]; then
+    if (( $(age_seconds "$LOCK_DIR") > 120 )); then
+      rm -rf "$LOCK_DIR"
+    else
+      return 0
+    fi
+  fi
+  mkdir "$LOCK_DIR" 2>/dev/null || return 0
+  if command -v setsid >/dev/null 2>&1; then
+    # Detach so the refresh survives the status-bar command exiting.
+    setsid "$script" --refresh "$bin" "$LOCK_DIR" >/dev/null 2>&1 < /dev/null &
+  else
+    MY_USAGE_BIN="$bin" refresh
+    rmdir "$LOCK_DIR" 2>/dev/null
+  fi
+}
+
+summarize() {
+  # One segment per "== Section ==" that has a percentage in its lines.
+  # Codex shows its worst window; other sections show the first percentage.
+  awk '
+    {
+      line = $0
+      if (match(line, /== [A-Za-z]+ ==/)) {
+        cur = substr(line, RSTART + 3, RLENGTH - 6)
+        if (!(cur in seen)) { order[++n] = cur; seen[cur] = 1; first[cur] = ""; max[cur] = "" }
+        next
+      }
+      if (cur == "") next
+      while (match(line, /[0-9]+(\.[0-9]+)?%/)) {
+        p = substr(line, RSTART, RLENGTH - 1) + 0
+        if (first[cur] == "") first[cur] = p
+        if (max[cur] == "" || p > max[cur]) max[cur] = p
+        line = substr(line, RSTART + RLENGTH)
+      }
+    }
+    END {
+      out = ""
+      for (i = 1; i <= n; i++) {
+        c = order[i]
+        p = (c == "Codex") ? max[c] : first[c]
+        if (p == "") continue
+        seg = c " " int(p + 0.5) "%"
+        out = out ? out " · " seg : seg
+      }
+      print out
+    }
+  ' "$CACHE"
+}
+
+main() {
+  # Internal detached mode: refresh cache, release lock, exit.
+  if [[ "${1:-}" == "--refresh" ]]; then
+    MY_USAGE_BIN="$2" refresh && rmdir "$3" 2>/dev/null
+    exit
+  fi
+  if [[ -f "$CACHE" ]]; then
+    if (( $(age_seconds) > TTL )); then
+      maybe_refresh_async
+    fi
+  else
+    refresh
+  fi
+  [[ -f "$CACHE" ]] || return 0
+  summarize
+}
+
+main "$@"
