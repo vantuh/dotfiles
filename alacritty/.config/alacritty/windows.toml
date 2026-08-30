@@ -3,7 +3,7 @@ import = ["C:\\Users\\Ivan\\AppData\\Roaming\\alacritty\\base.toml"]
 
 [terminal.shell]
 program = "wsl.exe"
-args = ["--cd", "~", "--", "tmux", "new-session", "-A", "-D", "-s", "main"]
+args = ["--cd", "~", "--", "/home/linuxbrew/.linuxbrew/bin/herdr"]
 
 [font]
 size = 12.0
