@@ -253,7 +253,7 @@ openrouter_key() {
   if [[ -f "$f" ]]; then
     key="$(tr -d '[:space:]' < "$f")"
   elif [[ -f "$HOME/.pi/agent/auth.json" ]]; then
-    key="$(OPENROUTER_AUTH="$HOME/.pi/agent/auth.json" node -e 'try{const d=require(process.env.OPENROUTER_AUTH);process.stdout.write((d.openrouter&&d.openrouter.key)||"")}catch{}' 2>/dev/null)"
+    key="$(OPENROUTER_AUTH="$HOME/.pi/agent/auth.json" node -e 'try{const d=require(process.env.OPENROUTER_AUTH);process.stdout.write((d.openrouter&&(d.openrouter.key||d.openrouter.access))||"")}catch{}' 2>/dev/null)"
   elif [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
     key="$OPENROUTER_API_KEY"
   fi
