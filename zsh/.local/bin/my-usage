@@ -293,7 +293,7 @@ try {
     console.log('skip: unexpected openrouter response');
   } else {
     const left = Math.max(0, total - used);
-    const pct = total > 0 ? (used / total) * 100 : 0;
+    const pct = total > 0 ? (left / total) * 100 : 0;
     const money = (v) => '$' + v.toFixed(2);
     const p = Math.max(0, Math.min(100, Math.round(pct)));
     const f = Math.round((p / 100) * 20);
