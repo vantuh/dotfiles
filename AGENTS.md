@@ -15,7 +15,6 @@ agents/             Shared AI agent skills & instructions (symlinked to Pi, OMP,
   skills.json       GitHub sources for skill updates
   update-skills.sh  Fetch latest skills from GitHub
 install.sh          Cross-platform installer (stow + agent linking)
-Brewfile            Homebrew dependencies
 ```
 
 ## Conventions
@@ -28,7 +27,6 @@ Brewfile            Homebrew dependencies
 ## Rules
 
 - **All changes happen inside this repo, never directly in `$HOME`.** Create/edit files here, then symlink them (via stow or `agents/link.sh`). After linking, tell the user to test. Don't create config files in `~` — they'll drift out of sync with the repo.
-- Don't add packages to Brewfile without asking.
 - Don't modify shared agent instructions (`agents/.agents/AGENTS.md`) unless the user explicitly asks — changes apply to pi, OMP, OpenCode, and Kiro simultaneously.
 - When adding a new stow package, add it to `COMMON_PACKAGES` or platform-specific list in `install.sh`.
 - When adding a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add targets to `agents/links.json`.

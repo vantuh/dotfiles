@@ -41,7 +41,6 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 git clone git@github.com:vantuh/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh
-brew bundle
 chsh -s $(which zsh)
 ```
 
