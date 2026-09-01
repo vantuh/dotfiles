@@ -29,7 +29,7 @@ Brewfile            Homebrew dependencies
 
 - **All changes happen inside this repo, never directly in `$HOME`.** Create/edit files here, then symlink them (via stow or `agents/link.sh`). After linking, tell the user to test. Don't create config files in `~` — they'll drift out of sync with the repo.
 - Don't add packages to Brewfile without asking.
-- Don't modify shared agent instructions (`agents/.agents/AGENTS.md`) — they're used across all agents.
+- Don't modify shared agent instructions (`agents/.agents/AGENTS.md`) unless the user explicitly asks — changes apply to pi, OMP, OpenCode, and Kiro simultaneously.
 - When adding a new stow package, add it to `COMMON_PACKAGES` or platform-specific list in `install.sh`.
 - When adding a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add targets to `agents/links.json`.
 - Keep shell scripts POSIX-compatible where possible; bash-specific features are fine in `.sh` files with `#!/bin/bash`.
