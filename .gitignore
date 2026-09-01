@@ -48,3 +48,4 @@ agents/.agents/skills/skills
 
 # Editor backups
 *.bak
+.pi
