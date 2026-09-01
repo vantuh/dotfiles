@@ -36,7 +36,6 @@ fi
 if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
   WINDOWS_USER=$(cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
   ALACRITTY_WIN="/mnt/c/Users/$WINDOWS_USER/AppData/Roaming/alacritty"
-  ZED_WIN="/mnt/c/Users/$WINDOWS_USER/AppData/Roaming/Zed"
 
   if [[ -n "$WINDOWS_USER" ]]; then
     echo "Detected WSL. Setting up Alacritty for Windows..."
@@ -46,46 +45,13 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
     echo "  -> Copied base.toml + windows.toml (as alacritty.toml) to $ALACRITTY_WIN"
     echo ""
 
-    echo "Detected WSL. Setting up Zed for Windows..."
-    WSL_DISTRO="${WSL_DISTRO_NAME:-Ubuntu}"
-    ZED_WSL_CONFIG_PATH="${DOTFILES_DIR#/}/zed/.config/zed"
-    ZED_WSL_CONFIG="\\\\wsl.localhost\\$WSL_DISTRO\\${ZED_WSL_CONFIG_PATH//\//\\}"
+    echo "Detected WSL. Setting up Windows Terminal..."
     POWERSHELL_EXE="powershell.exe"
     if [[ -x "/mnt/c/Users/$WINDOWS_USER/AppData/Local/Microsoft/WindowsApps/pwsh.exe" ]]; then
       POWERSHELL_EXE="/mnt/c/Users/$WINDOWS_USER/AppData/Local/Microsoft/WindowsApps/pwsh.exe"
     elif [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]]; then
       POWERSHELL_EXE="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
     fi
-    # Run from WSL, but create Windows symlinks whose targets are WSL UNC paths.
-    # This requires Windows Developer Mode or an elevated shell.
-    if "$POWERSHELL_EXE" -NoProfile -ExecutionPolicy Bypass -Command '
-      $ErrorActionPreference = "Stop"
-      $targetDir = "'"$ZED_WSL_CONFIG"'"
-      $zedDir = Join-Path $env:APPDATA "Zed"
-      New-Item -ItemType Directory -Force -Path $zedDir | Out-Null
-      foreach ($name in @("settings.json", "keymap.json")) {
-        $link = Join-Path $zedDir $name
-        $existing = Get-Item -LiteralPath $link -Force -ErrorAction SilentlyContinue
-        if ($existing) {
-          Remove-Item -LiteralPath $link -Force
-        }
-        New-Item -ItemType SymbolicLink -Path $link -Target (Join-Path $targetDir $name) | Out-Null
-      }
-    '; then
-      echo "  -> Symlinked settings.json + keymap.json to $ZED_WIN"
-      echo "  -> Target: $ZED_WSL_CONFIG"
-      echo "  -> PowerShell: $POWERSHELL_EXE"
-    else
-      echo "  !! Could not create Windows symlinks. Enable Windows Developer Mode or run from an elevated shell."
-      echo "  -> Falling back to regular copied files in $ZED_WIN"
-      mkdir -p "$ZED_WIN"
-      rm -f "$ZED_WIN/settings.json" "$ZED_WIN/keymap.json"
-      cp "$DOTFILES_DIR/zed/.config/zed/settings.json" "$ZED_WIN/settings.json"
-      cp "$DOTFILES_DIR/zed/.config/zed/keymap.json" "$ZED_WIN/keymap.json"
-    fi
-    echo ""
-
-    echo "Detected WSL. Setting up Windows Terminal..."
     WT_PACKAGES_DIR="/mnt/c/Users/$WINDOWS_USER/AppData/Local/Packages"
     WT_LOCAL_STATE=$(find "$WT_PACKAGES_DIR" -maxdepth 2 -name "LocalState" -path "*WindowsTerminal*" 2>/dev/null | head -1)
     if [[ -n "$WT_LOCAL_STATE" ]]; then
@@ -122,7 +88,7 @@ fi
 COMMON_PACKAGES="zsh tmux starship yazi pi omp herdr hunk nvim"
 
 if [[ "$PLATFORM" == "macos" ]]; then
-  PACKAGES="$COMMON_PACKAGES alacritty karabiner zed"
+  PACKAGES="$COMMON_PACKAGES alacritty karabiner"
 else
   PACKAGES="$COMMON_PACKAGES"
 fi
