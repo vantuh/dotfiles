@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "model": "kiro-acp/claude-haiku-4.5",
+  "model": "openai-codex/gpt-5.6-luna",
   "fallbackModels": [],
   "cooldownMinutes": 10,
   "debug": false,
