@@ -1,40 +1,40 @@
-# FanControl — актуальна конфігурація
+# FanControl — current configuration
 
-## Система
+## System
 
 - CPU: AMD Ryzen 7 7800X3D, Tjmax 89°C;
-- материнська плата: Gigabyte B850 AORUS Elite WIFI7;
+- motherboard: Gigabyte B850 AORUS Elite WIFI7;
 - GPU: ASUS Prime RTX 5080;
-- корпус: Jonsbo TK-3;
-- CPU cooler: ARCTIC Liquid Freezer III Pro 360, встановлена зверху на видув.
+- case: Jonsbo TK-3;
+- CPU cooler: ARCTIC Liquid Freezer III Pro 360, mounted at the top as exhaust.
 
-ARCTIC Liquid Freezer III Pro 360 замінила:
+ARCTIC Liquid Freezer III Pro 360 replaced:
 
-- баштовий кулер be quiet! Pure Rock Pro 3 LX;
-- три окремі верхні витяжні вентилятори.
+- the be quiet! Pure Rock Pro 3 LX tower cooler;
+- three separate top exhaust fans.
 
-Поточний повітряний потік:
+Current airflow:
 
-- 3 нижні вентилятори — intake;
-- 3 бокові вентилятори — intake;
-- 3 вентилятори радіатора AIO зверху — exhaust;
-- 1 задній вентилятор — exhaust.
+- 3 bottom fans — intake;
+- 3 side fans — intake;
+- 3 AIO radiator fans at the top — exhaust;
+- 1 rear fan — exhaust.
 
-## Підключення AIO
+## AIO wiring
 
-Використовується кабель окремого керування компонентами:
+A dedicated component-control cable is used:
 
-| Компонент | Розʼєм материнської плати |
+| Component | Motherboard header |
 |---|---|
-| 3× вентилятори радіатора | `CPU_FAN` |
-| Помпа | pump header |
-| Вентилятор VRM | `CPU_OPT` |
+| 3× radiator fans | `CPU_FAN` |
+| Pump | pump header |
+| VRM fan | `CPU_OPT` |
 
-У BIOS для відповідних розʼємів увімкнено PWM. Fan stop для помпи та VRM-вентилятора має залишатися вимкненим, а BIOS повинен забезпечувати їх безпечну роботу до запуску FanControl.
+PWM is enabled in BIOS for the corresponding headers. Fan stop for the pump and VRM fan should stay disabled, and BIOS should keep them running safely until FanControl starts.
 
-## Мапінг FanControl
+## FanControl mapping
 
-| Control | Identifier | Крива |
+| Control | Identifier | Curve |
 |---|---|---|
 | Top AIO Radiator | `/lpc/it8696e/control/0` | `AIO Radiator` |
 | Rear exhaust | `/lpc/it8696e/control/1` | `Rear exhaust` |
@@ -43,18 +43,18 @@ ARCTIC Liquid Freezer III Pro 360 замінила:
 | AIO VRM Fan | `/lpc/it8696e/control/4` | `AIO VRM Fixed` |
 | AIO Pump | `/lpc/it8696e/control/5` | `AIO Pump Fixed` |
 
-Усі control-канали відкалібровані та привʼязані до відповідних RPM-сенсорів `/lpc/it8696e/fan/0–5`.
+All control channels are calibrated and bound to the matching RPM sensors `/lpc/it8696e/fan/0–5`.
 
-## Поточна стратегія
+## Current strategy
 
 ```text
-Top AIO Radiator → температура CPU Core (Tctl/Tdie)
-AIO Pump         → fixed 60%, приблизно 2265–2300 RPM
-AIO VRM Fan      → fixed 30%, приблизно 1045–1050 RPM
+Top AIO Radiator → CPU Core temperature (Tctl/Tdie)
+AIO Pump         → fixed 60%, about 2265–2300 RPM
+AIO VRM Fan      → fixed 30%, about 1045–1050 RPM
 Rear exhaust     → MAX(CPU, GPU)
-Bottom intake    → температура GPU
-Vertical intake  → температура GPU
-GPU fans         → штатне керування відеокарти
+Bottom intake    → GPU temperature
+Vertical intake  → GPU temperature
+GPU fans         → native GPU fan control
 ```
 
 ### AIO Radiator
@@ -104,7 +104,7 @@ Source: GPU.
 
 ### Vertical intake
 
-Source: GPU. CPU прибрано з джерела, щоб короткі спайки Ryzen не розкручували три бокові вентилятори.
+Source: GPU. CPU was removed from the source so short Ryzen spikes do not spin up the three side fans.
 
 ```text
 35,10
@@ -115,11 +115,11 @@ Source: GPU. CPU прибрано з джерела, щоб короткі сп�
 90,60
 ```
 
-Невідомі motherboard sensors `Temperature #1–#5` не використовуються для керування вентиляторами.
+Unknown motherboard sensors `Temperature #1–#5` are not used for fan control.
 
-## Перевірені результати
+## Verified results
 
-### OCCT CPU — 10 хвилин
+### OCCT CPU — 10 minutes
 
 ```text
 Mode: Normal
@@ -131,29 +131,29 @@ Errors: 0
 
 ### OCCT 3D Adaptive
 
-Під час зафіксованого майже повного GPU-навантаження:
+During recorded near-full GPU load:
 
 ```text
 GPU load: 98%
-GPU power: приблизно 360 W
-GPU temperature: приблизно 70.6°C
-GPU fans: приблизно 2200 RPM
-Errors на момент перевірки: 0
+GPU power: about 360 W
+GPU temperature: about 70.6°C
+GPU fans: about 2200 RPM
+Errors at check time: 0
 ```
 
-Корпусні вентилятори при цьому залишалися на низьких обертах, тому підвищувати GPU-криві наразі не потрібно.
+Case fans stayed at low RPM, so raising the GPU curves is not needed for now.
 
-## Документація
+## Documentation
 
-- [`config.json`](config.json) — актуальна конфігурація FanControl;
-- [`config_backup.json`](config_backup.json) — конфігурація до встановлення AIO;
-- [`arctic-aio-research.md`](arctic-aio-research.md) — початкове дослідження й план переходу;
-- [`arctic-aio-setup-log-2026-07-19.md`](arctic-aio-setup-log-2026-07-19.md) — детальна історія налаштування та тестів.
+- [`config.json`](config.json) — current FanControl configuration;
+- [`config_backup.json`](config_backup.json) — configuration before the AIO install;
+- [`arctic-aio-research.md`](arctic-aio-research.md) — initial research and migration plan;
+- [`arctic-aio-setup-log-2026-07-19.md`](arctic-aio-setup-log-2026-07-19.md) — detailed setup and test history.
 
-## Що ще перевірити
+## Still to check
 
-- [ ] 20–30 хвилин у важкій грі як комбіноване CPU+GPU-навантаження;
-- [ ] GPU hotspot, якщо доступний;
-- [ ] запуск помпи, VRM і всіх трьох вентиляторів радіатора після повного cold boot;
-- [ ] BIOS fan-stop та безпечну швидкість помпи до запуску Windows;
-- [ ] джерело залишкового високочастотного писку, тільки якщо він заважає.
+- [ ] 20–30 minutes in a demanding game as combined CPU+GPU load;
+- [ ] GPU hotspot, if available;
+- [ ] pump, VRM, and all three radiator fans after a full cold boot;
+- [ ] BIOS fan-stop and a safe pump speed before Windows starts;
+- [ ] source of residual high-frequency whine, only if it becomes annoying.
