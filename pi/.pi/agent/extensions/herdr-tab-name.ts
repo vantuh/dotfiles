@@ -4,14 +4,17 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 /**
  * Syncs the pi session name to the Herdr tab running this session.
  *
- * No-op outside Herdr (HERDR_PANE_ID unset). On session_start, renames the
- * tab to the session's existing name if one is already set (e.g. resumed
- * session), otherwise to "pi". Keeps it in sync afterwards via
- * session_info_changed — fired by /name, RPC, or pi.setSessionName(), which
- * includes pi-autoname's automatic and periodic renames.
+ * No-op outside Herdr (HERDR_PANE_ID unset) or inside a Herdr subagent
+ * child session (HERDR_AGENT_CHILD=1) — the orchestrator names those tabs
+ * itself via herdr-agents. On session_start, renames the tab to the
+ * session's existing name if one is already set (e.g. resumed session),
+ * otherwise to "pi". Keeps it in sync afterwards via session_info_changed
+ * — fired by /name, RPC, or pi.setSessionName(), which includes
+ * pi-autoname's automatic and periodic renames.
  */
 export default function (pi: ExtensionAPI) {
   if (!process.env.HERDR_PANE_ID) return;
+  if (process.env.HERDR_AGENT_CHILD === "1") return;
 
   const herdrBin = process.env.HERDR_BIN_PATH || "herdr";
 
