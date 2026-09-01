@@ -48,4 +48,5 @@ agents/.agents/skills/skills
 
 # Editor backups
 *.bak
-.pi
+# Repo-local skills/prompts only; the pi/ stow package's .pi stays versioned
+/.pi/
