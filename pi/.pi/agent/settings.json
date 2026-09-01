@@ -3,7 +3,8 @@
   "defaultModel": "claude-sonnet-5",
   "packages": [
     "npm:pi-web-access",
-    "npm:pi-cursor-sdk"
+    "npm:pi-cursor-sdk",
+    "npm:pi-autoname"
   ],
   "lastChangelogVersion": "0.84.4",
   "hideThinkingBlock": false,

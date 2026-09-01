@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "model": "kiro-acp/claude-haiku-4.5",
+  "fallbackModels": [],
+  "cooldownMinutes": 10,
+  "debug": false,
+  "respectManualName": true
+}
