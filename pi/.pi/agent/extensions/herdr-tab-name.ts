@@ -4,9 +4,11 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 /**
  * Syncs the pi session name to the Herdr tab running this session.
  *
- * No-op outside Herdr (HERDR_PANE_ID unset). Listens for
- * session_info_changed — fired by /name, RPC, or pi.setSessionName(),
- * which includes pi-autoname's automatic and periodic renames.
+ * No-op outside Herdr (HERDR_PANE_ID unset). On session_start, renames the
+ * tab to the session's existing name if one is already set (e.g. resumed
+ * session), otherwise to "pi". Keeps it in sync afterwards via
+ * session_info_changed — fired by /name, RPC, or pi.setSessionName(), which
+ * includes pi-autoname's automatic and periodic renames.
  */
 export default function (pi: ExtensionAPI) {
   if (!process.env.HERDR_PANE_ID) return;
@@ -34,6 +36,10 @@ export default function (pi: ExtensionAPI) {
       },
     );
   };
+
+  pi.on("session_start", async () => {
+    renameTab(pi.getSessionName() || "pi");
+  });
 
   pi.on("session_info_changed", async (event) => {
     if (event.name) renameTab(event.name);
