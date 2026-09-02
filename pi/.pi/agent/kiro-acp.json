@@ -1,0 +1,10 @@
+{
+  "logger": {
+    "debug": true,
+    "verbose": 1
+  },
+  "usageFooter": {
+    "enabled": true,
+    "pollMinutes": 1
+  }
+}
