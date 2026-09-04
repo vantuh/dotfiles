@@ -1,5 +1,11 @@
 # council-command Specification
 
+> **Status note:** the `herdr-agents` extension implementing spec (`council-command`) describes a `/council` command of an extension that was
+> retired on 2026-09-04 and is not in use; the setup migrated to the
+> community-maintained [pi-subagents](https://github.com/nicobailon/pi-subagents).
+> The spec is kept as the design record of the one-shot delegation contract
+> (see `pi/.pi/agent/archive/herdr-agents`).
+
 ## Purpose
 The `/council` command asks one question to several models in parallel through Herdr agents and produces a single consolidated answer, so the user gets cross-checked input from multiple models with one command.
 
@@ -35,12 +41,12 @@ The `/council` command SHALL refuse to inject the message while the main agent i
 
 ### Requirement: Orchestrator spawns one researcher per model in parallel
 
-The injected council message SHALL instruct the Orchestrator to spawn one `researcher` agent per configured model using the `herdr_agent` tool, all in a single turn with `wait: false` (parallel), each with a distinct `tabLabel` identifying the model, and each passing the model as a `model` override.
+The injected council message SHALL instruct the Orchestrator to spawn one `researcher` agent per configured model using the `herdr_agent` tool, all in a single turn with `wait: false` (parallel), each with a distinct `tabLabel` identifying the model, and each passing the model as a `model` override. The message SHALL NOT reference agent lifecycles; council researchers are one-shot agents that close after their answer is delivered.
 
 #### Scenario: Three configured models
 
 - **WHEN** the Orchestrator processes the injected council message with 3 configured models
-- **THEN** it issues 3 `herdr_agent` calls with `agent: researcher`, a `model` override each, distinct labels, and `wait: false`
+- **THEN** it issues 3 `herdr_agent` calls with `agent: researcher`, a `model` override each, distinct labels, and `wait: false`, with no lifecycle parameter in any call
 
 ### Requirement: Model override changes spawned child model
 
