@@ -10,7 +10,7 @@
     "npm:pi-prompt-template-model"
   ],
   "lastChangelogVersion": "0.85.0",
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
