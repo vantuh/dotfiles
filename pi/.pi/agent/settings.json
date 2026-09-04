@@ -7,7 +7,7 @@
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
     "git:github.com/nicobailon/pi-subagents@d5d35f2bd0",
-    "npm:@rahularya01/pi-cursor"
+    "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "0.85.0",
   "hideThinkingBlock": true,
@@ -27,8 +27,8 @@
     "local/qwen3.8-27b",
     "local/qwen3.8-27b-ridge",
     "openrouter/deepseek/deepseek-v4-flash-0731",
-    "cursor/cursor-composer-2.5",
-    "cursor/cursor-grok-4.6"
+    "cursor/composer-2-5",
+    "cursor/grok-4.6:slow"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
