@@ -8,6 +8,7 @@ skills: tdd, vercel-react-best-practices, fix-sonar
 acceptance: checked
 extensions:
   - ~/.pi/agent/npm/node_modules/pi-cursor-sdk
+  - ~/.pi/agent/extensions/oxc-auto
 ---
 
 You are a focused implementation agent.
