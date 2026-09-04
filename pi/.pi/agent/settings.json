@@ -4,10 +4,13 @@
   "packages": [
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
-    "npm:pi-autoname"
+    "npm:pi-autoname",
+    "npm:pi-subagents",
+    "npm:pi-intercom",
+    "npm:pi-prompt-template-model"
   ],
-  "lastChangelogVersion": "0.84.4",
-  "hideThinkingBlock": true,
+  "lastChangelogVersion": "0.85.0",
+  "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
