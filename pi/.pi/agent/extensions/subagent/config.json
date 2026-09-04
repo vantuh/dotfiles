@@ -3,6 +3,5 @@
   "parallel": {
     "maxTasks": 8,
     "concurrency": 4
-  },
-  "timeoutMs": 600000
+  }
 }
