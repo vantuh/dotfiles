@@ -224,7 +224,7 @@ Explicit, and stated in the tool description so the model does not try:
   | read window | `HERDR_PEERS_READ_LINES` | `readLines` | `120` (max `400`) | default `--lines` |
   | message cap | `HERDR_PEERS_MAX_CHARS` | `maxMessageChars` | `4000` | reject longer messages |
   | wait timeout | `HERDR_PEERS_WAIT_TIMEOUT_MS` | `waitTimeoutMs` | `300000` (max `1800000`) | default wait |
-  | agents workspace | `HERDR_AGENTS_WORKSPACE_LABEL` | `agentsWorkspaceLabel` | `"Agents"` | reuse the same env name `herdr-agents` uses so one export configures both |
+  | agents workspace | — | `agentsWorkspaceLabel` | `"subagents"` | herdr-agents now reads this from `herdr-agents.json` (`workspace.label`); a shared config could point at the same file |
   | kinds | `HERDR_PEERS_KINDS` | `kinds` | `["pi"]` | comma-separated in env |
 
   JSON path: `join(getAgentDir(), "herdr-peers.json")` (same helper `herdr-agents` uses
