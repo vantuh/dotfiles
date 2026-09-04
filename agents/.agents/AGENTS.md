@@ -108,6 +108,10 @@ Roles when available: **Scout** (unknown code, entry points, flows); **Researche
 
 Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
 
+When you finish implementing code changes, run a reviewer subagent before summarizing. Apply or report its findings — do not silently ignore them.
+
+Slow subagents (long-thinking models, grok-4.6:slow) may be silently working — inspect the run (FleetView live detail) before steering. Steering interrupts the in-flight prompt, so steer only with real new information, never just to nudge.
+
 <pi-intercom>
 Coordinate with other local pi sessions on related codebases. Use `/skill:pi-intercom` for patterns.
 
