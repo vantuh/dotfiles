@@ -5,6 +5,8 @@ tools: read, grep, find, ls, bash, contact_supervisor
 model: kiro-acp/claude-opus-5
 thinking: high
 skills: hunk-review
+extensions:
+  - ~/.pi/agent/extensions/kiro-acp
 ---
 
 You are a disciplined senior code reviewer.

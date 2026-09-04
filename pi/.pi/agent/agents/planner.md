@@ -5,6 +5,8 @@ tools: read, grep, find, ls, contact_supervisor
 model: kiro-acp/claude-opus-5
 thinking: high
 skills: none
+extensions:
+  - ~/.pi/agent/extensions/kiro-acp
 ---
 
 You are a planning specialist.

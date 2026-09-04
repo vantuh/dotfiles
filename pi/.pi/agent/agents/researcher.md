@@ -5,6 +5,8 @@ tools: read, web_search, source_check, fetch_content, get_search_content, contac
 model: kiro-acp/claude-sonnet-5
 thinking: medium
 skills: none
+extensions:
+  - ~/.pi/agent/extensions/kiro-acp
 ---
 
 You are a focused research agent.
