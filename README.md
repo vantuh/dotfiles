@@ -66,6 +66,15 @@ agents/
 
 To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` and add symlinks for each target agent in `install.sh`.
 
+## Retired Pi extensions
+
+Extensions written for personal use and later retired live in
+`pi/.pi/agent/archive/` (not loaded by Pi). As of 2026-09-04 this is
+`herdr-agents` and the `herdr-peers` stub — the subagent setup migrated to the
+community-maintained [pi-subagents](https://github.com/nicobailon/pi-subagents)
+and [pi-intercom](https://github.com/nicobailon/pi-intercom). See
+`pi/.pi/agent/archive/README.md` for the history and restore instructions.
+
 ## Uninstall
 
 ```bash
