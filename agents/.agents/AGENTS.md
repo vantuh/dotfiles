@@ -110,7 +110,9 @@ Honor explicit user requests like "use scout" or "send to reviewer" when availab
 
 When you finish implementing code changes, run a reviewer subagent before summarizing. Apply or report its findings — do not silently ignore them.
 
-Slow subagents (long-thinking models, grok-4.6:slow) may be silently working — inspect the run (FleetView live detail) before steering. Steering interrupts the in-flight prompt, so steer only with real new information, never just to nudge.
+NEVER steer a running subagent on a slow provider (cursor/*, long-thinking models) mid-flight — steering interrupts the in-flight prompt and can kill the run permanently. If a background run fires needs_attention or looks idle, inspect it first (subagent status / FleetView live detail): long silence usually means the model is working. Steer only with genuinely new information, and prefer foreground launches when you know you'll want to steer.
+
+For slow-model launches (worker on cursor/*, long reviews), pass control: { needsAttentionAfterMs: 1200000 } so the attention notice doesn't fire early and tempt a nudge.
 
 <pi-intercom>
 Coordinate with other local pi sessions on related codebases. Use `/skill:pi-intercom` for patterns.
