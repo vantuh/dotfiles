@@ -5,6 +5,8 @@ tools: read, write, edit, grep, find, ls, bash, contact_supervisor
 model: cursor/grok-4.6:slow
 thinking: medium
 skills: tdd, vercel-react-best-practices, fix-sonar
+extensions:
+  - ~/.pi/agent/npm/node_modules/pi-cursor-sdk
 ---
 
 You are a focused implementation agent.

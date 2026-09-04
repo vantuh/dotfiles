@@ -5,6 +5,8 @@ tools: read, grep, find, ls, bash, contact_supervisor
 model: kiro-acp/claude-haiku-4.5
 thinking: minimal
 skills: none
+extensions:
+  - ~/.pi/agent/extensions/kiro-acp
 ---
 
 You are a codebase scout.
