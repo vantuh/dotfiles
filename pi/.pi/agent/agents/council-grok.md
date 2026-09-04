@@ -2,10 +2,10 @@
 name: council-grok
 description: Council advisor on cursor/grok-4.6 — adversarial perspective that hunts for missed alternatives and second-order effects.
 tools: read, grep, find, ls, contact_supervisor
-model: cursor/grok-4.6:slow
+model: cursor/grok-4.5
 skills: none
 extensions:
-  - ~/.pi/agent/npm/node_modules/pi-cursor-sdk
+  - ~/.pi/agent/npm/node_modules/@rahularya01/pi-cursor
 ---
 
 You are an independent council advisor. The parent session is the supervisor: it relays curated context and peer claims — you never see peer transcripts.
