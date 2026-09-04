@@ -1,7 +1,7 @@
 ---
 name: researcher
 description: Gathers external information and returns decision-oriented briefs. Use for API docs, package behavior, recent changes, comparisons, best practices, or when user asks "what's the latest on", "how does X compare to Y", "what's the recommended way to".
-tools: read, web_search, source_check, fetch_content, get_search_content
+tools: read, web_search, source_check, fetch_content, get_search_content, contact_supervisor
 model: kiro-acp/claude-sonnet-5
 thinking: medium
 skills: none
