@@ -7,6 +7,7 @@ thinking: medium
 skills: none
 extensions:
   - ~/.pi/agent/extensions/kiro-acp
+  - ~/.pi/agent/npm/node_modules/pi-web-access
 ---
 
 You are a focused research agent.
