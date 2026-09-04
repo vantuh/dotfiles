@@ -4,7 +4,7 @@ description: Reviews code changes, plans, and proposed solutions for correctness
 tools: read, grep, find, ls, bash, contact_supervisor
 model: kiro-acp/claude-opus-5
 thinking: high
-skills: hunk-review
+skills: hunk
 extensions:
   - ~/.pi/agent/extensions/kiro-acp
 ---
