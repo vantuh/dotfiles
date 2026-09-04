@@ -1,13 +1,13 @@
 {
-  "defaultProvider": "kiro-acp",
-  "defaultModel": "claude-sonnet-5",
+  "defaultProvider": "openrouter",
+  "defaultModel": "z-ai/glm-5.3-flash",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-cursor-sdk",
     "npm:pi-autoname"
   ],
   "lastChangelogVersion": "0.84.4",
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
