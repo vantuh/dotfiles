@@ -2,7 +2,7 @@
 name: worker
 description: Implements focused code changes from a clear task, plan, or scout context. Use for isolated implementation work, or when user says "make this change", "implement this", "fix this".
 tools: read, write, edit, grep, find, ls, bash, contact_supervisor
-model: cursor/composer-2
+model: cursor/cursor-grok-4.6
 thinking: medium
 skills: tdd, vercel-react-best-practices, fix-sonar
 acceptance: checked
