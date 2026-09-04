@@ -1,5 +1,5 @@
---- pcs-pristine/src/cursor-provider-live-run-drain.ts	1985-10-26 11:15:00
-+++ /Users/vantuh/.pi/agent/npm/node_modules/pi-cursor-sdk/src/cursor-provider-live-run-drain.ts	2026-09-04 23:22:25
+--- a/src/cursor-provider-live-run-drain.ts
++++ b/src/cursor-provider-live-run-drain.ts
 @@ -448,7 +448,19 @@
  				const shouldChainUserInput = run.chainUserInputAfterCompletion || hasTrailingUserMessagesAfterToolResults(context);
  				if (shouldChainUserInput) run.chainUserInputAfterCompletion = true;
@@ -21,3 +21,26 @@
  				}
  				if (run.disposed) return "continue_send" as const;
  				const drainOutcome = await drainCursorLiveRunTurn(stream, partial, model, context, run, consumed.toolResultInputTokens, {
+--- a/dist/cursor-provider-live-run-drain.js
++++ b/dist/cursor-provider-live-run-drain.js
+@@ -356,7 +356,19 @@
+                 if (shouldChainUserInput)
+                     run.chainUserInputAfterCompletion = true;
+                 while (!cursorLiveRuns.isReady(run)) {
+-                    await cursorLiveRuns.waitForProgress(run, signal);
++                    // Steer/abort can kill the cursor agent before it reports
++                    // done/cancelled, leaving the run in limbo: never ready,
++                    // no progress events, no error. Wait a bounded window; if
++                    // nothing arrives, dispose the dead run and let the new
++                    // turn proceed instead of hanging the child forever.
++                    const progressed = await Promise.race([
++                        cursorLiveRuns.waitForProgress(run, signal).then(() => true),
++                        new Promise((resolve) => setTimeout(() => resolve(false), 30000)),
++                    ]);
++                    if (!progressed) {
++                        run.disposed = true;
++                        break;
++                    }
+                 }
+                 if (run.disposed)
+                     return "continue_send";
