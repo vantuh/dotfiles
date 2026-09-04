@@ -107,3 +107,13 @@ When the environment provides specialized agents, delegate only when fresh or is
 Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Planner** (multi-file approach after requirements are clear); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract).
 
 Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
+
+<pi-intercom>
+Coordinate with other local pi sessions on related codebases. Use `/skill:pi-intercom` for patterns.
+
+**When:** Same codebase (parallel work), reference codebase (consulting patterns), related repos (shared libraries).
+
+**Not when:** Unrelated codebases, trivial questions, or when you can proceed independently.
+
+**Principle:** Prefer `send` for notifications; `ask` only when blocked waiting for input.
+</pi-intercom>
