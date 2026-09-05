@@ -1,13 +1,13 @@
 {
-  "defaultProvider": "openrouter",
-  "defaultModel": "z-ai/glm-5.3-flash",
+  "defaultProvider": "kiro-acp",
+  "defaultModel": "claude-sonnet-5",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-autoname",
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
-    "git:github.com/nicobailon/pi-subagents@d5d35f2bd0",
-    "npm:pi-cursor-sdk"
+    "npm:pi-cursor-sdk",
+    "git:github.com/nicobailon/pi-subagents@288a7ddfc3a781f880d586cd4100a4408f8d25af"
   ],
   "lastChangelogVersion": "0.85.0",
   "hideThinkingBlock": true,
