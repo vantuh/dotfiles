@@ -1,0 +1,24 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "scout": {
+        "model": "openai-codex/gpt-5.6-luna"
+      },
+      "delegate": {
+        "model": "openrouter/z-ai/glm-5.3-flash"
+      },
+      "researcher": {
+        "model": "openai-codex/gpt-5.6-terra"
+      },
+      "reviewer": {
+        "model": "openai-codex/gpt-5.6-sol"
+      },
+      "worker": {
+        "model": "openrouter/z-ai/glm-5.3-flash"
+      },
+      "oracle": {
+        "model": "openai-codex/gpt-5.6-sol"
+      }
+    }
+  }
+}
