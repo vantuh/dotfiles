@@ -1,0 +1,24 @@
+{
+  "subagents": {
+    "agentOverrides": {
+      "scout": {
+        "model": "kiro-acp/claude-haiku-4.5"
+      },
+      "delegate": {
+        "model": "kiro-acp/claude-sonnet-5"
+      },
+      "researcher": {
+        "model": "kiro-acp/claude-sonnet-5"
+      },
+      "reviewer": {
+        "model": "kiro-acp/claude-opus-5"
+      },
+      "worker": {
+        "model": "kiro-acp/claude-sonnet-5"
+      },
+      "oracle": {
+        "model": "kiro-acp/claude-opus-5"
+      }
+    }
+  }
+}
