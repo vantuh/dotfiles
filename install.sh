@@ -113,6 +113,15 @@ echo ""
 # Remove files that block stow
 rm -f "$HOME/.zcompdump" "$HOME/.zcompdump".*
 
+# Migrate the legacy auto-generated pi-autoname config now tracked by dotfiles.
+# Preserve any local version instead of letting it abort the entire pi package.
+PI_AUTONAME_CONFIG="$HOME/.pi/agent/pi-autoname.json"
+if [[ -e "$PI_AUTONAME_CONFIG" && ! -L "$PI_AUTONAME_CONFIG" ]]; then
+  PI_AUTONAME_BACKUP="$PI_AUTONAME_CONFIG.pre-stow.$(date +%Y%m%d-%H%M%S)"
+  mv "$PI_AUTONAME_CONFIG" "$PI_AUTONAME_BACKUP"
+  echo "  [pi] Backed up legacy pi-autoname config to $PI_AUTONAME_BACKUP"
+fi
+
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
