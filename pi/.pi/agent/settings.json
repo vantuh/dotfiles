@@ -7,7 +7,7 @@
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
     "npm:pi-cursor-sdk",
-    "git:github.com/nicobailon/pi-subagents@288a7ddfc3a781f880d586cd4100a4408f8d25af"
+    "npm:pi-subagents"
   ],
   "lastChangelogVersion": "0.85.1",
   "hideThinkingBlock": true,
