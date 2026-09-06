@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bun_home="${BUN_INSTALL:-$HOME/.bun}"
+entrypoint="$bun_home/install/global/node_modules/hunkdiff/bin/hunk.cjs"
+
+# Force Bun because hunkdiff's own executable uses a Node shebang.
+if [[ ! -x "$bun_home/bin/bun" ]]; then
+  printf 'Bun is not installed at %s\n' "$bun_home/bin/bun" >&2
+  exit 127
+fi
+if [[ ! -f "$entrypoint" ]]; then
+  printf 'hunkdiff is not installed; run: bun add --global hunkdiff\n' >&2
+  exit 127
+fi
+
+exec "$bun_home/bin/bun" "$entrypoint" "$@"
