@@ -23,17 +23,29 @@ design converged with the community's; see the OpenSpec archive
 (`openspec/changes/archive/2026-09-04-herdr-agent-oneshot-only`) and specs
 (`openspec/specs/herdr-agent-delegation/`) for the full design record.
 
+## Status: retired 2026-09-06
+
+`herdr-tab-name.ts` (tab name sync) also retired: with pi-subagents handling
+children, dynamic session-name → tab-label sync is no longer wanted — tabs stay
+statically named "pi". Also, its `HERDR_AGENT_CHILD` guard was dead code
+(pi-subagents marks children with `PI_SUBAGENT_CHILD` instead), so background
+children inheriting `HERDR_PANE_ID` could rename the parent tab. If dynamic
+naming is ever wanted again, the correct minimal version is: gate on
+`ctx.mode === "tui"`, skip when `PI_SUBAGENT_CHILD=1`, and rename directly via
+`herdr tab rename "$HERDR_TAB_ID" <name>` (no snapshot dance).
+
 ## Contents
 
 | Directory | What it was | Notes |
 |---|---|---|
 | `herdr-agents/` | `herdr_agent` tool: one-shot delegation through Herdr panes/tabs, detached delivery via widget poller, parked questions, session resume, `/run`, `/council`, `/herdr-agents` manager | Superseded by pi-subagents. Home copy and configs (`herdr-agents.json`, `council.json`, state file) removed from `~/.pi/agent/` |
 | `herdr-peers/` | Planning stub only (PLAN.md + proposal.md, no code): user-driven long-lived peer sessions in Herdr tabs | Superseded by pi-intercom + pi-subagents project panes |
+| `herdr-tab-name.ts` | Renamed the Herdr tab to the Pi session name (synced pi-autoname via `session_info_changed`) | Retired 2026-09-06: static "pi" tab name preferred; guard was dead code, background children could hijack the rename |
 | `zz-composer-herdr-agent.ts` | Single-file shim that renamed `herdr_agent` → `pi__herdr_agent` in the system prompt for Cursor Composer models | Only existed to serve `herdr-agents`; retired with it (see its `docs/composer-cursor-sdk-compatibility.md`) |
 
 Live single-file extensions that remain in `extensions/` (not archived):
-`herdr-tab-name.ts`, `herdr-agent-state.ts` —
-these integrate the Pi session with Herdr itself and are still in use.
+`herdr-agent-state.ts` (managed by Herdr itself) —
+integrates the Pi session with Herdr state reporting and is still in use.
 
 ## How to restore one
 
