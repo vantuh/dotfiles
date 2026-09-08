@@ -40,22 +40,22 @@
   "subagents": {
     "agentOverrides": {
       "scout": {
-        "model": "openai-codex/gpt-5.6-luna"
+        "model": "kiro-acp/claude-haiku-4.5"
       },
       "delegate": {
-        "model": "openrouter/z-ai/glm-5.3-flash"
+        "model": "kiro-acp/claude-sonnet-5"
       },
       "researcher": {
-        "model": "openai-codex/gpt-5.6-terra"
+        "model": "kiro-acp/claude-sonnet-5"
       },
       "reviewer": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "kiro-acp/claude-opus-5"
       },
       "worker": {
-        "model": "openrouter/z-ai/glm-5.3-flash"
+        "model": "kiro-acp/claude-sonnet-5"
       },
       "oracle": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "kiro-acp/claude-opus-5"
       }
     }
   }
