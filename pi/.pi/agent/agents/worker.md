@@ -8,6 +8,7 @@ acceptance: checked
 extensions:
   - ~/.pi/agent/npm/node_modules/pi-cursor-sdk
   - ~/.pi/agent/extensions/oxc-auto
+  - ~/.pi/agent/extensions/kiro-acp
 ---
 
 You are a focused implementation agent.
