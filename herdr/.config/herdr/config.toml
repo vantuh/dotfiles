@@ -32,6 +32,7 @@ split_horizontal = "prefix+minus"
 
 [keys.indexed]
 tabs = "alt"
+workspaces = "ctrl+shift"
 
 [ui]
 host_cursor = "native"
