@@ -40,19 +40,43 @@
   "subagents": {
     "agentOverrides": {
       "scout": {
-        "model": "kiro-acp/claude-haiku-4.5"
+        "model": "kiro-acp/claude-haiku-4.5",
+        "thinking": "minimal",
+        "extensions": [
+          "~/.pi/agent/extensions/kiro-acp"
+        ]
       },
       "delegate": {
         "model": "kiro-acp/claude-sonnet-5"
       },
       "researcher": {
-        "model": "kiro-acp/claude-sonnet-5"
+        "model": "kiro-acp/claude-sonnet-5",
+        "extensions": [
+          "~/.pi/agent/extensions/kiro-acp",
+          "~/.pi/agent/npm/node_modules/pi-web-access"
+        ]
       },
       "reviewer": {
-        "model": "kiro-acp/claude-opus-5"
+        "model": "kiro-acp/claude-opus-5",
+        "skills": [
+          "hunk"
+        ],
+        "extensions": [
+          "~/.pi/agent/extensions/kiro-acp"
+        ]
       },
       "worker": {
-        "model": "kiro-acp/claude-sonnet-5"
+        "model": "kiro-acp/claude-sonnet-5",
+        "thinking": "medium",
+        "skills": [
+          "tdd",
+          "vercel-react-best-practices",
+          "fix-sonar"
+        ],
+        "extensions": [
+          "~/.pi/agent/extensions/oxc-auto",
+          "~/.pi/agent/extensions/kiro-acp"
+        ]
       },
       "oracle": {
         "model": "kiro-acp/claude-opus-5"
