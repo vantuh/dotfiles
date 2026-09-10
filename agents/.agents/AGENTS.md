@@ -104,7 +104,7 @@ Prefer direct tools when the target is known: read known files, search known pat
 
 When the environment provides specialized agents, delegate only when fresh or isolated context materially improves the result. Do not delegate simple known-file edits, simple questions, one-command checks, or work you can do more cheaply with clear scope.
 
-Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Planner** (multi-file approach after requirements are clear); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract).
+Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract). The parent owns the plan: scout first in unknown areas, then plan yourself, then hand the plan to a worker.
 
 Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
 
