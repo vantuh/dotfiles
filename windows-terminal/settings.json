@@ -69,6 +69,15 @@
         "source": "Microsoft.WSL"
       },
       {
+        "commandline": "wsl.exe -d Ubuntu",
+        "font": {
+          "face": "JetBrainsMonoNL Nerd Font"
+        },
+        "guid": "{a1b2c3d4-1234-5678-9abc-def012345678}",
+        "hidden": false,
+        "name": "Ubuntu (shell)"
+      },
+      {
         "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
         "hidden": false,
         "name": "PowerShell",
