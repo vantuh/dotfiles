@@ -16,6 +16,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | omp        | Oh My Pi (omp) coding agent config |   ✓   |  ✓  |
 | alacritty | Alacritty terminal config         |   ✓   | ✓\* |
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
+| ghostty   | Ghostty terminal configuration    |   ✓   |     |
 | nvim      | Neovim: personal config (default) + LazyVim (appname `lazyvim`) | ✓ | ✓ |
 
 \* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
@@ -79,7 +80,7 @@ and [pi-intercom](https://github.com/nicobailon/pi-intercom). See
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi omp alacritty karabiner nvim
+stow -D zsh tmux starship yazi pi omp alacritty karabiner ghostty nvim
 ```
 
 ## Manual stow usage
