@@ -9,7 +9,7 @@ LOCK_DIR="${CACHE}.lock"
 TTL="${MY_USAGE_STATUS_TTL:-300}"
 
 # Herdr may launch this with a stripped PATH; restore common tool locations.
-for dir in "$HOME/.local/bin" /home/linuxbrew/.linuxbrew/bin /opt/homebrew/bin /usr/local/bin; do
+for dir in "$HOME/.local/bin" /home/linuxbrew/.linuxbrew/bin /opt/homebrew/bin /usr/local/bin "$HOME/.nvm/current/bin"; do
   [[ -d "$dir" ]] && PATH="$dir:$PATH"
 done
 export PATH
