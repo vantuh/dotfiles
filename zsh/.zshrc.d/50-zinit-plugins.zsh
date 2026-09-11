@@ -24,9 +24,3 @@ zinit wait lucid for \
     zsh-users/zsh-completions \
     atload"!_zsh_autosuggest_start" \
     zsh-users/zsh-autosuggestions
-
-# Tools via zinit (turbo)
-zinit ice wait lucid from"gh-r" as"program" mv"jq-* -> jq"
-zinit light jqlang/jq
-zinit ice wait lucid from"gh-r" as"program"
-zinit light jesseduffield/lazygit
