@@ -8,7 +8,8 @@ setup_plugin_path() {
     "/usr/local/bin" \
     "$HOME/.bun/bin" \
     "$HOME/.cargo/bin" \
-    "$HOME/.npm-global/bin"
+    "$HOME/.npm-global/bin" \
+    "$HOME/.nvm/current/bin"
   do
     [[ -d "$dir" ]] && PATH="$dir:$PATH"
   done
