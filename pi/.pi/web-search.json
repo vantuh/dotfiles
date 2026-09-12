@@ -1,5 +1,0 @@
-{
-  "provider": "exa",
-  "workflow": "none",
-  "summaryModel": "openai-codex/gpt-5.5"
-}
