@@ -57,3 +57,8 @@ esac
 # cargo
 export PATH="$HOME/.cargo/bin:$PATH"
 
+# rustup
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
+fi
+
