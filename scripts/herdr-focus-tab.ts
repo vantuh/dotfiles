@@ -1,4 +1,4 @@
-#!/usr/bin/env nub
+#!/usr/bin/env bun
 /**
  * Focus a Herdr tab by label in the current workspace.
  * Create the tab and run a command if the tab/process is missing.

@@ -1,4 +1,4 @@
-#!/usr/bin/env nub
+#!/usr/bin/env bun
 /**
  * Herdr tab watcher: renames tabs to reflect the foreground process.
  *
