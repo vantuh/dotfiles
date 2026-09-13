@@ -6,11 +6,4 @@ _self=$(realpath "$0" 2>/dev/null || echo "$0")
 _dotfiles=$(cd "$(dirname "$_self")/../../.." && pwd)
 _ts="$_dotfiles/scripts/herdr-setup.ts"
 
-if command -v bun >/dev/null 2>&1; then
-  exec bun "$_ts" "$@"
-elif [[ -x "${HOME}/.bun/bin/bun" ]]; then
-  exec "${HOME}/.bun/bin/bun" "$_ts" "$@"
-else
-  echo "herdr-setup: bun not found (https://bun.sh)" >&2
-  exit 1
-fi
+exec bun "$_ts" "$@"
