@@ -1,4 +1,4 @@
-#!/usr/bin/env nub
+#!/usr/bin/env bun
 /**
  * Open a file in an existing Neovim: Snacks ($NVIM), Herdr nvim tab, or local nvim.
  * Lazygit: os.edit / os.editAtLine. Args: [+LINE] FILE

@@ -1,4 +1,4 @@
-#!/usr/bin/env nub
+#!/usr/bin/env bun
 /**
  * Set up the standard Herdr workspace layout.
  *
