@@ -3,9 +3,13 @@
  * Herdr tab watcher: renames tabs to reflect the foreground process.
  *
  * Polls every second per pane in the current Herdr session, detects the foreground
- * process via `herdr pane process-info`, and renames the owning tab using
- * a label map (nvim -> nvim, lazygit -> lg, pi -> pi, hunk -> hunk, ...).
- * Unknown processes fall back to their own name.
+ * process and renames the owning tab using a label map (nvim -> nvim, lazygit -> lg, ...).
+ *
+ * Fast path: pane terminal titles usually mirror the foreground app
+ * ("π - ..." -> pi, "lazygit", "nvim", "hunk ...", "user@host:path" -> shell),
+ * so most ticks need only the single `herdr api snapshot` fork. `herdr pane
+ * process-info` is spawned only for panes whose title is ambiguous (or when a
+ * watcher-set custom label must be re-verified).
  *
  * Rules:
  * - Tabs whose foreground is just the shell are left untouched.
@@ -38,6 +42,14 @@ const RUNTIME_NAMES = new Set([
   "npm", "npx", "pnpm", "yarn", "volta",
 ]);
 
+/** Terminal-title first word -> foreground process name (pi sets "π - ..."). */
+const TITLE_PROC: Record<string, string> = {
+  "π": "pi",
+};
+
+/** zsh/bash prompt titles look like "user@host:cwd" (or "user@host cwd"). */
+const SHELL_TITLE_RE = /^[^\s@]+@[^\s@]+[:\s]\S/;
+
 const STATE_FILE = path.join(os.homedir(), ".cache", "herdr", "tab-watcher-state.json");
 
 type ProcessInfo = {
@@ -45,9 +57,9 @@ type ProcessInfo = {
   argv0?: string;
 };
 
-type Pane = { pane_id: string; tab_id: string };
+type Pane = { pane_id: string; tab_id: string; terminal_title_stripped?: string };
 
-type Tab = { tab_id: string; label: string };
+type Tab = { tab_id: string; label: string; number: number };
 
 function runJson<T>(cmd: string, args: string[]): T | null {
   try {
@@ -124,7 +136,30 @@ function tabProcess(paneIds: string[]): ProcessInfo | null {
 
 function labelFor(proc: ProcessInfo): string {
   const name = (proc.name || "").toLowerCase();
-  return LABEL_MAP[name] ?? name;
+  return Object.hasOwn(LABEL_MAP, name) ? LABEL_MAP[name] : name;
+}
+
+/**
+ * Cheap foreground guess from pane terminal titles.
+ * Returns a process name, "shell", or null when the titles are ambiguous
+ * and `herdr pane process-info` must be consulted.
+ */
+function titleGuessForTab(panes: Pane[]): string | "shell" | null {
+  let sawPane = false;
+  for (const pane of panes) {
+    const title = pane.terminal_title_stripped?.trim();
+    // Missing/unknown titles are ambiguous: defer to `process-info`.
+    if (!title) return null;
+    sawPane = true;
+    if (SHELL_TITLE_RE.test(title)) continue;
+    const first = title.split(/\s+/)[0].toLowerCase();
+    if (SHELL_NAMES.has(first)) continue;
+    // Object.hasOwn: a title like "constructor" must not hit prototypes.
+    if (Object.hasOwn(TITLE_PROC, first)) return TITLE_PROC[first];
+    if (Object.hasOwn(LABEL_MAP, first)) return first;
+    return null;
+  }
+  return sawPane ? "shell" : null;
 }
 
 function tick(state: Record<string, string>): void {
@@ -139,17 +174,33 @@ function tick(state: Record<string, string>): void {
     if (!liveTabs.has(tabId)) delete state[tabId];
   }
 
-  const panesByTab = new Map<string, string[]>();
+  const panesByTab = new Map<string, Pane[]>();
   for (const pane of snapshot.panes) {
     const list = panesByTab.get(pane.tab_id) ?? [];
-    list.push(pane.pane_id);
+    list.push(pane);
     panesByTab.set(pane.tab_id, list);
   }
 
   for (const tab of snapshot.tabs) {
-    const paneIds = panesByTab.get(tab.tab_id) ?? [];
-    if (paneIds.length === 0) continue;
-    const proc = tabProcess(paneIds);
+    const panes = panesByTab.get(tab.tab_id) ?? [];
+    if (panes.length === 0) continue;
+
+    // Fast path: decide from terminal titles, fork-free.
+    const guess = titleGuessForTab(panes);
+    let proc: ProcessInfo | null;
+    if (guess === "shell") {
+      const lastSet = state[tab.tab_id];
+      if (lastSet !== undefined && lastSet === tab.label && lastSet !== String(tab.number)) {
+        // Watcher's own custom label still shown: verify before reset.
+        proc = tabProcess(panes.map((p) => p.pane_id));
+      } else {
+        proc = null;
+      }
+    } else if (guess !== null) {
+      proc = { name: guess };
+    } else {
+      proc = tabProcess(panes.map((p) => p.pane_id));
+    }
 
     if (!proc) {
       // Shell-only tab: reset to the default label (tab number), but only
