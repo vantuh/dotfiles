@@ -6,7 +6,7 @@
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openrouter/z-ai/glm-5.3-flash"
+        "model": "cursor/grok-4.6:slow"
       },
       "researcher": {
         "model": "openai-codex/gpt-5.6-terra",
@@ -21,15 +21,15 @@
         ]
       },
       "worker": {
-        "model": "openrouter/z-ai/glm-5.3-flash",
-        "thinking": "medium",
+        "model": "cursor/grok-4.6:slow",
         "skills": [
           "tdd",
           "vercel-react-best-practices",
           "fix-sonar"
         ],
         "extensions": [
-          "~/.pi/agent/extensions/oxc-auto"
+          "~/.pi/agent/extensions/oxc-auto",
+          "~/.pi/agent/npm/node_modules/pi-cursor-sdk"
         ]
       },
       "oracle": {
