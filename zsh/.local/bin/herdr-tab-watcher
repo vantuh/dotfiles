@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Thin shim: full logic lives in scripts/herdr-tab-watcher.ts.
+# Thin shim: full logic lives in scripts/herdr-tab-watcher-socket.ts.
 set -euo pipefail
 
 _self=$(realpath "$0" 2>/dev/null || echo "$0")
 _dotfiles=$(cd "$(dirname "$_self")/../../.." && pwd)
-_ts="$_dotfiles/scripts/herdr-tab-watcher.ts"
+_ts="$_dotfiles/scripts/herdr-tab-watcher-socket.ts"
 
 exec bun "$_ts" "$@"
