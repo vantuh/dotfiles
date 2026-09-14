@@ -1,25 +1,25 @@
 #!/usr/bin/env bun
 /**
- * Herdr tab watcher: renames tabs to reflect the foreground process.
+ * Herdr tab watcher (socket API): renames tabs to reflect the foreground process.
  *
- * Polls every second per pane in the current Herdr session, detects the foreground
- * process and renames the owning tab using a label map (nvim -> nvim, lazygit -> lg, ...).
+ * Event-driven: instead of forking the `herdr`
+ * CLI every tick, it keeps one persistent NDJSON subscription connection to the
+ * Herdr socket (`events.subscribe`) and reconciles tab labels only when Herdr
+ * pushes a relevant event (pane.updated carries terminal title changes), plus
+ * a low-frequency reconciliation snapshot as a self-heal. Zero process forks
+ * in steady state; a socket roundtrip costs ~0.3-2 ms vs ~5-7 ms per CLI fork.
  *
- * Fast path: pane terminal titles usually mirror the foreground app
- * ("π - ..." -> pi, "lazygit", "nvim", "hunk ...", "user@host:path" -> shell),
- * so most ticks need only the single `herdr api snapshot` fork. `herdr pane
- * process-info` is spawned only for panes whose title is ambiguous (or when a
- * watcher-set custom label must be re-verified).
+ * Label heuristics and state semantics (manual renames, shell reset):
+ * - Fast path from pane terminal titles ("π - ..." -> pi, "lazygit", "nvim",
+ *   "hunk ...", "user@host:path" -> shell); ambiguous titles resolve via
+ *   `pane.process_info` over the socket.
+ * - Manual tab renames are respected: a tab is only renamed when its current
+ *   label matches the label the watcher last set for it (or when the watcher
+ *   has never renamed it).
  *
- * Rules:
- * - Tabs whose foreground is just the shell are left untouched.
- * - Manual tab renames are respected: a tab is only renamed when its
- *   current label matches the label the watcher last set for it (or when
- *   the watcher has never renamed it). State persists across restarts.
- *
- * Usage: herdr-tab-watcher [--interval MS]   (default 1000)
+ * Usage: herdr-tab-watcher [--state FILE] [--reconcile-interval MS]
  */
-import { execFileSync } from "node:child_process";
+import net from "node:net";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -50,29 +50,236 @@ const TITLE_PROC: Record<string, string> = {
 /** zsh/bash prompt titles look like "user@host:cwd" (or "user@host cwd"). */
 const SHELL_TITLE_RE = /^[^\s@]+@[^\s@]+[:\s]\S/;
 
-const STATE_FILE = path.join(os.homedir(), ".cache", "herdr", "tab-watcher-state.json");
+/** Events that can affect tab labels. Wire names are snake_case. */
+const WATCHED_EVENTS = new Set([
+  "pane_updated", "pane_created", "pane_closed", "pane_moved", "pane_exited",
+  "tab_created", "tab_closed", "tab_renamed",
+  "workspace_closed",
+]);
 
-type ProcessInfo = {
-  name?: string;
-  argv0?: string;
+const SOCKET_PATH =
+  process.env.HERDR_SOCKET_PATH ||
+  path.join(os.homedir(), ".config", "herdr", "herdr.sock");
+
+type ProcessInfo = { name?: string; argv0?: string };
+
+type PaneCache = { pane_id: string; tab_id: string; terminal_title_stripped?: string };
+type TabCache = { label: string; number: number; workspace_id?: string };
+
+type Cache = {
+  tabs: Map<string, TabCache>;
+  panes: Map<string, PaneCache>;
 };
 
-type Pane = { pane_id: string; tab_id: string; terminal_title_stripped?: string };
+function argAfter(flag: string): string | undefined {
+  const i = process.argv.indexOf(flag);
+  return i > -1 ? process.argv[i + 1] : undefined;
+}
 
-type Tab = { tab_id: string; label: string; number: number };
+const STATE_FILE =
+  argAfter("--state") ||
+  path.join(os.homedir(), ".cache", "herdr", "tab-watcher-state.json");
+const RECONCILE_INTERVAL = Number(argAfter("--reconcile-interval")) || 30_000;
+const RECONCILE_DEBOUNCE = 150;
+const VERBOSE = process.argv.includes("--verbose");
 
-function runJson<T>(cmd: string, args: string[]): T | null {
+function log(msg: string): void {
+  console.error(`herdr-tab-watcher: ${msg}`);
+}
+
+// ---------------------------------------------------------------------------
+// Socket transport: request/response is one connection per request; the
+// server closes request connections after answering. Subscriptions persist.
+// ---------------------------------------------------------------------------
+
+type JsonMsg = { id?: string; result?: any; error?: any; event?: string; data?: any };
+
+function rpc(method: string, params: Record<string, unknown> = {}): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let buf = "";
+    let done = false;
+    Bun.connect({
+      unix: SOCKET_PATH,
+      socket: {
+        data(socket, chunk) {
+          buf += chunk;
+          const i = buf.indexOf("\n");
+          if (i >= 0 && !done) {
+            done = true;
+            socket.end();
+            try {
+              resolve(JSON.parse(buf.slice(0, i)) as JsonMsg);
+            } catch (e) {
+              reject(e);
+            }
+          }
+        },
+        error(socket, e) {
+          if (!done) { done = true; reject(e); }
+        },
+        close() {
+          if (!done) { done = true; reject(new Error("socket closed before response")); }
+        },
+      },
+    })
+      .then((socket) => {
+        socket.write(JSON.stringify({ id: "r", method, params }) + "\n");
+      })
+      .catch(reject);
+  });
+}
+
+async function subscribe(onEvent: (event: string, data: any) => void): Promise<() => void> {
+  return await new Promise((resolveSub, rejectSub) => {
+    let buf = "";
+    let acked = false;
+    let backoff = 1000;
+
+    const connect = () => {
+      Bun.connect({
+        unix: SOCKET_PATH,
+        socket: {
+          data(_socket, chunk) {
+            buf += chunk;
+            let i: number;
+            while ((i = buf.indexOf("\n")) >= 0) {
+              const line = buf.slice(0, i);
+              buf = buf.slice(i + 1);
+              if (!line.trim()) continue;
+              let msg: JsonMsg;
+              try {
+                msg = JSON.parse(line) as JsonMsg;
+              } catch {
+                continue;
+              }
+              if (!acked && msg.result?.type === "subscription_started") {
+                acked = true;
+                backoff = 1000;
+                log("event subscription established");
+                resolveSub(close);
+                continue;
+              }
+              if (msg.event && WATCHED_EVENTS.has(msg.event)) {
+                onEvent(msg.event, msg.data);
+              }
+            }
+          },
+          error(_socket, e) {
+            log(`subscription socket error: ${e.message}`);
+          },
+          close() {
+            if (!acked) {
+              rejectSub(new Error("subscription closed before ack"));
+              return;
+            }
+            log(`subscription lost, reconnecting in ${backoff}ms`);
+            setTimeout(() => {
+              backoff = Math.min(backoff * 2, 15_000);
+              acked = false;
+              buf = "";
+              connect();
+            }, backoff).unref();
+          },
+        },
+      })
+        .then((socket) => {
+          (close as any)._socket = socket;
+          socket.write(
+            JSON.stringify({
+              id: "s",
+              method: "events.subscribe",
+              params: {
+                subscriptions: [...WATCHED_EVENTS].map((e) => ({
+                  type: e.replaceAll("_", "."),
+                })),
+              },
+            }) + "\n",
+          );
+        })
+        .catch((e) => {
+          if (!acked) rejectSub(e);
+        });
+    };
+
+    function close(): void {
+      (close as any)._socket?.end();
+    }
+
+    connect();
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Label heuristics (shared with the polling watcher)
+// ---------------------------------------------------------------------------
+
+function baseName(proc: ProcessInfo): string {
+  const raw = proc.argv0 || proc.name || "";
+  return path.basename(raw).replace(/^-/, "");
+}
+
+function pickProcess(procs: ProcessInfo[]): ProcessInfo | null {
+  if (procs.length === 0) return null;
+  for (let i = procs.length - 1; i >= 0; i--) {
+    if (LABEL_MAP[baseName(procs[i])]) return procs[i];
+  }
+  for (let i = procs.length - 1; i >= 0; i--) {
+    const name = baseName(procs[i]);
+    if (name && !RUNTIME_NAMES.has(name) && !SHELL_NAMES.has(name)) return procs[i];
+  }
+  return procs[0];
+}
+
+function labelFor(proc: ProcessInfo): string {
+  const name = (proc.name || "").toLowerCase();
+  return Object.hasOwn(LABEL_MAP, name) ? LABEL_MAP[name] : name;
+}
+
+/**
+ * Cheap foreground guess from pane terminal titles.
+ * Returns a process name, "shell", or null when the titles are ambiguous
+ * and `pane.process_info` must be consulted.
+ */
+function titleGuessForTab(panes: PaneCache[]): string | "shell" | null {
+  let sawPane = false;
+  for (const pane of panes) {
+    const title = pane.terminal_title_stripped?.trim();
+    // Missing/unknown titles are ambiguous: defer to process_info.
+    if (!title) return null;
+    sawPane = true;
+    if (SHELL_TITLE_RE.test(title)) continue;
+    const first = title.split(/\s+/)[0].toLowerCase();
+    if (SHELL_NAMES.has(first)) continue;
+    // Object.hasOwn: a title like "constructor" must not hit prototypes.
+    if (Object.hasOwn(TITLE_PROC, first)) return TITLE_PROC[first];
+    if (Object.hasOwn(LABEL_MAP, first)) return first;
+    return null;
+  }
+  return sawPane ? "shell" : null;
+}
+
+/** Foreground process of one pane over the socket (no fork). */
+async function foregroundProcess(paneId: string): Promise<ProcessInfo | null> {
+  let res: any;
   try {
-    const out = execFileSync(cmd, args, {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-    if (!out.trim()) return null;
-    return JSON.parse(out) as T;
+    res = await rpc("pane.process_info", { pane_id: paneId });
   } catch {
     return null;
   }
+  const procs =
+    res?.result?.process_info?.foreground_processes ??
+    res?.result?.foreground_processes;
+  if (!Array.isArray(procs) || procs.length === 0) return null;
+  const proc = pickProcess(procs);
+  if (!proc) return null;
+  const name = baseName(proc);
+  if (!name || SHELL_NAMES.has(name)) return null;
+  return { name };
 }
+
+// ---------------------------------------------------------------------------
+// State (same semantics as the polling watcher)
+// ---------------------------------------------------------------------------
 
 function loadState(): Record<string, string> {
   try {
@@ -87,134 +294,83 @@ function saveState(state: Record<string, string>): void {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2) + "\n");
 }
 
-function baseName(proc: ProcessInfo): string {
-  const raw = proc.argv0 || proc.name || "";
-  return path.basename(raw).replace(/^-/, "");
-}
+// ---------------------------------------------------------------------------
+// Reconcile: recompute labels for every tab, rename through the socket
+// ---------------------------------------------------------------------------
 
-/**
- * The list is the foreground process tree, but the order of wrappers vs the
- * real app is not guaranteed (pi runs last under kiro wrappers; hunk runs
- * first under bun). Pick by priority, scanning from the innermost process:
- * 1. a process explicitly mapped in LABEL_MAP (e.g. pi, hunk),
- * 2. the first non-runtime process (skips bun/node/deno hosts),
- * 3. fall back to the first entry.
- */
-function pickProcess(procs: ProcessInfo[]): ProcessInfo | null {
-  if (procs.length === 0) return null;
-  for (let i = procs.length - 1; i >= 0; i--) {
-    if (baseName(procs[i]) in LABEL_MAP) return procs[i];
+function parseCache(snapshot: any): Cache {
+  const cache: Cache = { tabs: new Map(), panes: new Map() };
+  for (const t of snapshot?.tabs ?? []) {
+    cache.tabs.set(t.tab_id, { label: t.label, number: t.number, workspace_id: t.workspace_id });
   }
-  for (let i = procs.length - 1; i >= 0; i--) {
-    const name = baseName(procs[i]);
-    if (name && !RUNTIME_NAMES.has(name) && !SHELL_NAMES.has(name)) return procs[i];
+  for (const p of snapshot?.panes ?? []) {
+    cache.panes.set(p.pane_id, {
+      tab_id: p.tab_id,
+      terminal_title_stripped: p.terminal_title_stripped,
+    });
   }
-  return procs[0];
+  return cache;
 }
 
-/** Foreground process of a pane, or null when it is just the shell. */
-function foregroundProcess(paneId: string): ProcessInfo | null {
-  const res = runJson<{ result: { process_info: { foreground_processes: ProcessInfo[] } } }>(
-    "herdr",
-    ["pane", "process-info", "--pane", paneId],
-  );
-  const procs = res?.result?.process_info?.foreground_processes;
-  if (!Array.isArray(procs) || procs.length === 0) return null;
-  const name = baseName(pickProcess(procs));
-  if (!name || SHELL_NAMES.has(name)) return null;
-  return { name };
+async function renameTab(tabId: string, label: string): Promise<void> {
+  const res = await rpc("tab.rename", { tab_id: tabId, label });
+  if (res?.error) throw new Error(res.error.message ?? "tab.rename failed");
 }
 
-/** Pick the most interesting foreground process across a tab's panes. */
-function tabProcess(paneIds: string[]): ProcessInfo | null {
-  for (const paneId of paneIds) {
-    const proc = foregroundProcess(paneId);
-    if (proc) return proc;
-  }
-  return null;
-}
-
-function labelFor(proc: ProcessInfo): string {
-  const name = (proc.name || "").toLowerCase();
-  return Object.hasOwn(LABEL_MAP, name) ? LABEL_MAP[name] : name;
-}
-
-/**
- * Cheap foreground guess from pane terminal titles.
- * Returns a process name, "shell", or null when the titles are ambiguous
- * and `herdr pane process-info` must be consulted.
- */
-function titleGuessForTab(panes: Pane[]): string | "shell" | null {
-  let sawPane = false;
-  for (const pane of panes) {
-    const title = pane.terminal_title_stripped?.trim();
-    // Missing/unknown titles are ambiguous: defer to `process-info`.
-    if (!title) return null;
-    sawPane = true;
-    if (SHELL_TITLE_RE.test(title)) continue;
-    const first = title.split(/\s+/)[0].toLowerCase();
-    if (SHELL_NAMES.has(first)) continue;
-    // Object.hasOwn: a title like "constructor" must not hit prototypes.
-    if (Object.hasOwn(TITLE_PROC, first)) return TITLE_PROC[first];
-    if (Object.hasOwn(LABEL_MAP, first)) return first;
-    return null;
-  }
-  return sawPane ? "shell" : null;
-}
-
-function tick(state: Record<string, string>): void {
-  const snap = runJson<{
-    result: { snapshot: { panes: Pane[]; tabs: Tab[] } };
-  }>("herdr", ["api", "snapshot"]);
-  const snapshot = snap?.result?.snapshot;
-  if (!snapshot || !Array.isArray(snapshot.tabs)) return;
-
-  const liveTabs = new Set(snapshot.tabs.map((t) => t.tab_id));
+async function reconcile(
+  cache: Cache,
+  state: Record<string, string>,
+  liveTabs: Set<string>,
+): Promise<void> {
   for (const tabId of Object.keys(state)) {
     if (!liveTabs.has(tabId)) delete state[tabId];
   }
 
-  const panesByTab = new Map<string, Pane[]>();
-  for (const pane of snapshot.panes) {
+  const panesByTab = new Map<string, PaneCache[]>();
+  for (const [paneId, pane] of cache.panes) {
     const list = panesByTab.get(pane.tab_id) ?? [];
-    list.push(pane);
+    list.push({ pane_id: paneId, tab_id: pane.tab_id, terminal_title_stripped: pane.terminal_title_stripped });
     panesByTab.set(pane.tab_id, list);
   }
 
-  for (const tab of snapshot.tabs) {
-    const panes = panesByTab.get(tab.tab_id) ?? [];
+  for (const [tabId, tab] of cache.tabs) {
+    const panes = panesByTab.get(tabId) ?? [];
     if (panes.length === 0) continue;
 
-    // Fast path: decide from terminal titles, fork-free.
     const guess = titleGuessForTab(panes);
     let proc: ProcessInfo | null;
     if (guess === "shell") {
-      const lastSet = state[tab.tab_id];
+      const lastSet = state[tabId];
       if (lastSet !== undefined && lastSet === tab.label && lastSet !== String(tab.number)) {
         // Watcher's own custom label still shown: verify before reset.
-        proc = tabProcess(panes.map((p) => p.pane_id));
+        proc = null;
+        for (const pane of panes) {
+          proc = await foregroundProcess(pane.pane_id);
+          if (proc) break;
+        }
       } else {
         proc = null;
       }
     } else if (guess !== null) {
       proc = { name: guess };
     } else {
-      proc = tabProcess(panes.map((p) => p.pane_id));
+      proc = null;
+      for (const pane of panes) {
+        proc = await foregroundProcess(pane.pane_id);
+        if (proc) break;
+      }
     }
 
     if (!proc) {
       // Shell-only tab: reset to the default label (tab number), but only
       // if the watcher renamed it before — manual names stay untouched.
-      const lastSet = state[tab.tab_id];
+      const lastSet = state[tabId];
       if (lastSet === undefined || lastSet !== tab.label) continue;
       const fallback = String(tab.number);
       if (fallback === tab.label) continue;
       try {
-        execFileSync("herdr", ["tab", "rename", tab.tab_id, fallback], {
-          stdio: "ignore",
-          timeout: 5000,
-        });
-        state[tab.tab_id] = fallback;
+        await renameTab(tabId, fallback);
+        state[tabId] = fallback;
       } catch {
         // ignore transient rename failures
       }
@@ -224,17 +380,14 @@ function tick(state: Record<string, string>): void {
     const wanted = labelFor(proc);
     if (!wanted || wanted === tab.label) continue;
 
-    const lastSet = state[tab.tab_id];
+    const lastSet = state[tabId];
     // Respect manual renames: only touch tabs we renamed before,
     // or tabs the watcher has never labelled.
     if (lastSet !== undefined && lastSet !== tab.label) continue;
 
     try {
-      execFileSync("herdr", ["tab", "rename", tab.tab_id, wanted], {
-        stdio: "ignore",
-        timeout: 5000,
-      });
-      state[tab.tab_id] = wanted;
+      await renameTab(tabId, wanted);
+      state[tabId] = wanted;
     } catch {
       // ignore transient rename failures
     }
@@ -243,16 +396,58 @@ function tick(state: Record<string, string>): void {
   saveState(state);
 }
 
-function main(): void {
-  const intervalArg = process.argv.indexOf("--interval");
-  const interval = intervalArg > -1 ? Number(process.argv[intervalArg + 1]) || 1000 : 1000;
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
 
+async function main(): Promise<void> {
   const state = loadState();
-  console.error(`herdr-tab-watcher: polling every ${interval}ms`);
-  for (;;) {
-    tick(state);
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, interval);
+  let cache: Cache = { tabs: new Map(), panes: new Map() };
+  let reconciling: Promise<void> | null = null;
+
+  async function reconcileNow(): Promise<void> {
+    if (reconciling) return reconciling;
+    reconciling = (async () => {
+      try {
+        const res = await rpc("session.snapshot", {});
+        const snapshot = res?.result?.snapshot;
+        if (!snapshot) return;
+        cache = parseCache(snapshot);
+        await reconcile(cache, state, new Set(cache.tabs.keys()));
+      } catch (e: any) {
+        log(`reconcile failed: ${e.message}`);
+      } finally {
+        reconciling = null;
+      }
+    })();
+    return reconciling;
   }
+
+  // Debounce event bursts (e.g. a tab closing emits several events).
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  const scheduleReconcile = (): void => {
+    if (debounceTimer) return;
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      void reconcileNow();
+    }, RECONCILE_DEBOUNCE);
+    (debounceTimer as any).unref?.();
+  };
+
+  await subscribe((event, data) => {
+    if (VERBOSE) log(`event ${event}: ${JSON.stringify(data ?? {}).slice(0, 120)}`);
+    scheduleReconcile();
+  });
+
+  log(`watching socket ${SOCKET_PATH}, reconcile interval ${RECONCILE_INTERVAL}ms`);
+  await reconcileNow();
+
+  // Self-heal: periodic snapshot in case an event was missed (e.g. downtime).
+  const intervalTimer = setInterval(() => void reconcileNow(), RECONCILE_INTERVAL);
+  intervalTimer.unref?.();
+
+  // Keep the process alive on the subscription connection.
+  setInterval(() => {}, 60_000).unref();
 }
 
-main();
+void main();
