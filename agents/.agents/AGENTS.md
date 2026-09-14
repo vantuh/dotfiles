@@ -108,9 +108,11 @@ Roles when available: **Scout** (unknown code, entry points, flows); **Researche
 
 Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
 
-When you finish implementing code changes, run a reviewer subagent before summarizing. Apply or report its findings — do not silently ignore them.
+When you finish implementing code changes, run a reviewer subagent before summarizing. Wait for that run to complete; then apply or report its findings — do not silently ignore them.
 
-A running subagent's long silence usually means the model is working — inspect it first (subagent status / FleetView live detail) before assuming it's stuck. Steer only with genuinely new information, and prefer foreground launches when you know you'll want to steer.
+A running subagent's long silence usually means the model is working — inspect it first (subagent status / FleetView live detail) before assuming it's stuck. Steer only with genuinely new information (steer / FleetView), not by launching foreground.
+
+From this chat, top-level subagent launches are background. Omit `async: false` and `foregroundOnly`. After launch, yield unless independent work remains; do not treat the launch itself as finished work.
 
 For slow-model launches (worker on cursor/*, long reviews), pass control: { needsAttentionAfterMs: 1200000 } so the attention notice doesn't fire early and tempt a nudge.
 
