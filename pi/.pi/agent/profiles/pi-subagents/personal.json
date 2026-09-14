@@ -22,6 +22,7 @@
       },
       "worker": {
         "model": "cursor/grok-4.6:slow",
+        "thinking": "medium",
         "skills": [
           "tdd",
           "vercel-react-best-practices",
