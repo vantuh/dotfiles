@@ -1,4 +1,5 @@
 {
+  "forceTopLevelAsync": true,
   "maxActiveAsyncRunsPerSession": 10,
   "parallel": {
     "maxTasks": 8,
