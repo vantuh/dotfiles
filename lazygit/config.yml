@@ -1,6 +1,7 @@
 gui:
   nerdFontsVersion: "3"
   showFileIcons: true
+  sidePanelWidth: 0.222
 # Standalone lazygit (Herdr tab `lg`): open files in existing Herdr nvim via herdr-nvim-edit.
 # Absolute path: Herdr/lazygit PATH often omits ~/.local/bin.
 os:
