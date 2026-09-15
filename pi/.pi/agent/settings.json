@@ -23,8 +23,6 @@
     "kiro-acp/auto",
     "kiro-acp/claude-sonnet-5",
     "kiro-acp/claude-opus-5",
-    "local/qwen3.8-27b",
-    "local/qwen3.8-27b-ridge",
     "cursor/grok-4.6",
     "cursor/composer-2-5",
     "openai-codex/gpt-6-astra",
