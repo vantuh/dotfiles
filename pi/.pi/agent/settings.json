@@ -29,7 +29,8 @@
     "cursor/composer-2-5",
     "openai-codex/gpt-6-astra",
     "opencode-go/glm-5.3-flash",
-    "opencode-go/glm-5.3"
+    "opencode-go/glm-5.3",
+    "simplex/qwen3.8-27b-exl3-3.0bpw"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
