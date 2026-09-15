@@ -88,13 +88,14 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Incremental commits
 
-**Commit every atomic slice as you finish it. The end result should read as a graph of work, not one giant diff.**
+**For non-trivial work spanning multiple verifiable concerns, commit each completed concern as you go instead of accumulating one large diff.** A trivial single-concern task needs at most one commit.
 
-- As soon as a piece of work stands on its own — it's coherent, complete for its concern, and its check passes — commit it, then continue. Don't let a large multi-concern diff pile up in the working tree.
-- One concern per commit, in the order the work actually happened (prerequisite/fix → feature → tests → docs). Keep commit messages specific enough to review a commit without reading the others.
-- Commit on your own; no need to ask. Never push — the user pushes.
-- Stage only the files your change touched (see Surgical Changes); never sweep unrelated user changes into your commits.
-- Don't commit knowingly broken intermediate states. If a slice can't stand alone yet, keep working until it can.
+- One independently reviewable concern per commit, including the tests and docs that make it complete. Order dependencies before dependents. The message states the concern and the intent, and follows the repository's existing message style (check recent `git log`).
+- Commit a slice once it is coherent and every available check relevant to it passes. If no check exists or a relevant one can't run, say so and don't imply it passed. Never commit a state you know is broken — keep working until the slice stands on its own.
+- This is standing authorization to create local commits: don't ask before each one. Never push — the user pushes.
+- These rules are global, so assume nothing about the repository's workflow. On the default or a protected branch, don't commit unless the user or that repo's own instructions allow it — propose a task branch instead. On a task branch, just commit.
+- Check status and diffs first, then stage only your own paths or hunks — never a whole file just because you touched it (see Surgical Changes). If your edits can't be separated from pre-existing changes in the same file, don't commit them; report the overlap.
+- Let commit hooks run; no `--no-verify` unless the user asks. Amending your own unpushed commit from the current task is fine (e.g. a hook reformatted files); otherwise fix mistakes with new commits and never rewrite pre-existing history unless the user asks.
 
 ## Safety Rules
 
@@ -120,7 +121,7 @@ Honor explicit user requests like "use scout" or "send to reviewer" when availab
 
 When you finish implementing code changes, run a reviewer subagent before summarizing. Wait for that run to complete; then apply or report its findings — do not silently ignore them.
 
-Workers follow Incremental commits too. When the work landed as commits, scope the reviewer to that commit range (`<base>..HEAD`) instead of the working tree, name the base explicitly, and have it review commit by commit — plus the cumulative diff for cross-commit issues. Only fall back to reviewing the working tree when the changes are uncommitted.
+Workers follow Incremental commits too. Before launching a worker that may commit, record the current commit SHA as the base and require the worker to report the SHAs it created plus its final tip. Scope the reviewer to that immutable range (`base..tip`, or the exact task SHAs if unrelated commits interleaved) and have it review each commit plus the cumulative diff. Review the working tree only for uncommitted changes.
 
 A running subagent's long silence usually means the model is working — inspect it first (subagent status / FleetView live detail) before assuming it's stuck. Steer only with genuinely new information (steer / FleetView), not by launching foreground.
 
