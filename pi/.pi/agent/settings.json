@@ -7,7 +7,8 @@
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
     "npm:pi-cursor-sdk",
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "git:github.com/leblancfg/pi-ansi-themes"
   ],
   "lastChangelogVersion": "0.85.1",
   "hideThinkingBlock": true,
@@ -16,7 +17,7 @@
     "reserveTokens": 8192,
     "keepRecentTokens": 16000
   },
-  "theme": "dark",
+  "theme": "ansi-dark",
   "enabledModels": [
     "kiro-acp/claude-haiku-4.5",
     "openai-codex/gpt-5.6-sol",
