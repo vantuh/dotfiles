@@ -10,7 +10,7 @@ set -Eeuo pipefail
 #   ./llama-update.sh --dry-run
 
 INSTALL_DIR="${INSTALL_DIR:-/mnt/c/Users/Ivan/llama-bin}"
-CUDA_VER="13.3"
+CUDA_VER="13.4"
 TARGETS="llama-server llama-bench llama-cli llama-mtmd-cli"
 
 PINNED_BUILD=""
