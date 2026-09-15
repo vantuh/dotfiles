@@ -13,7 +13,8 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | starship  | Starship prompt theme             |   ✓   |  ✓  |
 | yazi      | Yazi file manager config          |   ✓   |  ✓  |
 | pi        | Pi coding agent config            |   ✓   |  ✓  |
-| omp        | Oh My Pi (omp) coding agent config |   ✓   |  ✓  |
+| herdr     | Herdr config + plugins            |   ✓   |  ✓  |
+| hunk      | Hunk diff-review config           |   ✓   |  ✓  |
 | alacritty | Alacritty terminal config         |   ✓   | ✓\* |
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
 | ghostty   | Ghostty terminal configuration    |   ✓   |     |
@@ -21,14 +22,16 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 
 \* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
 
-### Other packages (manually symlinked by `install.sh`)
+### Other directories (not stow packages)
 
-| Package     | Contents                                         |
-| ----------- | ------------------------------------------------ |
-| agents      | Shared AI agent skills & instructions            |
-| lazygit     | Lazygit config                                   |
-| scripts     | Utility scripts (llama runner, pi commit helper) |
-| fan_control | Fan Control app config (Linux/Windows)           |
+| Directory        | Contents                                                        |
+| ---------------- | --------------------------------------------------------------- |
+| agents           | Shared AI agent skills & instructions (linked by `install.sh`)  |
+| lazygit          | Lazygit config (linked by `install.sh`)                         |
+| scripts          | Utility scripts (llama runner, pi commit helper, herdr helpers) |
+| fan_control      | Fan Control app config + research docs                          |
+| windows-terminal | Windows Terminal `settings.json` (WSL: linked/copied by `install.sh`) |
+| openspec         | OpenSpec design docs (specs + archived changes)                 |
 
 ## Prerequisites
 
@@ -45,42 +48,41 @@ cd ~/dotfiles
 chsh -s $(which zsh)
 ```
 
-`install.sh` auto-detects the platform (macOS / WSL), stows the appropriate packages, symlinks lazygit config, and wires up shared agent skills. On WSL it also copies `alacritty.toml` to the Windows-native config path.
+`install.sh` auto-detects the platform (macOS / WSL), stows the appropriate packages, symlinks lazygit config, and wires up shared agent skills. On WSL it also copies `alacritty.toml` to the Windows-native config path and links Windows Terminal settings.
 
 Restart your terminal after install. Zinit will auto-install all plugins on first launch.
 
 ## Shared Agent Skills
 
-The `agents/` directory is the single source of truth for AI agent skills and instructions shared across Pi, OMP, OpenCode, Kiro, and Claude.
+The `agents/` directory is the single source of truth for AI agent skills and instructions shared across Pi, OpenCode, Kiro, and Claude.
 
 ```
 agents/
   .agents/          # symlinked to ~/.agents (shared skills root)
     AGENTS.md       # shared agent instructions
     skills/         # shared SKILL.md files
-  .pi/
-    skills/         # pi-specific skill symlinks
   skills-lock.json  # pinned skill versions
 ```
 
-`install.sh` creates `~/.agents → dotfiles/agents/.agents`, then symlinks each agent's `skills/` and `AGENTS.md` into `~/.agents`. This means skill writes from any agent flow back into the repo automatically.
+`install.sh` creates `~/.agents → dotfiles/agents/.agents`, then symlinks `~/.agents/skills` and `~/.agents/AGENTS.md` into each agent's directory. This means skill writes from any agent flow back into the repo automatically.
 
-To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` and add symlinks for each target agent in `install.sh`.
+To add a shared skill: place it in `agents/.agents/skills/<name>/SKILL.md` — it becomes available to all linked agents automatically.
 
 ## Retired Pi extensions
 
 Extensions written for personal use and later retired live in
-`pi/.pi/agent/archive/` (not loaded by Pi). As of 2026-09-04 this is
-`herdr-agents` and the `herdr-peers` stub — the subagent setup migrated to the
-community-maintained [pi-subagents](https://github.com/nicobailon/pi-subagents)
-and [pi-intercom](https://github.com/nicobailon/pi-intercom). See
+`pi/.pi/agent/archive/` (not loaded by Pi): `herdr-agents`, the `herdr-peers`
+stub, `herdr-tab-name.ts`, and `zz-composer-herdr-agent.ts`. The subagent setup
+migrated to the community-maintained
+[pi-subagents](https://github.com/nicobailon/pi-subagents) and
+[pi-intercom](https://github.com/nicobailon/pi-intercom). See
 `pi/.pi/agent/archive/README.md` for the history and restore instructions.
 
 ## Uninstall
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi omp alacritty karabiner ghostty nvim
+stow -D zsh tmux starship yazi pi herdr hunk alacritty karabiner ghostty nvim
 ```
 
 ## Manual stow usage
