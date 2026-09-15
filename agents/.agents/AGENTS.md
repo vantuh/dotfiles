@@ -86,6 +86,16 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - If a required or relevant check cannot run, state the exact check not run, why, and any residual risk.
 - Don't make checks pass by weakening tests, suppressing type errors, or disabling lint rules instead of fixing the underlying issue.
 
+## Incremental commits
+
+**Commit every atomic slice as you finish it. The end result should read as a graph of work, not one giant diff.**
+
+- As soon as a piece of work stands on its own — it's coherent, complete for its concern, and its check passes — commit it, then continue. Don't let a large multi-concern diff pile up in the working tree.
+- One concern per commit, in the order the work actually happened (prerequisite/fix → feature → tests → docs). Keep commit messages specific enough to review a commit without reading the others.
+- Commit on your own; no need to ask. Never push — the user pushes.
+- Stage only the files your change touched (see Surgical Changes); never sweep unrelated user changes into your commits.
+- Don't commit knowingly broken intermediate states. If a slice can't stand alone yet, keep working until it can.
+
 ## Safety Rules
 
 - Never run destructive git commands (`reset --hard`, `push --force`, `clean -f`, `branch -D`) without asking.
@@ -109,6 +119,8 @@ Roles when available: **Scout** (unknown code, entry points, flows); **Researche
 Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
 
 When you finish implementing code changes, run a reviewer subagent before summarizing. Wait for that run to complete; then apply or report its findings — do not silently ignore them.
+
+Workers follow Incremental commits too. When the work landed as commits, scope the reviewer to that commit range (`<base>..HEAD`) instead of the working tree, name the base explicitly, and have it review commit by commit — plus the cumulative diff for cross-commit issues. Only fall back to reviewing the working tree when the changes are uncommitted.
 
 A running subagent's long silence usually means the model is working — inspect it first (subagent status / FleetView live detail) before assuming it's stuck. Steer only with genuinely new information (steer / FleetView), not by launching foreground.
 
