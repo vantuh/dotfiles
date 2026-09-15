@@ -23,12 +23,13 @@
     "kiro-acp/auto",
     "kiro-acp/claude-sonnet-5",
     "kiro-acp/claude-opus-5",
-    "openrouter/z-ai/glm-5.3-flash",
     "local/qwen3.8-27b",
     "local/qwen3.8-27b-ridge",
-    "openrouter/deepseek/deepseek-v4-flash-0731",
     "cursor/grok-4.6",
-    "cursor/composer-2-5"
+    "cursor/composer-2-5",
+    "openai-codex/gpt-6-astra",
+    "opencode-go/glm-5.3-flash",
+    "opencode-go/glm-5.3"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
