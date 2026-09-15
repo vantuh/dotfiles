@@ -33,3 +33,4 @@ install.sh          Cross-platform installer (stow + agent linking)
 - Keep shell scripts POSIX-compatible where possible; bash-specific features are fine in `.sh` files with `#!/bin/bash`.
 - Don't write executable helper scripts in Python. For anything more than a couple of lines, use bun + TypeScript (`#!/usr/bin/env bun` in `scripts/*.ts`, with a thin bash shim in `zsh/.local/bin/` — see `scripts/herdr-*.ts`). For trivial one-liners, use Node.js + JS (`node -e '...'`).
 - Test `install.sh` changes with `--dry-run` flag on `link.sh` before committing.
+- This repo works directly on `main`: committing there is authorized, no need to ask (see Incremental commits in the shared `AGENTS.md`). Pushing is still the user's job.
