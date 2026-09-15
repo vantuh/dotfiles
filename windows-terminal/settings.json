@@ -46,7 +46,10 @@
   "profiles": {
     "defaults": {
       "colorScheme": "Catppuccin Mocha",
-      "fontSize": 11,
+      "font": {
+        "size": 11,
+        "weight": "light"
+      },
       "cellHeight": 1,
       "scrollbarState": "hidden",
       "padding": "0"
@@ -61,7 +64,8 @@
       {
         "commandline": "wsl.exe -d Ubuntu -- /bin/bash -l -c herdr",
         "font": {
-          "face": "JetBrainsMonoNL Nerd Font"
+          "face": "JetBrainsMonoNL Nerd Font",
+          "weight": "light"
         },
         "guid": "{e454de88-5a64-5722-933e-b3135df7bd0d}",
         "hidden": false,
@@ -71,7 +75,8 @@
       {
         "commandline": "wsl.exe -d Ubuntu",
         "font": {
-          "face": "JetBrainsMonoNL Nerd Font"
+          "face": "JetBrainsMonoNL Nerd Font",
+          "weight": "light"
         },
         "guid": "{a1b2c3d4-1234-5678-9abc-def012345678}",
         "hidden": false,
