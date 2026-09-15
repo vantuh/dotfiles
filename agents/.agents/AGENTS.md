@@ -4,6 +4,12 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+## Language
+
+The user is a native Ukrainian speaker and reads English fluently. Answer in the language the user writes in: if they write in Ukrainian, reply, ask clarifying questions, and summarize in Ukrainian; the same for English.
+
+Ukrainian is for the chat only. Everything that lands in a repository is English, even when the request came in Ukrainian: code, identifiers, comments, commit messages, PR/MR descriptions, and any documentation you're asked to write (README, docs, ADRs, specs, plan files).
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
