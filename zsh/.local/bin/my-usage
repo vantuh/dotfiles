@@ -248,25 +248,35 @@ NODE
 }
 
 
-openrouter_key() {
-  local key="" f="${OPENROUTER_KEY_FILE:-$HOME/.config/my-usage/openrouter-key}"
+opencode_key() {
+  local key="" f="${OPENCODE_KEY_FILE:-$HOME/.config/my-usage/opencode-key}" auth
   if [[ -f "$f" ]]; then
     key="$(tr -d '[:space:]' < "$f")"
-  elif [[ -f "$HOME/.pi/agent/auth.json" ]]; then
-    key="$(OPENROUTER_AUTH="$HOME/.pi/agent/auth.json" node -e 'try{const d=require(process.env.OPENROUTER_AUTH);process.stdout.write((d.openrouter&&(d.openrouter.key||d.openrouter.access))||"")}catch{}' 2>/dev/null)"
-  elif [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
-    key="$OPENROUTER_API_KEY"
+  elif [[ -n "${OPENCODE_API_KEY:-}" ]]; then
+    key="$OPENCODE_API_KEY"
+  else
+    # opencode auth login writes here (macOS / XDG)
+    if [[ -f "$HOME/Library/Application Support/opencode/auth.json" ]]; then
+      auth="$HOME/Library/Application Support/opencode/auth.json"
+    else
+      auth="${OPENCODE_AUTH_JSON:-$HOME/.local/share/opencode/auth.json}"
+    fi
+    if [[ -f "$auth" ]]; then
+      # dedicated `opencode-go` entry wins over `opencode`
+      key="$(OPENCODE_AUTH="$auth" node -e 'try{const d=require(process.env.OPENCODE_AUTH);for(const p of ["opencode-go","opencode"]){const e=d[p];if(!e)continue;const k=e.key||e.apiKey;if(k){process.stdout.write(k);break}}}catch{}' 2>/dev/null)"
+    fi
   fi
   printf '%s' "$key"
 }
 
-run_openrouter_usage() {
-  section "OpenRouter"
+run_opencode_usage() {
+  section "OpenCode"
 
   local key
-  key="$(openrouter_key)"
+  key="$(opencode_key)"
   if [[ -z "$key" ]]; then
-    skip "openrouter api key missing"
+    skip "opencode api key missing"
+    printf 'Set OPENCODE_API_KEY, or put the Go key in ~/.config/my-usage/opencode-key\n'
     return 0
   fi
 
@@ -280,34 +290,117 @@ run_openrouter_usage() {
     return 0
   fi
 
-  local json
-  json="$(curl -sS --max-time 10 'https://openrouter.ai/api/v1/credits' \
-    -H "Authorization: Bearer $key" 2>/dev/null)" || { skip "openrouter request failed"; return 0; }
+  local response status body
+  response="$(curl -sS --max-time 15 -w '\n%{http_code}' 'https://opencode.ai/zen/go/v1/usage' \
+    -H "Authorization: Bearer $key" -H 'Accept: application/json' 2>/dev/null)"
+  status="${response##*$'\n'}"
+  body="${response%$'\n'*}"
 
-  OPENROUTER_JSON="$json" node <<'NODE'
+  if [[ "$status" == 401 ]]; then
+    printf 'opencode usage failed: HTTP 401, api key rejected\n'
+    return 0
+  fi
+  if [[ "$status" == 403 ]]; then
+    skip "no opencode go subscription on this key"
+    return 0
+  fi
+  if [[ "$status" != 2* ]]; then
+    printf 'opencode usage failed: HTTP %s\n' "$status"
+    return 0
+  fi
+
+  OPENCODE_USAGE_JSON="$body" node <<'NODE'
 try {
-  const data = JSON.parse(process.env.OPENROUTER_JSON || '{}').data || {};
-  const total = data.total_credits;
-  const used = data.total_usage;
-  if (typeof total !== 'number' || typeof used !== 'number') {
-    console.log('skip: unexpected openrouter response');
-  } else {
-    const left = Math.max(0, total - used);
-    const pct = total > 0 ? (used / total) * 100 : 0;
-    const money = (v) => '$' + v.toFixed(2);
-    const p = Math.max(0, Math.min(100, Math.round(pct)));
-    const f = Math.round((p / 100) * 20);
-    const bar = '█'.repeat(f) + '░'.repeat(20 - f);
-    console.log(`Balance  ${bar} ${p}%  ${money(left)} left of ${money(total)}`);
+  const usage = JSON.parse(process.env.OPENCODE_USAGE_JSON || '{}').usage || {};
+  const fmtRemaining = (resetsAt) => {
+    const remaining = Math.max(0, Math.floor(Date.parse(resetsAt) / 1000) - Math.floor(Date.now() / 1000));
+    const hours = Math.floor(remaining / 3600);
+    const minutes = Math.floor((remaining % 3600) / 60);
+    return hours >= 24 ? `${Math.floor(hours / 24)}d${hours % 24}h` : `${hours}h${minutes}m`;
+  };
+  function bar(percent, width = 20) {
+    const value = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+    const filled = Math.round((value / 100) * width);
+    return `${'█'.repeat(filled)}${'░'.repeat(width - filled)} ${value}%`;
   }
+  function printMetric(name, percent, detail = '') {
+    console.log(`${name.padEnd(8)} ${bar(percent)}${detail ? `  ${detail}` : ''}`);
+  }
+  let any = false;
+  for (const [name, win] of Object.entries({ Rolling: usage.rolling, Weekly: usage.weekly, Monthly: usage.monthly })) {
+    if (!win || typeof win.percent !== 'number') continue;
+    any = true;
+    const detail = win.resetsAt && !Number.isNaN(Date.parse(win.resetsAt)) ? `resets ${fmtRemaining(win.resetsAt)}` : '';
+    printMetric(name, win.percent, detail);
+  }
+  if (!any) console.log('skip: unexpected opencode response');
 } catch {
-  console.log('skip: unexpected openrouter response');
+  console.log('skip: unexpected opencode response');
 }
 NODE
 }
+
+# openrouter_key() {
+#   local key="" f="${OPENROUTER_KEY_FILE:-$HOME/.config/my-usage/openrouter-key}"
+#   if [[ -f "$f" ]]; then
+#     key="$(tr -d '[:space:]' < "$f")"
+#   elif [[ -f "$HOME/.pi/agent/auth.json" ]]; then
+#     key="$(OPENROUTER_AUTH="$HOME/.pi/agent/auth.json" node -e 'try{const d=require(process.env.OPENROUTER_AUTH);process.stdout.write((d.openrouter&&(d.openrouter.key||d.openrouter.access))||"")}catch{}' 2>/dev/null)"
+#   elif [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
+#     key="$OPENROUTER_API_KEY"
+#   fi
+#   printf '%s' "$key"
+# }
+#
+# run_openrouter_usage() {
+#  section "OpenRouter"
+
+#  local key
+#  key="$(openrouter_key)"
+#  if [[ -z "$key" ]]; then
+#    skip "openrouter api key missing"
+#    return 0
+#  fi
+
+#  if ! command -v curl >/dev/null 2>&1; then
+#    skip "curl not installed"
+#    return 0
+#  fi
+
+#  if ! command -v node >/dev/null 2>&1; then
+#    skip "node not installed"
+#    return 0
+#  fi
+
+#  local json
+#  json="$(curl -sS --max-time 10 'https://openrouter.ai/api/v1/credits' \
+#    -H "Authorization: Bearer $key" 2>/dev/null)" || { skip "openrouter request failed"; return 0; }
+
+#  OPENROUTER_JSON="$json" node <<'NODE'
+#try {
+#  const data = JSON.parse(process.env.OPENROUTER_JSON || '{}').data || {};
+#  const total = data.total_credits;
+#  const used = data.total_usage;
+#  if (typeof total !== 'number' || typeof used !== 'number') {
+#    console.log('skip: unexpected openrouter response');
+#  } else {
+#    const left = Math.max(0, total - used);
+#    const pct = total > 0 ? (used / total) * 100 : 0;
+#    const money = (v) => '$' + v.toFixed(2);
+#    const p = Math.max(0, Math.min(100, Math.round(pct)));
+#    const f = Math.round((p / 100) * 20);
+#    const bar = '█'.repeat(f) + '░'.repeat(20 - f);
+#    console.log(`Balance  ${bar} ${p}%  ${money(left)} left of ${money(total)}`);
+#  }
+#} catch {
+#  console.log('skip: unexpected openrouter response');
+#}
+#NODE
+#}
 
 
 run_codex_usage || true
 run_kiro_usage || true
 run_cursor_usage || true
-run_openrouter_usage || true
+run_opencode_usage || true
+# run_openrouter_usage || true
