@@ -21,8 +21,8 @@
         ]
       },
       "worker": {
-        "model": "cursor/grok-4.6:slow",
-        "thinking": "medium",
+        "model": "opencode-go/deepseek-v4.1-flash",
+        "thinking": "high",
         "skills": [
           "tdd",
           "vercel-react-best-practices",
