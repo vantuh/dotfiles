@@ -6,7 +6,7 @@
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "cursor/grok-4.6:slow"
+        "model": "openai-codex/gpt-5.6-sol"
       },
       "researcher": {
         "model": "openai-codex/gpt-5.6-terra",
