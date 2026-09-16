@@ -99,7 +99,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - One independently reviewable concern per commit, including the tests and docs that make it complete. Order dependencies before dependents. The message states the concern and the intent, and follows the repository's existing message style (check recent `git log`).
 - Commit a slice once it is coherent and every available check relevant to it passes. If no check exists or a relevant one can't run, say so and don't imply it passed. Never commit a state you know is broken — keep working until the slice stands on its own.
 - This is standing authorization to create local commits: don't ask before each one. Never push — the user pushes.
-- On a task branch, just commit. On the default or a protected branch, don't commit unless the user or that repo's own instructions allow it — propose a task branch instead.
+- Stay on the current branch, including default/`main`. Do not create a feature or task branch unless the user explicitly asks. Commits on `main` are authorized.
 - Check status and diffs first, then stage only your own paths or hunks — never a whole file just because you touched it (see Surgical Changes). If your edits can't be separated from pre-existing changes in the same file, don't commit them; report the overlap.
 - Let commit hooks run; no `--no-verify` unless the user asks. Amending your own unpushed commit from the current task is fine (e.g. a hook reformatted files); otherwise fix mistakes with new commits and never rewrite pre-existing history unless the user asks.
 
