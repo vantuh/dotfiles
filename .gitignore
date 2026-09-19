@@ -50,5 +50,7 @@ agents/.agents/skills/skills
 *.bak
 # omp atomic-write lock beside the symlinked config target
 omp/.omp/agent/config.yml.lock
+# install.sh used to write this into the folded package dir
+alacritty/.config/alacritty/alacritty.toml
 # Repo-local skills/prompts only; the pi/ stow package's .pi stays versioned
 /.pi/
