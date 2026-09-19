@@ -1,7 +1,7 @@
 // Test: buildPromptParts prompt assembly (omp string[] systemPrompt).
 // Run: test/run-all.sh test/helpers.test.ts
 
-import { buildPromptParts } from "../helpers.ts";
+import { buildPromptParts, lastUserMessage } from "../helpers.ts";
 import type { Context } from "@earendil-works/pi-ai";
 
 function assert(condition: unknown, label: string): void {
@@ -60,5 +60,61 @@ function assert(condition: unknown, label: string): void {
   assert(
     typeof parts.systemPrompt === "string",
     "joined systemPrompt is a string",
+  );
+}
+
+{
+  // omp appends role:"developer" reminders after the user turn; they are
+  // part of the current input, not a replay of the original message.
+  const context: Context = {
+    systemPrompt: ["S"],
+    messages: [
+      { role: "user", content: "Run the tests", timestamp: 1 } as Context["messages"][number],
+      { role: "developer", content: "Continue from the failing test.", timestamp: 2 } as Context["messages"][number],
+    ],
+  };
+  const current = lastUserMessage(context);
+  assert(
+    current.includes("Run the tests") && current.includes("Continue from the failing test."),
+    "trailing developer reminder is appended to the current prompt",
+  );
+
+  const replay = buildPromptParts(context, true);
+  assert(
+    replay.userMessage.includes("Run the tests"),
+    "history replay still carries the user message",
+  );
+}
+
+{
+  // Assistant work between the user turn and the developer reminder must not
+  // be swallowed into the current prompt either.
+  const context: Context = {
+    systemPrompt: ["S"],
+    messages: [
+      { role: "user", content: "Run the tests", timestamp: 1 } as Context["messages"][number],
+      { role: "assistant", content: "Working on it", timestamp: 2 } as Context["messages"][number],
+      { role: "developer", content: "Reminder text", timestamp: 3 } as Context["messages"][number],
+    ],
+  };
+  const current = lastUserMessage(context);
+  assert(
+    current.includes("Run the tests") && current.includes("Reminder text"),
+    "developer reminder after assistant work is still appended",
+  );
+}
+
+{
+  // No trailing developer messages: prompt is exactly the user text.
+  const context: Context = {
+    systemPrompt: ["S"],
+    messages: [
+      { role: "user", content: "Just this", timestamp: 1 } as Context["messages"][number],
+    ],
+  };
+  const current = lastUserMessage(context);
+  assert(
+    current === "Just this",
+    "plain user turn yields the bare user text",
   );
 }
