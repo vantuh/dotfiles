@@ -1172,6 +1172,7 @@ export class AcpSession {
           callId,
           toolName: call.toolName,
           resultLen: tr.text.length,
+          isError: tr.isError,
           textOnly,
           ...(textOnly
             ? {}

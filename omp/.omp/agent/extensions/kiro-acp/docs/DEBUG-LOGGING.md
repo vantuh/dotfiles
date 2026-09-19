@@ -11,7 +11,7 @@ $TMPDIR/kiro-acp-debug.log
 Example on this machine: `/var/folders/.../T/kiro-acp-debug.log`.  
 On load, `extension loaded` includes `{ logFile }` when debug is on.
 
-Format: `[HH:MM:SS.mmm] message {json}` — written by `logging.ts:log()` via `appendFile`.
+Format: `[HH:MM:SS.mmm] message {json}` — written by `logging.ts:log()` via `appendFile`. Timestamps are **UTC** (`toISOString().slice(11, 23)`), not local time.
 
 ### Watch in real-time
 
@@ -213,6 +213,26 @@ parsed by 2.21 but has no effect there; written for CLI 3+.
 ---
 
 ## Common debugging scenarios
+
+### Forwarded `edit` calls keep failing (`isError: true` on every edit)
+
+omp's default `hashline` edit protocol requires the model to copy the
+`[PATH#HASH]` tag that omp's `read` tool issued for that exact file.
+Models relayed through kiro-acp sometimes fabricate the tag without reading
+first (verified: `claude-haiku-4.5` → `input must begin with "[PATH#HASH]"
+for anchored edits; got: ""` twice in one turn, then a `write` fallback).
+Fix in omp `config.yml` — downgrade the whole provider to the simpler
+`replace` protocol (omp does the same natively for kimi/minimax/deepseek/
+glm-flash classes):
+
+```yaml
+edit:
+  modelVariants:
+    kiro-acp/: replace
+```
+
+Watch it with `grep '"toolName":"edit"' — now every `delivering tool result`
+log line carries `isError`.
 
 ### Tool call not arriving
 
