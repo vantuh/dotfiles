@@ -277,9 +277,13 @@ log line carries `isError`.
 A fresh session has no Kiro builtins (`tools: ["@pi_host"]` — verified against
 kiro-cli 2.21.1 with a probe MCP server). Builtins leak back only when
 `session/load` restores a persisted session whose agent snapshot predates the
-current agent config — including the common case of a snapshot bound to a
-previous process's agent name (names are per-instance random, so a
-**cross-restart restore always risks the `kiro_default` fallback**):
+current agent config — including the case of a snapshot bound to a
+previous process's agent name (the agent name is now **stable per
+persistence key** — derived from the persisted-session identity — so the
+next process rewrites the identical config under the same name and
+`session/load` re-resolves it: verified clean cross-restart restore with
+`replayHistory:false`. Only sessions without a persistence key keep a
+random name, and snapshot-config mismatches can still leak):
 `NameCollision(BuiltIn(FsRead/AgentCrew/…))` then drops
 same-named pi_host specs and the native tool becomes model-visible. The
 forwarded catalog aliases those names (`subagent` → `pi_subagent`, `read` →
