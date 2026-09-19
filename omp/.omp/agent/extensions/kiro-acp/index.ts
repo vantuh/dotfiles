@@ -7,7 +7,7 @@ import { loadKiroAcpConfig, resolveUsageFooterConfig } from "./config.ts";
 import { KIRO_MODELS, type KiroModelConfig } from "./models/fallback.ts";
 import { discoverKiroModels } from "./models/discovery.ts";
 import { LOG_FILE, log } from "./logging.ts";
-import { KIRO_ACP_PROVIDER, normalizeKiroContextOverflow } from "./overflow.ts";
+import { KIRO_ACP_PROVIDER } from "./overflow.ts";
 import { stripAssistantContentFrames } from "./native-tool-frame.ts";
 import { stopAllSessions } from "./session-manager.ts";
 import { streamKiroAcp } from "./stream.ts";
@@ -138,15 +138,14 @@ export default function (pi: ExtensionAPI) {
     return changed ? { messages: event.messages } : undefined;
   });
 
-  pi.on("message_end", (event, ctx) =>
-    normalizeKiroContextOverflow(event.message, ctx),
-  );
+  // omp's message_end is notification-only (return value ignored), so kiro
+  // context-overflow errors are classified at the source instead — see
+  // classifyKiroContextOverflow() in overflow.ts, called from stream.ts.
 
-  pi.on("session_shutdown", async (event) => {
-    log("session_shutdown", {
-      reason: event.reason,
-      targetSessionFile: event.targetSessionFile,
-    });
+  pi.on("session_shutdown", async () => {
+    // omp's SessionShutdownEvent carries only `type` (pi also had
+    // reason/targetSessionFile); the shutdown path just needs ACP teardown.
+    log("session_shutdown");
     await stopAllSessions();
   });
 }
@@ -172,7 +171,7 @@ function registerKiroProvider(
   models: KiroModelConfig[],
 ): void {
   pi.registerProvider(KIRO_ACP_PROVIDER, {
-    name: "Kiro ACP",
+    // omp's ProviderConfig has no `name` field (display names live on models).
     baseUrl: "local",
     apiKey: "unused",
     api: "kiro-acp-api" as any,

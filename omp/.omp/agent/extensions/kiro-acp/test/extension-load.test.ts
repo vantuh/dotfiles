@@ -58,7 +58,6 @@ for (const event of [
   "turn_start",
   "message_start",
   "context",
-  "message_end",
   "session_shutdown",
 ]) {
   assert(events.includes(event), `the extension subscribes to ${event}`);
