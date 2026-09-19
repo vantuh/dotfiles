@@ -139,7 +139,11 @@ export function buildPromptParts(
     }
   }
   return {
-    systemPrompt: context.systemPrompt || "",
+    // omp's Context.systemPrompt is string[] (pi passed a string); join the
+    // blocks so prompt hashing and the <system_instructions> wrapper work.
+    systemPrompt: Array.isArray(context.systemPrompt)
+      ? context.systemPrompt.join("\n\n")
+      : (context.systemPrompt || ""),
     userMessage: includeHistory
       ? buildConversationPrompt(context)
       : lastUserMessage(context),
