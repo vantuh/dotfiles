@@ -48,5 +48,7 @@ agents/.agents/skills/skills
 
 # Editor backups
 *.bak
+# omp atomic-write lock beside the symlinked config target
+omp/.omp/agent/config.yml.lock
 # Repo-local skills/prompts only; the pi/ stow package's .pi stays versioned
 /.pi/
