@@ -6,7 +6,7 @@ Personal dotfiles for macOS and WSL, managed with GNU Stow.
 
 ```
 <package>/          Stow package — symlinked to $HOME
-                    (zsh, tmux, starship, yazi, pi, alacritty, karabiner)
+                    (zsh, tmux, starship, yazi, pi, omp, alacritty, karabiner)
 agents/             Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro, Claude)
   skills/           Shared SKILL.md files
   instructions/     Shared instruction files (AGENTS.md, caveman.md)
@@ -22,6 +22,11 @@ install.sh          Cross-platform installer (stow + agent linking)
 - Each top-level directory is a stow package mirroring `$HOME` structure.
 - `agents/` is NOT a stow package — it uses its own `link.sh` for symlinks.
 - Config files go inside their stow package at the path they'd have under `$HOME` (e.g. `zsh/.zshrc`, `pi/.pi/agent/settings.json`).
+- `kiro-acp` exists twice, on purpose: `omp/.omp/agent/extensions/kiro-acp`
+  is Oh My Pi (`omp`, `~/.omp`); `pi/.pi/agent/extensions/kiro-acp` is Pi
+  (`pi`, `~/.pi`). They are not the same tree. Start at the copy's
+  `README.md` before editing. Do not port a change across hosts unless
+  asked.
 - Platform-specific handling is in `install.sh`, not scattered across packages.
 
 ## Rules

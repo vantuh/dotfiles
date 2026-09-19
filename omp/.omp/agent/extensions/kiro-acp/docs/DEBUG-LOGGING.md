@@ -1,14 +1,20 @@
 # kiro-acp Debug Logging
 
+> **Oh My Pi copy.** Source and identity: [README.md](../README.md).
+> Do not edit `pi/.pi/agent/extensions/kiro-acp` for omp work.
+> In this catalog, "pi" means the host SDK / tool loop, not the `pi` stow package.
+
 ## Log File
 
-Path comes from Node `os.tmpdir()` (not always `/tmp` on macOS):
+Path comes from Node `os.tmpdir()` (not always `/tmp` on macOS). This copy
+uses a namespaced file so it does not mix with the Pi copy's
+`$TMPDIR/kiro-acp-debug.log`:
 
 ```
-$TMPDIR/kiro-acp-debug.log
+$TMPDIR/omp-kiro-acp-debug.log
 ```
 
-Example on this machine: `/var/folders/.../T/kiro-acp-debug.log`.  
+Example on this machine: `/var/folders/.../T/omp-kiro-acp-debug.log`.
 On load, `extension loaded` includes `{ logFile }` when debug is on.
 
 Format: `[HH:MM:SS.mmm] message {json}` — written by `logging.ts:log()` via `appendFile`. Timestamps are **UTC** (`toISOString().slice(11, 23)`), not local time.
@@ -16,8 +22,8 @@ Format: `[HH:MM:SS.mmm] message {json}` — written by `logging.ts:log()` via `a
 ### Watch in real-time
 
 ```sh
-LOG="${TMPDIR%/}/kiro-acp-debug.log"
-# or: node -e "console.log(require('os').tmpdir()+'/kiro-acp-debug.log')"
+LOG="${TMPDIR%/}/omp-kiro-acp-debug.log"
+# or: node -e "console.log(require('os').tmpdir()+'/omp-kiro-acp-debug.log')"
 tail -f "$LOG"
 # filter to one session
 tail -f "$LOG" | grep '"session":"abc123"'
@@ -46,9 +52,10 @@ one pipe can in principle interleave a large frame, so this stays off by default
 is meant for a specific hunt:
 
 ```sh
-# logger.debug + logger.verbose go to ~/.pi/agent/kiro-acp.json:
+# logger.debug + logger.verbose go to ~/.omp/agent/kiro-acp.json:
 # { "logger": { "debug": true, "verbose": 2 } }
-pi
+# then restart omp (not pi) so logging.ts re-reads the file
+omp
 ```
 
 Rough volume for one initialize + `session/new` cycle: `-v` ≈ 8 lines, `-vv` ≈ 20,
@@ -247,7 +254,7 @@ log line carries `isError`.
 1. Look for `kiro exited` — note `code`/`signal`
 2. Check `kiro stderr` lines before exit for error output from kiro-cli
 3. `cleanupAfterProcessExit` shows how many pending RPCs/tool calls were dropped
-4. If `hadActivePrompt: true`, the prompt was lost — Pi will likely error
+4. If `hadActivePrompt: true`, the prompt was lost — omp will likely error
 
 ### RPC timeout
 
@@ -258,8 +265,8 @@ log line carries `isError`.
 
 ### Streaming feels slow / waiting
 
-1. Enable debug: `PI_KIRO_ACP_DEBUG=1`
-2. Clear log: `LOG="${TMPDIR%/}/kiro-acp-debug.log"; : > "$LOG"`
+1. Enable debug in `~/.omp/agent/kiro-acp.json`: `{ "logger": { "debug": true } }` (env `PI_KIRO_ACP_DEBUG` is ignored) and restart omp
+2. Clear log: `LOG="${TMPDIR%/}/omp-kiro-acp-debug.log"; : > "$LOG"`
 3. Reproduce one slow turn, then:
    ```sh
    grep -E 'timing first|prompt sent|outcome|bridge tool call|rpc ←|delivering tool' "$LOG"
@@ -272,7 +279,7 @@ log line carries `isError`.
    - Tiny `avgTextChunkChars` + many `textChunks` → tiny ACP chunks; they are forwarded 1:1 now,
      so this is kiro-cli's chunking, not extension batching
 
-### Native Kiro tool activity not visible in pi
+### Native Kiro tool activity not visible in omp
 
 A fresh session has no Kiro builtins (`tools: ["@pi_host"]` — verified against
 kiro-cli 2.21.1 with a probe MCP server). Builtins leak back only when

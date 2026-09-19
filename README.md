@@ -79,11 +79,25 @@ migrated to the community-maintained
 [pi-intercom](https://github.com/nicobailon/pi-intercom). See
 `pi/.pi/agent/archive/README.md` for the history and restore instructions.
 
+## Two kiro-acp trees
+
+`kiro-acp` is vendored separately for each host. They forked from the same
+extension and are not kept in sync.
+
+| Host | Repo path | Loaded from |
+| ---- | --------- | ----------- |
+| Oh My Pi (`omp`) | `omp/.omp/agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
+| Pi (`pi`) | `pi/.pi/agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
+
+Each tree has a `README.md` with config paths and namespaced runtime files.
+Start there before editing. `stow --restow` the matching package (`omp` or
+`pi`) after adding files; `--no-folding` links per file, not the directory.
+
 ## Uninstall
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi herdr hunk alacritty karabiner ghostty nvim
+stow -D zsh tmux starship yazi pi omp herdr hunk alacritty karabiner ghostty nvim
 ```
 
 ## Manual stow usage

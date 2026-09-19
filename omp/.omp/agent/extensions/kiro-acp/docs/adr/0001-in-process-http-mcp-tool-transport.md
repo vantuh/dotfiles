@@ -1,5 +1,9 @@
 # 0001 — In-process HTTP MCP tool transport for kiro-acp
 
+> **Oh My Pi copy** of this history. Identity and the sibling Pi tree:
+> [README.md](../../README.md). "pi" below is the host SDK / tool loop
+> (`pi_host`, `@earendil-works/pi-*`), not `dotfiles/pi` or `~/.pi`.
+
 Status: accepted (2026-08)
 Supersedes: the `.mjs` stdio bridge + `/tmp` tools-file + HTTP IPC transport.
 
