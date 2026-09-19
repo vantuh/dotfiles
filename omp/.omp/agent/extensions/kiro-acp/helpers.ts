@@ -11,7 +11,17 @@ const MAX_TOOL_RESULT_CHARS = 20000;
 export function lastUserMessage(context: Context): string {
   const msgs = context.messages || [];
   const i = findLastUserIndex(context);
-  return i < 0 ? "" : messageText(msgs[i], Infinity);
+  if (i < 0) return "";
+  // omp appends role:"developer" messages after the user turn (auto-retry /
+  // unexpected-stop corrective reminders, todo reminders, file mentions).
+  // Treat them as part of the current input so Kiro continues the turn
+  // instead of re-answering the original user message.
+  const parts = [messageText(msgs[i], Infinity)];
+  for (let j = i + 1; j < msgs.length; j++) {
+    if (msgs[j].role !== "developer") continue;
+    parts.push(messageText(msgs[j], Infinity));
+  }
+  return parts.filter(Boolean).join("\n\n");
 }
 
 export function buildConversationPrompt(context: Context): string {
@@ -91,6 +101,11 @@ function findLastUserIndex(context: Context): number {
 function formatHistoryMessage(msg: Context["messages"][number]): string {
   if (msg.role === "user") {
     return `<message role="user">\n${escapeText(messageText(msg, MAX_HISTORY_TEXT_CHARS))}\n</message>`;
+  }
+
+  // omp developer reminders land in history; keep them visible on replay.
+  if (msg.role === "developer") {
+    return `<message role="developer">\n${escapeText(messageText(msg, MAX_HISTORY_TEXT_CHARS))}\n</message>`;
   }
 
   if (msg.role === "assistant") {

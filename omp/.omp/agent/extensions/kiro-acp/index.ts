@@ -92,7 +92,9 @@ export default function (pi: ExtensionAPI) {
   };
 
   pi.on("session_start", (_event, ctx) => syncKiroUsageFooter(ctx.model));
-  pi.on("model_select", (event) => syncKiroUsageFooter(event.model));
+  // omp has no model_select extension hook; re-sync from the current model
+  // at each turn so switching to/from kiro-acp updates the footer.
+  pi.on("turn_start", (_event, ctx) => syncKiroUsageFooter(ctx.model));
 
   pi.registerCommand("kiro-usage", {
     description: "Refresh Kiro plan usage shown in the footer",
