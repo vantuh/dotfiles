@@ -36,7 +36,8 @@ export interface SessionMetadata {
   contextSize?: number;
   // NOTE: sessionCost / meteringUsage are per-turn session telemetry only —
   // NOT the account plan quota (credits, % used, reset date). ACP does not
-  // expose plan usage; see usage.ts for how that is fetched.
+  // expose plan usage; see usage.ts. meteringUsage credits become amortized
+  // plan $ in estimateUsage (not sessionCost, which may be cumulative).
   sessionCost?: { amount: number; currency: string };
   meteringUsage?: Array<{ unit: string; unitPlural?: string; value: number }>;
   turnDurationMs?: number;

@@ -14,7 +14,9 @@ import {
   estimateUsage,
   imagesFromToolResults,
   lastUserMessage,
+  sumMeteringCredits,
 } from "./helpers.ts";
+import { loadKiroAcpConfig, resolveCostConfig } from "./config.ts";
 import { log, msSince } from "./logging.ts";
 import { classifyKiroContextOverflow } from "./overflow.ts";
 import { kiroToolIdentity } from "./permissions.ts";
@@ -76,6 +78,7 @@ export function streamKiroAcp(
 
   (async () => {
     const output = createOutputMessage(model);
+    const dollarsPerCredit = resolveCostConfig(loadKiroAcpConfig()).dollarsPerCredit;
     // Set once the turn bumps streamGen so the finally below can clear the
     // turn's handlers without clobbering a newer turn's assignments.
     let turnGen: number | null = null;
@@ -278,7 +281,12 @@ export function streamKiroAcp(
       // frames carry it and live counters (e.g. the subagent fleet) tick.
       session.onMetadata = (m) => {
         if (suppressUpdates) return;
-        output.usage = estimateUsage(output, model.contextWindow, m);
+        output.usage = estimateUsage(
+          output,
+          model.contextWindow,
+          m,
+          dollarsPerCredit,
+        );
       };
 
       session.updateHandler = (update) => {
@@ -667,7 +675,14 @@ export function streamKiroAcp(
         output,
         model.contextWindow,
         session.metadata,
+        dollarsPerCredit,
       );
+      log("amortized cost", {
+        session: session.id,
+        dollarsPerCredit,
+        credits: sumMeteringCredits(session.metadata?.meteringUsage),
+        total: output.usage.cost.total,
+      });
       appendKiroMetadataDiagnostic(output, session.metadata);
 
       if (outcome === "toolUse") {

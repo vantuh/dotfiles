@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 interface KiroAcpConfig {
   logger?: {
-    /** Write $TMPDIR/kiro-acp-debug.log. Default: off. */
+    /** Write $TMPDIR/omp-kiro-acp-debug.log. Default: off. */
     debug?: boolean;
     /** kiro-cli `-v` repeat count, 0 = off, max 3. Default: 0. */
     verbose?: number;
@@ -15,11 +15,19 @@ interface KiroAcpConfig {
     /** Poll interval in minutes. Default: 10. */
     pollMinutes?: number;
   };
+  cost?: {
+    /**
+     * Amortized plan $ written to usage.cost.total per Kiro credit.
+     * Default 0.02 (Pro / Pro+ / Pro Max / Power list rate). Set 0 to leave
+     * cost at $0 (heatmap will not paint Kiro days by spend).
+     */
+    dollarsPerCredit?: number;
+  };
 }
 
-const CONFIG_PATH = join(homedir(), ".pi", "agent", "kiro-acp.json");
+const CONFIG_PATH = join(homedir(), ".omp", "agent", "kiro-acp.json");
 
-/** Reads ~/.pi/agent/kiro-acp.json; empty object when missing/invalid. */
+/** Reads ~/.omp/agent/kiro-acp.json; empty object when missing/invalid. */
 export function loadKiroAcpConfig(): KiroAcpConfig {
   try {
     return JSON.parse(readFileSync(CONFIG_PATH, "utf-8")) as KiroAcpConfig;
@@ -56,5 +64,21 @@ export function resolveUsageFooterConfig(
     enabled: typeof enabled === "boolean" ? enabled : false,
     pollMinutes:
       Number.isFinite(pollMinutes) && pollMinutes > 0 ? pollMinutes : 10,
+  };
+}
+
+/** List rate of paid individual plans: $20 / 1000 credits. */
+export const DEFAULT_DOLLARS_PER_CREDIT = 0.02;
+
+interface CostConfig {
+  dollarsPerCredit: number;
+}
+
+/** Cost settings: config with default $0.02/credit. Explicit 0 disables. */
+export function resolveCostConfig(config: KiroAcpConfig): CostConfig {
+  const n = Number(config.cost?.dollarsPerCredit);
+  return {
+    dollarsPerCredit:
+      Number.isFinite(n) && n >= 0 ? n : DEFAULT_DOLLARS_PER_CREDIT,
   };
 }
