@@ -1,13 +1,1 @@
-[general]
-import = ["~/.config/alacritty/base.toml"]
-working_directory = "/Users/vantuh/projects"
-
-[terminal.shell]
-program = "/opt/homebrew/bin/herdr"
-
-[font]
-size = 14.5 
-
-[font.normal]
-family = "JetBrainsMonoNL Nerd Font"
-style = "Light"
+macos.toml
