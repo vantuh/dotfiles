@@ -17,7 +17,8 @@ import {
   stripNativeToolFrames,
 } from "./native-tool-frame.ts";
 
-const APP_DIR = "pi-kiro-acp";
+/** Namespaced vs Pi's `pi-kiro-acp` so omp/pi do not share ACP session files. */
+const APP_DIR = "omp-kiro-acp";
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface PersistedKiroSession {

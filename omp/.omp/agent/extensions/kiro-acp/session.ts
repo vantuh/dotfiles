@@ -121,7 +121,7 @@ export class AcpSession {
   /** Derived agent scratch dir — deterministic from the session id, so no
    * stored state can drift from it and teardown needs only one rmSync. */
   get agentRootPath(): string {
-    return join(tmpdir(), "kiro-acp", `agent-root-${this.id}`);
+    return join(tmpdir(), "omp-kiro-acp", `agent-root-${this.id}`);
   }
   get agentConfigPath(): string {
     return join(
