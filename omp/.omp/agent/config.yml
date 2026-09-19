@@ -26,3 +26,6 @@ lsp:
   diagnosticsOnEdit: true
 task:
   eager: preferred
+edit:
+  modelVariants:
+    kiro-acp/: replace
