@@ -146,17 +146,21 @@ fi
 # yourself, then restow. The installer must not rm HOME copies.
 
 # Stow folds ~/.config/alacritty onto the package dir. Unfold first so
-# later restow --no-folding owns files, not the directory.
-ALACRITTY_CFG="$HOME/.config/alacritty"
-if [[ -L "$ALACRITTY_CFG" ]]; then
-  alacritty_real="$(cd -P "$ALACRITTY_CFG" && pwd)"
-  case "$alacritty_real" in
-    "$DOTFILES_DIR"/*)
-      rm "$ALACRITTY_CFG"
-      mkdir -p "$ALACRITTY_CFG"
-      echo "  [alacritty] unfolded package dir"
-      ;;
-  esac
+# later restow --no-folding owns files, not the directory. Alacritty is a
+# macOS-only package — on Linux/WSL this would drop a HOME symlink and
+# never restow it.
+if [[ "$PLATFORM" == "macos" ]]; then
+  ALACRITTY_CFG="$HOME/.config/alacritty"
+  if [[ -L "$ALACRITTY_CFG" ]]; then
+    alacritty_real="$(cd -P "$ALACRITTY_CFG" && pwd)"
+    case "$alacritty_real" in
+      "$DOTFILES_DIR"/*)
+        rm "$ALACRITTY_CFG"
+        mkdir -p "$ALACRITTY_CFG"
+        echo "  [alacritty] unfolded package dir"
+        ;;
+    esac
+  fi
 fi
 
 for pkg in $PACKAGES; do
