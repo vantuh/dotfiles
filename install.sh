@@ -145,26 +145,17 @@ fi
 # links) are a one-time conflict — delete ~/.omp/agent/extensions/kiro-acp
 # yourself, then restow. The installer must not rm HOME copies.
 
-# Stow folds ~/.config/alacritty onto the package dir. The post-stow
-# macos.toml → alacritty.toml link would then land in the repo. Unfold
-# that one directory (remove the dir symlink, keep the package) first.
-ALACRITTY_CFG="$HOME/.config/alacritty"
-if [[ -L "$ALACRITTY_CFG" ]]; then
-  alacritty_real="$(cd -P "$ALACRITTY_CFG" && pwd)"
-  case "$alacritty_real" in
-    "$DOTFILES_DIR"/*)
-      rm "$ALACRITTY_CFG"
-      mkdir -p "$ALACRITTY_CFG"
-      echo "  [alacritty] unfolded package dir so alacritty.toml stays in \$HOME"
-      ;;
-  esac
+# Drop the old installer-created ~/.config/alacritty/alacritty.toml (absolute
+# link to macos.toml) so stow can own the tracked relative package link.
+if [[ -L "$HOME/.config/alacritty/alacritty.toml" ]]; then
+  rm -f "$HOME/.config/alacritty/alacritty.toml"
 fi
 
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
     stow_args=(--restow)
-    if [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" || "$pkg" == "alacritty" ]]; then
+    if [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" ]]; then
       stow_args+=(--no-folding --ignore='(cursor-sdk\.json|node_modules|package(-lock)?\.json|\.lock)$')
     fi
     stow -d "$DOTFILES_DIR" -t "$HOME" "${stow_args[@]}" "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
@@ -183,25 +174,6 @@ fi
 mkdir -p "$(dirname "$LAZYGIT_DST")"
 ln -sf "$LAZYGIT_SRC" "$LAZYGIT_DST"
 echo "  [lazygit] -> $LAZYGIT_DST"
-
-# --- Post-stow: Alacritty platform config on macOS ---
-# alacritty.toml is HOME-only (not in the package). Refuse if the dest
-# still resolves into the repo — that is how a previous install dirtied git.
-if [[ "$PLATFORM" == "macos" ]]; then
-  ALACRITTY_CFG="$HOME/.config/alacritty"
-  if [[ -d "$ALACRITTY_CFG" ]]; then
-    alacritty_real="$(cd -P "$ALACRITTY_CFG" && pwd)"
-    case "$alacritty_real" in
-      "$DOTFILES_DIR"/*)
-        echo "  [alacritty] skip: $ALACRITTY_CFG still resolves into the repo"
-        ;;
-      *)
-        ln -sf "$DOTFILES_DIR/alacritty/.config/alacritty/macos.toml" "$ALACRITTY_CFG/alacritty.toml"
-        echo "  [alacritty] -> Symlinked macos.toml as alacritty.toml"
-        ;;
-    esac
-  fi
-fi
 
 # --- Link shared agent skills/instructions ---
 echo ""
