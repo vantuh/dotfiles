@@ -140,29 +140,10 @@ if [[ -e "$OMP_KIRO_JSON" && ! -L "$OMP_KIRO_JSON" ]]; then
   echo "  [omp] Backed up live kiro-acp.json to $OMP_KIRO_JSON_BACKUP"
 fi
 
-# ~/.omp is a live runtime tree (sessions, sqlite, blobs). Stow --no-folding
-# only owns individual tracked files. A copied kiro-acp extension (regular
-# files, not links) blocks restow. Touch only that known tree — never every
-# file in the omp package. Identical copies are dropped; divergent copies
-# are moved aside so local edits survive.
-OMP_KIRO_ACP="$HOME/.omp/agent/extensions/kiro-acp"
-OMP_KIRO_ACP_SRC="$DOTFILES_DIR/omp/.omp/agent/extensions/kiro-acp"
-if [[ -d "$OMP_KIRO_ACP" && ! -L "$OMP_KIRO_ACP" && -d "$OMP_KIRO_ACP_SRC" ]]; then
-  stamp="$(date +%Y%m%d-%H%M%S)"
-  while IFS= read -r -d '' dest; do
-    rel="${dest#"$OMP_KIRO_ACP"/}"
-    src="$OMP_KIRO_ACP_SRC/$rel"
-    [[ -f "$src" ]] || continue
-    if cmp -s "$src" "$dest"; then
-      rm -f "$dest"
-      echo "  [omp] removed identical kiro-acp copy: $rel"
-    else
-      backup="$dest.pre-stow.$stamp"
-      mv "$dest" "$backup"
-      echo "  [omp] backed up local kiro-acp file to $backup"
-    fi
-  done < <(find "$OMP_KIRO_ACP" \( -name node_modules \) -prune -o -type f ! -type l -print0)
-fi
+# ~/.omp is a live runtime tree. Stow --no-folding only owns tracked files;
+# ignore lock/node_modules below. Copied kiro-acp files (regular files, not
+# links) are a one-time conflict — delete ~/.omp/agent/extensions/kiro-acp
+# yourself, then restow. The installer must not rm HOME copies.
 
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
