@@ -16,6 +16,7 @@ import {
   lastUserMessage,
 } from "./helpers.ts";
 import { log, msSince } from "./logging.ts";
+import { classifyKiroContextOverflow } from "./overflow.ts";
 import { kiroToolIdentity } from "./permissions.ts";
 import {
   historyFingerprintAfterAssistantTurn,
@@ -663,7 +664,15 @@ export function streamKiroAcp(
       } else if (outcome === "error") {
         session.activePromptDone = null;
         output.stopReason = "error";
-        output.errorMessage = promptError?.message || "Kiro ACP prompt failed";
+        output.errorMessage =
+          classifyKiroContextOverflow({
+            role: "assistant",
+            stopReason: "error",
+            provider: output.provider,
+            errorMessage: promptError?.message || "Kiro ACP prompt failed",
+          }) ??
+          promptError?.message ??
+          "Kiro ACP prompt failed";
         stream.push({ type: "error", reason: "error", error: output });
       } else {
         session.activePromptDone = null;
@@ -705,7 +714,14 @@ export function streamKiroAcp(
       });
       output.stopReason = "error";
       output.errorMessage =
-        error instanceof Error ? error.message : String(error);
+        classifyKiroContextOverflow({
+          role: "assistant",
+          stopReason: "error",
+          provider: output.provider,
+          errorMessage:
+            error instanceof Error ? error.message : String(error),
+        }) ??
+        (error instanceof Error ? error.message : String(error));
       stream.push({ type: "error", reason: "error", error: output });
       stream.end();
     } finally {

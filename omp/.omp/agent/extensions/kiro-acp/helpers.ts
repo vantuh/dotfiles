@@ -306,6 +306,10 @@ export function estimateUsage(
   return {
     input: Math.max(0, totalTokens - outputTokens),
     output: outputTokens,
+    // omp reads usage.contextTokens for the authoritative occupied-context
+    // display (model selector) and usage-backed context-overflow detection
+    // (isUsageBackedContextOverflow); kiro reports this value directly.
+    contextTokens: reportedContextTokens || undefined,
     cacheRead: 0,
     cacheWrite: 0,
     totalTokens,

@@ -1,5 +1,5 @@
 // Shared test infrastructure for the kiro-acp tests. These files run through
-// jiti (test/run-all.sh) with pi's dependency tree, so imports stay relative
+// bun (test/run-all.sh) with pi's dependency tree, so imports stay relative
 // and there is no test framework — just helpers plus process.exit on failure.
 // test/refusal-retry.test.ts deliberately does not use this file: it must set
 // an env var before stream.ts is imported.
