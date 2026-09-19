@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 
 import { loadKiroAcpConfig, resolveLoggerConfig } from "./config.ts";
 
-export const LOG_FILE = join(tmpdir(), "kiro-acp-debug.log");
+export const LOG_FILE = join(tmpdir(), "omp-kiro-acp-debug.log");
 
 const DEBUG = resolveLoggerConfig(loadKiroAcpConfig()).debug;
 
