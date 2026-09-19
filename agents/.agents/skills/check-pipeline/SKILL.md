@@ -23,13 +23,18 @@ Everything below uses bounded, one-shot commands instead. `glab ci get` is the w
 
 ## Step 1 — Resolve which pipeline to look at
 
-From the repository root:
+From the repository root, resolve the pipeline **and pin it in the same breath**, then report from the pinned id:
 
 ```bash
-glab ci get -F json --jq '"\(.id) \(.status) ref=\(.ref) sha=\(.sha[0:8]) \(.web_url)"'
+repo_flag=""                    # or: repo_flag="-R group/sub/repo"
+selector=""                     # or: -p <pipeline-id> / -b <branch> / --merge-request <iid>
+pipeline_id=$(glab ci get $repo_flag $selector -F json --jq '.id')
+glab ci get $repo_flag -p "$pipeline_id" -F json --jq '"\(.id) \(.status) ref=\(.ref) sha=\(.sha[0:8]) \(.web_url)"'
 ```
 
-With no flags this takes the latest pipeline for the current branch, and if the branch has no pipeline of its own it falls back to the head pipeline of the branch's merge request — which is what you usually want, since MR pipelines run on `refs/merge-requests/<iid>/head`, not on the branch ref.
+`$repo_flag` and `$selector` are deliberately unquoted so that empty values disappear instead of becoming empty arguments.
+
+With an empty selector this takes the latest pipeline for the current branch, and if the branch has no pipeline of its own it falls back to the head pipeline of the branch's merge request — which is what you usually want, since MR pipelines run on `refs/merge-requests/<iid>/head`, not on the branch ref.
 
 Override when the user pointed somewhere specific:
 
@@ -42,6 +47,8 @@ Override when the user pointed somewhere specific:
 | Recent pipelines, to pick one | `glab ci list -F json` |
 
 If glab reports `No pipeline found for branch …`, say so plainly and check whether the branch was pushed (`git log origin/<branch>..HEAD`) instead of guessing at another pipeline. A missing pipeline and a failed pipeline are very different news.
+
+Every command below passes `$repo_flag -p "$pipeline_id"`. This is not ceremony: a bare `glab ci get` re-resolves to the newest pipeline of the current branch in the current repository, so without pinning you can start on the pipeline the user asked about and finish by reporting a different one — after a push, a retry, or simply because they asked about another project.
 
 ## Step 2 — Classify the status before doing anything else
 
@@ -67,7 +74,7 @@ Say it in one or two lines: pipeline id, status, ref, duration, URL. Do not fetc
 The one thing worth adding: if any job has `allow_failure: true` and failed, the pipeline is still green but something did break. Surface those as a short note, because they are invisible in the overall status and are exactly the failures people miss:
 
 ```bash
-glab ci get -F json --jq '.jobs[] | select(.status=="failed") | "\(.name) (\(.stage)) allow_failure=\(.allow_failure)"'
+glab ci get $repo_flag -p "$pipeline_id" -F json --jq '.jobs[] | select(.status=="failed") | "\(.name) (\(.stage)) allow_failure=\(.allow_failure)"'
 ```
 
 ## Step 4 — Pipeline still running
@@ -75,17 +82,14 @@ glab ci get -F json --jq '.jobs[] | select(.status=="failed") | "\(.name) (\(.st
 Tell the user immediately, before you start waiting, so they aren't staring at silence: which pipeline, what's already done, what's still going.
 
 ```bash
-glab ci get -F json --jq '[.jobs[] | "\(.status)\t\(.name)"] | .[]'
+glab ci get $repo_flag -p "$pipeline_id" -F json --jq '[.jobs[] | "\(.status)\t\(.name)"] | .[]'
 ```
 
-Then poll in short bursts, pinning the pipeline id you resolved in Step 1. Pinning matters: without `-p`, a pipeline started meanwhile (a new push, a retry) silently becomes the thing you report on.
-
-Keep each command short — a single call that could block for ten minutes looks like a hang and may be killed by the runtime, and there is no `timeout` binary on macOS to bound it:
+Then poll in short bursts. Keep each command short — a single call that could block for ten minutes looks like a hang and may be killed by the runtime, and there is no `timeout` binary on macOS to bound it:
 
 ```bash
-pipeline_id=<id from Step 1>
 for i in 1 2 3; do
-  status=$(glab ci get -p "$pipeline_id" -F json --jq '.status')
+  status=$(glab ci get $repo_flag -p "$pipeline_id" -F json --jq '.status')
   case "$status" in
     success|failed|canceled|skipped|manual) break ;;
   esac
@@ -97,22 +101,24 @@ echo "status after ${i} polls: $status"
 If it's still running after the burst, report what moved and ask whether to keep waiting rather than looping again on your own. To set expectations, read how long the previous pipeline took — note that `glab ci list` does **not** return `duration`, only `glab ci get` does:
 
 ```bash
-prev=$(glab ci list -F json --jq '.[1].id')
-glab ci get -p "$prev" -F json --jq '.duration'   # seconds
+prev=$(glab ci list $repo_flag -F json --jq '.[1].id // empty')
+[ -n "$prev" ] && glab ci get $repo_flag -p "$prev" -F json --jq '.duration'   # seconds
 ```
+
+The `// empty` guard matters on a young project: with fewer than two pipelines, `.[1].id` yields `null`, and `-p null` fails because the flag takes an integer.
 
 When polling ends, route the final status through the Step 2 table again — including `manual` and `skipped`, which are not failures.
 
 ## Step 5 — Failed pipeline: find the failures
 
 ```bash
-glab ci get -F json --status failed --jq '.jobs[] | "\(.id)\t\(.name)\t\(.stage)\tallow_failure=\(.allow_failure)\t\(.failure_reason // "-")\t\(.web_url)"'
+glab ci get $repo_flag -p "$pipeline_id" -F json --status failed --jq '.jobs[] | "\(.id)\t\(.name)\t\(.stage)\tallow_failure=\(.allow_failure)\t\(.failure_reason // "-")\t\(.web_url)"'
 ```
 
 For a **canceled** pipeline, don't use `--status failed`: it maps to the API's `scope=failed` and can return nothing at all, which reads as "nothing failed" when in fact a job broke and the rest were canceled. Filter client-side instead:
 
 ```bash
-glab ci get -F json --jq '.jobs[] | select(.status=="failed" or .status=="canceled") | "\(.id)\t\(.name)\t\(.status)\t\(.failure_reason // "-")"'
+glab ci get $repo_flag -p "$pipeline_id" -F json --jq '.jobs[] | select(.status=="failed" or .status=="canceled") | "\(.id)\t\(.name)\t\(.status)\t\(.failure_reason // "-")"'
 ```
 
 Two fields decide how much work each failure deserves:
@@ -149,7 +155,7 @@ If the tail doesn't contain the cause — common for test runners that print the
 grep -nE '(FAIL|ERROR|error TS[0-9]+|✖|Cannot find|not found|exit code)' <saved-log-path> | head -40
 ```
 
-For another project, or when running outside a Git repo, the script needs the project explicitly:
+The script takes job ids, not `-R`, so when the pipeline lives in another project you must name that project for the script too — otherwise it reads job ids from one project against another and either 404s or, worse, matches an unrelated job. Same when running outside a Git repo:
 
 ```bash
 PROJECT=group%2Fsub%2Frepo GLAB_HOSTNAME=gitlab.example.com bash <skill-directory>/scripts/job-log.sh <job-id>
@@ -165,7 +171,7 @@ Lead with the verdict, then the evidence. Keep it tight — the user wants to kn
 Pipeline <id> — <status> · <ref> · <short-sha> "<commit title>"
 <web_url>
 
-<N> passed, <M> failed, <K> skipped.
+<counts for every status present, e.g. 12 passed, 1 failed, 3 canceled, 1 manual>
 
 **<job> (<stage>)** — <one-line cause, naming the command and the rule/assertion>
     <1–5 log lines that prove it, verbatim>

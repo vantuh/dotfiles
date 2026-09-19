@@ -14,11 +14,13 @@ Two failure modes make this task go wrong, and both are worth naming up front. T
 
 Don't start from a guess about what's failing. Use the **check-pipeline** skill by name (its frontmatter `name: check-pipeline`) — it owns pipeline resolution, job listing and log retrieval, including the non-interactive command discipline that keeps `glab` from hanging. Don't try to reach it by a relative path like `../check-pipeline/`: that only resolves from inside the skills folder, never from the user's repository.
 
-If it isn't available, the minimum you need is:
+If it isn't available, the minimum you need is — resolving the pipeline once and pinning it, so a push mid-diagnosis can't switch you to a different pipeline:
 
 ```bash
-glab ci get -F json --jq '"\(.id) \(.status) \(.web_url)"'
-glab ci get -F json --status failed --jq '.jobs[] | "\(.id)\t\(.name)\t\(.allow_failure)\t\(.failure_reason)"'
+repo_flag=""                    # or: repo_flag="-R group/sub/repo"
+pipeline_id=$(glab ci get $repo_flag -F json --jq '.id')
+glab ci get $repo_flag -p "$pipeline_id" -F json --jq '"\(.id) \(.status) \(.web_url)"'
+glab ci get $repo_flag -p "$pipeline_id" -F json --status failed --jq '.jobs[] | "\(.id)\t\(.name)\t\(.allow_failure)\t\(.failure_reason)"'
 glab api projects/:id/jobs/<job-id>/trace | tail -120
 ```
 
@@ -42,9 +44,9 @@ glab ci retry <job-id>     # always pass the job id — bare `retry` opens a pic
 
 If the only failing jobs have `allow_failure: true`, the pipeline is not actually blocked. Tell the user that before spending effort, so they can decide whether it's worth fixing now.
 
-## Step 3 — Find the exact command CI ran
+## Step 3 — Find the command CI actually ran
 
-Reproduce the failure with CI's command, not one you assume is equivalent. `.gitlab-ci.yml` here is usually a thin `include:` of a shared template, so the local file does not show what `linter` or `tests` actually run. The bundled script resolves every include and prints the job's real definition — image, variables, script:
+Reproduce the failure with CI's command, not one you assume is equivalent. If the project's `.gitlab-ci.yml` pulls in shared configuration with `include:`, the local file will not show what a job like `linter` or `tests` really runs — the definition lives in the included template. The bundled script resolves every `include:` and prints the job's definition as the server sees it:
 
 ```bash
 bash <skill-directory>/scripts/job-recipe.sh              # list job names
@@ -53,24 +55,30 @@ bash <skill-directory>/scripts/job-recipe.sh linter       # image + script + rul
 
 `<skill-directory>` is the folder containing *this* SKILL.md; keep the working directory at the repository root. Invoke the script by absolute path — a relative `scripts/job-recipe.sh` resolves inside the user's repo, where it doesn't exist.
 
-Read three things from the output:
+Read all of this from the output, not just the script:
 
 - **`script`** — the command to run locally, verbatim. `npm run lint` and `npx eslint .` are not the same thing; the package script carries flags like `--max-warnings 0` that decide pass/fail.
+- **`before_script`** — GitLab runs it in the *same shell* as `script`, so anything it sets up counts: exported variables, generated files such as a registry `.npmrc`, a `cd`, an install step. Skipping it is one of the most common reasons a "faithful" local run behaves differently.
 - **`image`** — the toolchain version. A failure that reproduces only in CI is very often a version gap between that image and your local runtime.
-- **`variables`** — env the command depends on. If a build needs `VITE_API_URL`, running without it reproduces a different failure than the real one.
+- **`variables`** — env the command depends on. If a build needs an API base URL injected at build time, running without it reproduces a different failure than the real one.
+- **`services`** — containers the job talks to (database, cache, broker). A job that needs one cannot be reproduced by running the script alone; say so rather than pretending.
 
-One trap: `compile` resolves `include:` but does not flatten `extends:`. The job you asked for may still end with `extends: ".linter"`, and that parent is a hidden job whose `script:` is often an abstract placeholder like `echo "ERROR: Base lint script is not implemented"`. Read the concrete job's own `script:` — following `extends` gives you a command CI never ran. If the concrete job has no `script:` of its own, say so instead of substituting the parent's stub.
+One trap: `compile` resolves `include:` but does not flatten `extends:`. The job you asked for may still end with `extends: ".linter"`, pointing at a hidden job (printed with a quoted key). GitLab merges parent into child, so read it in that direction:
 
-After editing `.gitlab-ci.yml`, re-run with `REFRESH=1` so you don't read a cached pre-edit definition.
+- The child's own `script:` **overrides** the parent's. When the concrete job defines `script:`, that is what ran — don't substitute the parent's, which is often an abstract placeholder like `echo "ERROR: Base lint script is not implemented"`.
+- When the concrete job has **no** `script:` of its own, the inherited one is what ran. Follow the `extends` chain and read the parent's, applying the same override rule at each level.
+- With several parents, or a reference you can't resolve, stop and say the reproduction is approximate instead of guessing which script won.
+
+The compiled definition describes the configuration as it is **now**. For an older pipeline — or after the shared template changed — it may not be what that run executed, and the job log stays the source of truth: it echoes the actual commands. Re-run the script with `REFRESH=1` at the start of each diagnosis, and always after you edit `.gitlab-ci.yml`, so you never read a stale definition.
 
 ## Step 4 — Reproduce locally
 
-Run the job's command exactly as CI does and confirm you see the same failure. This is the step that keeps you honest: without a local reproduction you're editing code on the strength of a log excerpt.
+Run the job's commands as CI does — `before_script` and `script` in one shell, in order — and confirm you see the same failure. This is the step that keeps you honest: without a local reproduction you're editing code on the strength of a log excerpt. If you deliberately skip part of the setup, call the reproduction approximate when you report it.
 
 Compare what you get against the CI log. Three outcomes, three different responses:
 
 - **Same failure** — good. Go fix it.
-- **Different failure** — you're not running what CI ran. Re-check the variables and the image version from Step 3 before continuing.
+- **Different failure** — you're not running what CI ran. Re-check `before_script`, the variables and the image version from Step 3 before continuing.
 - **Passes locally** — that difference *is* the finding. Look at toolchain version (`node --version` against the job's `image`), a dependency tree that differs from lockfile-clean install (`npm ci`, not `npm install`), env vars only set in CI, or files that are git-ignored locally but absent in CI. Report this rather than editing blind: a fix aimed at a failure you cannot see is a guess.
 
 ## Step 5 — Fix the root cause
