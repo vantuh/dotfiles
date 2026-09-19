@@ -477,6 +477,18 @@ export function streamKiroAcp(
                 contentIndex: idx,
                 partial: output,
               });
+              // omp opens the tool's arg stream on toolcall_start and feeds
+              // EditSession through toolcall_delta pushes. With no delta the
+              // EditSession parses an empty payload and every forwarded edit
+              // fails ("input must begin with [PATH#HASH]"/"path is
+              // required."), so deliver the full args JSON as one delta —
+              // same contract as native JSON function calls.
+              stream.push({
+                type: "toolcall_delta",
+                contentIndex: idx,
+                delta: JSON.stringify(call.args),
+                partial: output,
+              });
               stream.push({
                 type: "toolcall_end",
                 contentIndex: idx,
