@@ -5,9 +5,13 @@ theme:
   dark: titanium
 setupVersion: 2
 modelRoles:
-  default: opencode-go/glm-5.3-flash:high
+  default: cursor/cursor-grok-4.6:high
   smol: cursor/composer-2.5:auto
   advisor: openai-codex/gpt-5.6-sol:high
+  plan: openai-codex/gpt-5.6-sol:high
+  commit: kiro-acp/claude-haiku-4.5:medium
+  slow: cursor/composer-2.5:auto
+  tiny: kiro-acp/claude-haiku-4.5:high
 display:
   cacheMissMarker: true
   showTurnTime: true
