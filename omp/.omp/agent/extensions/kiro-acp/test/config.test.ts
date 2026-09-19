@@ -1,7 +1,9 @@
-// Test: kiro-acp.json config resolvers (logger + usage footer).
+// Test: kiro-acp.json config resolvers (logger + usage footer + cost).
 // Run: test/run-all.sh test/config.test.ts
 
 import {
+  DEFAULT_DOLLARS_PER_CREDIT,
+  resolveCostConfig,
   resolveLoggerConfig,
   resolveUsageFooterConfig,
 } from "../config.ts";
@@ -53,6 +55,25 @@ assert(
 assert(
   resolveUsageFooterConfig({ usageFooter: { pollMinutes: 0 } }).pollMinutes === 10,
   "invalid pollMinutes falls back to 10",
+);
+
+// --- resolveCostConfig ---
+
+assert(
+  resolveCostConfig({}).dollarsPerCredit === DEFAULT_DOLLARS_PER_CREDIT,
+  "cost default is $0.02/credit",
+);
+assert(
+  resolveCostConfig({ cost: { dollarsPerCredit: 0.04 } }).dollarsPerCredit === 0.04,
+  "add-on rate 0.04 is respected",
+);
+assert(
+  resolveCostConfig({ cost: { dollarsPerCredit: 0 } }).dollarsPerCredit === 0,
+  "explicit 0 disables amortized cost",
+);
+assert(
+  resolveCostConfig({ cost: { dollarsPerCredit: -1 } }).dollarsPerCredit === DEFAULT_DOLLARS_PER_CREDIT,
+  "negative dollarsPerCredit falls back to default",
 );
 
 process.env = savedEnv;

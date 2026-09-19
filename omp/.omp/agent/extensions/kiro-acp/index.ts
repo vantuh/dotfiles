@@ -47,7 +47,7 @@ export default function (pi: ExtensionAPI) {
 
   // Kiro plan usage in the footer (via kiro-cli /usage). Shown only while a
   // kiro-acp model is active; toggle + poll interval live in
-  // ~/.pi/agent/kiro-acp.json (defaults: off, poll every 10 minutes).
+  // ~/.omp/agent/kiro-acp.json (defaults: off, poll every 10 minutes).
   // /kiro-usage forces a refresh.
   let usageTimer: ReturnType<typeof setInterval> | undefined;
   // Guards against an in-flight kiro-cli fetch re-adding the status after the

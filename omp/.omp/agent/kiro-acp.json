@@ -1,0 +1,13 @@
+{
+  "logger": {
+    "debug": true,
+    "verbose": 1
+  },
+  "usageFooter": {
+    "enabled": false,
+    "pollMinutes": 1
+  },
+  "cost": {
+    "dollarsPerCredit": 0.02
+  }
+}

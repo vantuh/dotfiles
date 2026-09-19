@@ -1,4 +1,5 @@
 import type { AssistantMessage, Context } from "@earendil-works/pi-ai";
+import { DEFAULT_DOLLARS_PER_CREDIT } from "./config.ts";
 import type {
   SessionMetadata,
   ToolResultContentBlock,
@@ -280,10 +281,38 @@ function normalizeToolResultContent(content: any[]): ToolResultContentBlock[] {
   return blocks;
 }
 
+/** Sum of per-turn Kiro credits from `_kiro.dev/metadata.meteringUsage`. */
+export function sumMeteringCredits(
+  meteringUsage?: Array<{ unit: string; value: number }> | null,
+): number {
+  if (!meteringUsage) return 0;
+  let sum = 0;
+  for (const m of meteringUsage) {
+    if (m.unit !== "credit" && m.unit !== "credits") continue;
+    if (!Number.isFinite(m.value) || m.value <= 0) continue;
+    sum += m.value;
+  }
+  return sum;
+}
+
+/**
+ * Plan-amortized $ for a turn. Kiro ACP never sends tokens; 1x/2.2x multipliers
+ * are already inside the credit count, so this is credits × list rate only.
+ */
+export function amortizedCostFromCredits(
+  credits: number,
+  dollarsPerCredit: number,
+): number {
+  if (!Number.isFinite(credits) || credits <= 0) return 0;
+  if (!Number.isFinite(dollarsPerCredit) || dollarsPerCredit <= 0) return 0;
+  return credits * dollarsPerCredit;
+}
+
 export function estimateUsage(
   output: AssistantMessage,
   contextWindow?: number,
   metadata?: SessionMetadata | null,
+  dollarsPerCredit = DEFAULT_DOLLARS_PER_CREDIT,
 ) {
   let chars = 0;
   for (const b of output.content) {
@@ -302,6 +331,8 @@ export function estimateUsage(
           )
         : 0;
   const totalTokens = Math.max(outputTokens, reportedContextTokens);
+  const credits = sumMeteringCredits(metadata?.meteringUsage);
+  const total = amortizedCostFromCredits(credits, dollarsPerCredit);
 
   return {
     input: Math.max(0, totalTokens - outputTokens),
@@ -313,7 +344,9 @@ export function estimateUsage(
     cacheRead: 0,
     cacheWrite: 0,
     totalTokens,
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+    // input/output/cache stay 0: ACP has no token breakdown. total is the
+    // amortized plan $ so omp-stats / the /usage heatmap can paint the day.
+    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total },
   };
 }
 
@@ -335,8 +368,7 @@ export function appendKiroMetadataDiagnostic(
         sessionCost: metadata.sessionCost,
         meteringUsage: metadata.meteringUsage,
         turnDurationMs: metadata.turnDurationMs,
-        credits: metadata.meteringUsage?.find((m) => m.unit === "credit")
-          ?.value,
+        credits: sumMeteringCredits(metadata.meteringUsage) || undefined,
       },
     },
   ];

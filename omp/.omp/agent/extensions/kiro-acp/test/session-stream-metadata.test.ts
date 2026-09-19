@@ -6,7 +6,7 @@ process.env.XDG_DATA_HOME ??= "/tmp/kiro-acp-test-data";
 
 import { tmpdir } from "node:os";
 import { AcpSession } from "../session.ts";
-import { estimateUsage } from "../helpers.ts";
+import { estimateUsage, sumMeteringCredits } from "../helpers.ts";
 
 function assert(condition: unknown, label: string): void {
   if (!condition) {
@@ -69,6 +69,30 @@ assert(fromPercent.totalTokens === 100_000, "contextUsagePercentage × contextWi
 
 const negative = estimateUsage(msg, 1000, { contextUsed: -5 } as any);
 assert(negative.totalTokens === 100, "negative contextUsed clamps to the char-based floor");
+assert(first.cost.total === 0, "cost stays 0 without meteringUsage");
+
+const twoCredits = estimateUsage(msg, 1000, {
+  meteringUsage: [
+    { unit: "credit", value: 1 },
+    { unit: "credit", value: 4 },
+    { unit: "tokens", value: 999 },
+  ],
+} as any);
+assert(twoCredits.cost.total === 0.1, "sums credit rows at $0.02 each (5 × 0.02)");
+assert(twoCredits.cost.input === 0 && twoCredits.cost.output === 0, "token buckets stay 0");
+assert(
+  estimateUsage(msg, 1000, { meteringUsage: [{ unit: "credit", value: 1 }] } as any, 0)
+    .cost.total === 0,
+  "dollarsPerCredit 0 leaves cost at 0",
+);
+assertEqual(
+  sumMeteringCredits([
+    { unit: "credit", value: 1 },
+    { unit: "credits", value: 1 },
+  ]),
+  2,
+  "sums credit and credits units",
+);
 
 // ── session.onMetadata fires on _kiro.dev/metadata updates ───────────────────
 // stream.ts assigns session.onMetadata so partial frames carry live usage.
