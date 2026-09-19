@@ -21,7 +21,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | ghostty   | Ghostty terminal configuration    |   ✓   |     |
 | nvim      | Neovim: personal config (default) + LazyVim (appname `lazyvim`) | ✓ | ✓ |
 
-\* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked.
+\* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked. On macOS, `install.sh` unfolds `~/.config/alacritty` (stow `--no-folding`) and links `alacritty.toml` → `macos.toml` in `$HOME`, not in the package.
 
 ### Other directories (not stow packages)
 
