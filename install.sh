@@ -145,29 +145,11 @@ fi
 # links) are a one-time conflict — delete ~/.omp/agent/extensions/kiro-acp
 # yourself, then restow. The installer must not rm HOME copies.
 
-# Stow folds ~/.config/alacritty onto the package dir. Unfold first so
-# later restow --no-folding owns files, not the directory. Alacritty is a
-# macOS-only package — on Linux/WSL this would drop a HOME symlink and
-# never restow it.
-if [[ "$PLATFORM" == "macos" ]]; then
-  ALACRITTY_CFG="$HOME/.config/alacritty"
-  if [[ -L "$ALACRITTY_CFG" ]]; then
-    alacritty_real="$(cd -P "$ALACRITTY_CFG" && pwd)"
-    case "$alacritty_real" in
-      "$DOTFILES_DIR"/*)
-        rm "$ALACRITTY_CFG"
-        mkdir -p "$ALACRITTY_CFG"
-        echo "  [alacritty] unfolded package dir"
-        ;;
-    esac
-  fi
-fi
-
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
     stow_args=(--restow)
-    if [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" || "$pkg" == "alacritty" ]]; then
+    if [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" ]]; then
       stow_args+=(--no-folding --ignore='(cursor-sdk\.json|node_modules|package(-lock)?\.json|\.lock)$')
     fi
     stow -d "$DOTFILES_DIR" -t "$HOME" "${stow_args[@]}" "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
