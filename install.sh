@@ -94,8 +94,8 @@ else
 fi
 
 # Remove absolute extensions symlink that conflicts with stow --no-folding
-# (stow sees it as "not owned by stow" and aborts the entire pi package)
-for agent_ext in "$HOME/.pi/agent/extensions"; do
+# (stow sees it as "not owned by stow" and aborts the entire package)
+for agent_ext in "$HOME/.pi/agent/extensions" "$HOME/.omp/agent/extensions"; do
   if [[ -L "$agent_ext" ]]; then
     rm -f "$agent_ext"
   fi
@@ -131,12 +131,29 @@ if [[ -e "$OMP_CONFIG" && ! -L "$OMP_CONFIG" ]]; then
   echo "  [omp] Backed up live omp config to $OMP_CONFIG_BACKUP"
 fi
 
+# ~/.omp is a live runtime tree (sessions, sqlite, blobs). Stow --no-folding
+# only owns individual tracked files. A copied kiro-acp extension (regular
+# files, not links) blocks restow; drop those copies so stow can point them
+# at this repo. Lockfiles and node_modules are ignored by stow.
+if [[ -d "$DOTFILES_DIR/omp" ]]; then
+  while IFS= read -r -d '' src; do
+    rel="${src#"$DOTFILES_DIR/omp"/}"
+    dest="$HOME/$rel"
+    if [[ -f "$dest" && ! -L "$dest" ]]; then
+      rm -f "$dest"
+      echo "  [omp] removed copy blocking stow: $rel"
+    fi
+  done < <(find "$DOTFILES_DIR/omp" \( -name node_modules -o -name '*.lock' \) -prune -o -type f -print0)
+fi
+
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
-    STOW_OPTS="--restow"
-    [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" ]] && STOW_OPTS="$STOW_OPTS --no-folding --ignore=(cursor-sdk\\.json|node_modules|package(-lock)?\\.json)$"
-    stow -d "$DOTFILES_DIR" -t "$HOME" $STOW_OPTS "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
+    stow_args=(--restow)
+    if [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" ]]; then
+      stow_args+=(--no-folding --ignore='(cursor-sdk\.json|node_modules|package(-lock)?\.json|\.lock)$')
+    fi
+    stow -d "$DOTFILES_DIR" -t "$HOME" "${stow_args[@]}" "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
   else
     echo "  [$pkg] skipped (directory not found)"
   fi
