@@ -121,7 +121,48 @@ const extension = (name: string, extra: Record<string, unknown> = {}) => ({
     catalog.diagnostics.length === 2,
     "fallbacks emit concise diagnostics",
   );
+}
 
+{
+  // omp's getAllTools returns omptype schemas (callable validators with a
+  // toJsonSchema() method) where pi passed plain JSON schema objects.
+  const ompSchema = () => ({}) as never;
+  const omptypeSchema = Object.assign(ompSchema, {
+    toJsonSchema: () => ({
+      type: "object",
+      properties: { path: { type: "string" } },
+      required: ["path"],
+    }),
+  });
+  const catalog = buildForwardedToolCatalog(
+    [
+      {
+        name: "read",
+        description: "read tool",
+        parameters: omptypeSchema,
+        sourceInfo: { source: "builtin" },
+      },
+    ],
+    ["read"],
+  );
+  assert(
+    JSON.stringify(catalog.tools[0]?.parameters) ===
+      JSON.stringify({
+        type: "object",
+        properties: { path: { type: "string" } },
+        required: ["path"],
+      }),
+    "omptype callable schema is materialized via toJsonSchema()",
+  );
+  assert(
+    catalog.diagnostics.every(
+      (line) => !line.includes("no object parameter schema"),
+    ),
+    "materialized schema emits no schema-fallback diagnostics",
+  );
+}
+
+{
   const paddedDescription = "  preserve this spacing  ";
   const padded = buildForwardedToolCatalog(
     [extension("padded_description", { description: paddedDescription })],

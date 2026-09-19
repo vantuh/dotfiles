@@ -99,11 +99,27 @@ function fallbackDescription(name: string): string {
   return `Host Pi extension tool: ${name}`;
 }
 
+/** omp tool parameters are omptype schemas: callable validators carrying a
+ * `toJsonSchema()` method (pi passed plain JSON schema objects). */
+interface OmptypeSchemaLike {
+  toJsonSchema(): Record<string, unknown>;
+}
+
+function isOmptypeSchema(value: unknown): value is OmptypeSchemaLike {
+  return (
+    typeof value === "function" &&
+    typeof (value as Partial<OmptypeSchemaLike>).toJsonSchema === "function"
+  );
+}
+
 function schemaOrFallback(
   parameters: unknown,
   name: string,
   diagnostics: string[],
 ): Record<string, unknown> {
+  if (isOmptypeSchema(parameters)) {
+    return parameters.toJsonSchema();
+  }
   if (
     parameters &&
     typeof parameters === "object" &&
