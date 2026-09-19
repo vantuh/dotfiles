@@ -131,19 +131,37 @@ if [[ -e "$OMP_CONFIG" && ! -L "$OMP_CONFIG" ]]; then
   echo "  [omp] Backed up live omp config to $OMP_CONFIG_BACKUP"
 fi
 
+# Same for kiro-acp.json: a regular file here blocks restow of the tracked
+# config. Backup, don't delete.
+OMP_KIRO_JSON="$HOME/.omp/agent/kiro-acp.json"
+if [[ -e "$OMP_KIRO_JSON" && ! -L "$OMP_KIRO_JSON" ]]; then
+  OMP_KIRO_JSON_BACKUP="$OMP_KIRO_JSON.pre-stow.$(date +%Y%m%d-%H%M%S)"
+  mv "$OMP_KIRO_JSON" "$OMP_KIRO_JSON_BACKUP"
+  echo "  [omp] Backed up live kiro-acp.json to $OMP_KIRO_JSON_BACKUP"
+fi
+
 # ~/.omp is a live runtime tree (sessions, sqlite, blobs). Stow --no-folding
 # only owns individual tracked files. A copied kiro-acp extension (regular
-# files, not links) blocks restow; drop those copies so stow can point them
-# at this repo. Lockfiles and node_modules are ignored by stow.
-if [[ -d "$DOTFILES_DIR/omp" ]]; then
-  while IFS= read -r -d '' src; do
-    rel="${src#"$DOTFILES_DIR/omp"/}"
-    dest="$HOME/$rel"
-    if [[ -f "$dest" && ! -L "$dest" ]]; then
+# files, not links) blocks restow. Touch only that known tree — never every
+# file in the omp package. Identical copies are dropped; divergent copies
+# are moved aside so local edits survive.
+OMP_KIRO_ACP="$HOME/.omp/agent/extensions/kiro-acp"
+OMP_KIRO_ACP_SRC="$DOTFILES_DIR/omp/.omp/agent/extensions/kiro-acp"
+if [[ -d "$OMP_KIRO_ACP" && ! -L "$OMP_KIRO_ACP" && -d "$OMP_KIRO_ACP_SRC" ]]; then
+  stamp="$(date +%Y%m%d-%H%M%S)"
+  while IFS= read -r -d '' dest; do
+    rel="${dest#"$OMP_KIRO_ACP"/}"
+    src="$OMP_KIRO_ACP_SRC/$rel"
+    [[ -f "$src" ]] || continue
+    if cmp -s "$src" "$dest"; then
       rm -f "$dest"
-      echo "  [omp] removed copy blocking stow: $rel"
+      echo "  [omp] removed identical kiro-acp copy: $rel"
+    else
+      backup="$dest.pre-stow.$stamp"
+      mv "$dest" "$backup"
+      echo "  [omp] backed up local kiro-acp file to $backup"
     fi
-  done < <(find "$DOTFILES_DIR/omp" \( -name node_modules -o -name '*.lock' \) -prune -o -type f -print0)
+  done < <(find "$OMP_KIRO_ACP" \( -name node_modules \) -prune -o -type f ! -type l -print0)
 fi
 
 for pkg in $PACKAGES; do
