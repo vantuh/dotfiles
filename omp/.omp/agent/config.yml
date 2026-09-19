@@ -17,3 +17,11 @@ tui:
 terminal:
   showProgress: true
 hideThinkingBlock: true
+read:
+  renderMarkdown: true
+  toolResultPreview: true
+lsp:
+  formatOnWrite: true
+  diagnosticsOnEdit: true
+task:
+  eager: preferred
