@@ -14,12 +14,9 @@ display:
   showTokenUsage: true
 tui:
   textSizing: true
-terminal:
-  showProgress: true
 hideThinkingBlock: true
 read:
   renderMarkdown: true
-  toolResultPreview: true
 lsp:
   formatOnWrite: true
   diagnosticsOnEdit: true
