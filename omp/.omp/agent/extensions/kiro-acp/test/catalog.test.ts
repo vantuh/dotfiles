@@ -163,6 +163,35 @@ const extension = (name: string, extra: Record<string, unknown> = {}) => ({
 }
 
 {
+  // A throwing toJsonSchema() must degrade to the empty object schema with a
+  // diagnostic, not crash every turn.
+  const throwingSchema = Object.assign(() => ({}) as never, {
+    toJsonSchema: () => {
+      throw new TypeError("boom");
+    },
+  });
+  const catalog = buildForwardedToolCatalog(
+    [
+      {
+        name: "read",
+        description: "read tool",
+        parameters: throwingSchema,
+        sourceInfo: { source: "builtin" },
+      },
+    ],
+    ["read"],
+  );
+  assert(
+    catalog.tools[0]?.parameters.type === "object",
+    "throwing toJsonSchema falls back to an empty object schema",
+  );
+  assert(
+    catalog.diagnostics.some((line) => line.includes("toJsonSchema() failed")),
+    "schema failure emits a diagnostic",
+  );
+}
+
+{
   const paddedDescription = "  preserve this spacing  ";
   const padded = buildForwardedToolCatalog(
     [extension("padded_description", { description: paddedDescription })],

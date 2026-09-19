@@ -118,7 +118,14 @@ function schemaOrFallback(
   diagnostics: string[],
 ): Record<string, unknown> {
   if (isOmptypeSchema(parameters)) {
-    return parameters.toJsonSchema();
+    try {
+      return parameters.toJsonSchema();
+    } catch (error) {
+      diagnostics.push(
+        `Tool ${name}: toJsonSchema() failed (${error instanceof Error ? error.message : String(error)}); using an empty object schema.`,
+      );
+      return { type: "object", properties: {} };
+    }
   }
   if (
     parameters &&
