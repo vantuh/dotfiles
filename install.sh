@@ -85,7 +85,7 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
-COMMON_PACKAGES="zsh tmux starship yazi pi herdr hunk nvim"
+COMMON_PACKAGES="zsh tmux starship yazi pi herdr hunk nvim omp"
 
 if [[ "$PLATFORM" == "macos" ]]; then
   PACKAGES="$COMMON_PACKAGES alacritty karabiner ghostty"
@@ -122,11 +122,20 @@ if [[ -e "$PI_AUTONAME_CONFIG" && ! -L "$PI_AUTONAME_CONFIG" ]]; then
   echo "  [pi] Backed up legacy pi-autoname config to $PI_AUTONAME_BACKUP"
 fi
 
+# Migrate the live omp-generated config now tracked by dotfiles. Preserve the
+# local version instead of letting it abort the entire omp package.
+OMP_CONFIG="$HOME/.omp/agent/config.yml"
+if [[ -e "$OMP_CONFIG" && ! -L "$OMP_CONFIG" ]]; then
+  OMP_CONFIG_BACKUP="$OMP_CONFIG.pre-stow.$(date +%Y%m%d-%H%M%S)"
+  mv "$OMP_CONFIG" "$OMP_CONFIG_BACKUP"
+  echo "  [omp] Backed up live omp config to $OMP_CONFIG_BACKUP"
+fi
+
 for pkg in $PACKAGES; do
   if [[ -d "$DOTFILES_DIR/$pkg" ]]; then
     echo "  [$pkg] stowing..."
     STOW_OPTS="--restow"
-    [[ "$pkg" == "pi" || "$pkg" == "herdr" ]] && STOW_OPTS="$STOW_OPTS --no-folding --ignore=(cursor-sdk\\.json|node_modules|package(-lock)?\\.json)$"
+    [[ "$pkg" == "pi" || "$pkg" == "herdr" || "$pkg" == "omp" ]] && STOW_OPTS="$STOW_OPTS --no-folding --ignore=(cursor-sdk\\.json|node_modules|package(-lock)?\\.json)$"
     stow -d "$DOTFILES_DIR" -t "$HOME" $STOW_OPTS "$pkg" 2>&1 | { grep -v 'BUG in find_stowed_path' || true; } | sed 's/^/    /'
   else
     echo "  [$pkg] skipped (directory not found)"

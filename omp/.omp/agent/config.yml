@@ -1,0 +1,19 @@
+symbolPreset: nerd
+composer:
+  shape: band
+theme:
+  dark: titanium
+setupVersion: 2
+modelRoles:
+  default: opencode-go/glm-5.3-flash:high
+  smol: cursor/composer-2.5:auto
+  advisor: openai-codex/gpt-5.6-sol:high
+display:
+  cacheMissMarker: true
+  showTurnTime: true
+  showTokenUsage: true
+tui:
+  textSizing: true
+terminal:
+  showProgress: true
+hideThinkingBlock: true

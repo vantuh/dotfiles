@@ -15,6 +15,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | pi        | Pi coding agent config            |   ✓   |  ✓  |
 | herdr     | Herdr config + plugins            |   ✓   |  ✓  |
 | hunk      | Hunk diff-review config           |   ✓   |  ✓  |
+| omp       | Oh My Pi coding agent config      |   ✓   |  ✓  |
 | alacritty | Alacritty terminal config         |   ✓   | ✓\* |
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
 | ghostty   | Ghostty terminal configuration    |   ✓   |     |
