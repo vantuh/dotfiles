@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bun_home="${BUN_INSTALL:-$HOME/.bun}"
-entrypoint="$bun_home/install/global/node_modules/hunkdiff/bin/hunk.cjs"
+entrypoint="$HOME/.npm/_npx/hunkdiff/bin/hunk.cjs"
 
-# Force Bun because hunkdiff's own executable uses a Node shebang.
-if [[ ! -x "$bun_home/bin/bun" ]]; then
-  printf 'Bun is not installed at %s\n' "$bun_home/bin/bun" >&2
+# Use Node directly instead of Bun
+if ! command -v node &> /dev/null; then
+  printf 'Node.js is not installed\n' >&2
   exit 127
 fi
 if [[ ! -f "$entrypoint" ]]; then
-  printf 'hunkdiff is not installed; run: bun add --global hunkdiff\n' >&2
+  printf 'hunkdiff is not installed; run: npm install --global hunkdiff\n' >&2
   exit 127
 fi
 
-exec "$bun_home/bin/bun" "$entrypoint" "$@"
+exec node "$entrypoint" "$@"
