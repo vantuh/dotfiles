@@ -11,7 +11,12 @@ import { KIRO_ACP_PROVIDER } from "./overflow.ts";
 import { stripAssistantContentFrames } from "./native-tool-frame.ts";
 import { stopAllSessions } from "./session-manager.ts";
 import { streamKiroAcp } from "./stream.ts";
-import { getKiroUsage, type KiroUsage } from "./usage.ts";
+import {
+  getKiroUsage,
+  kiroAcpUsageProvider,
+  prefetchKiroUsage,
+  type KiroUsage,
+} from "./usage.ts";
 
 type UiGetter = () => ExtensionContext["ui"] | undefined;
 
@@ -38,6 +43,7 @@ export default function (pi: ExtensionAPI) {
 
   registerKiroProvider(pi, KIRO_MODELS);
   void refreshKiroModels(pi);
+  prefetchKiroUsage();
 
   // Kiro plan usage in the footer (via kiro-cli /usage). Shown only while a
   // kiro-acp model is active; toggle + poll interval live in
@@ -97,7 +103,7 @@ export default function (pi: ExtensionAPI) {
   pi.on("turn_start", (_event, ctx) => syncKiroUsageFooter(ctx.model));
 
   pi.registerCommand("kiro-usage", {
-    description: "Refresh Kiro plan usage shown in the footer",
+    description: "Refresh Kiro plan usage (footer and /usage cache)",
     handler: async (_args, ctx) => {
       try {
         const usage = await getKiroUsage();
@@ -178,6 +184,7 @@ function registerKiroProvider(
     models,
     streamSimple: (model, context, options) =>
       streamKiroAcp(pi, model, context, options),
+    usage: kiroAcpUsageProvider,
   });
 }
 

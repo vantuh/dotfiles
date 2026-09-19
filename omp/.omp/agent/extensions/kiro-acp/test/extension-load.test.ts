@@ -52,6 +52,12 @@ assert(
   typeof config.streamSimple === "function",
   "the provider exposes streamSimple",
 );
+assert(
+  config.usage &&
+    config.usage.id === KIRO_ACP_PROVIDER &&
+    typeof config.usage.fetchUsage === "function",
+  "the provider registers a usage fetcher for /usage",
+);
 
 for (const event of [
   "session_start",
