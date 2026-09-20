@@ -93,5 +93,9 @@ must not be updated as if they were mirrors.
 | Oh My Pi (`omp`) | `home/dot_omp/private_agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
 | Pi (`pi`) | `home/dot_pi/agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
 
+The vendored `test/` directories are source-only and intentionally excluded
+from `$HOME`; run their checks from the repository paths above. Chezmoi deploys
+runtime extension files as regular files, not Stow symlinks.
+
 Read the matching tree's `README.md` before editing, then apply that target and
 run its checks.

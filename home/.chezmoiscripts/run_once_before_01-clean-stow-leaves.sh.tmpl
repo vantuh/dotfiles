@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+working_tree="{{ .chezmoi.workingTree }}"
+
+normalize_path() {
+  local path=$1 part normalized=
+  local -a parts
+
+  IFS=/ read -r -a parts <<< "$path"
+  for part in "${parts[@]}"; do
+    case "$part" in
+      ""|.) ;;
+      ..) normalized=${normalized%/*} ;;
+      *) normalized="$normalized/$part" ;;
+    esac
+  done
+  printf '%s\n' "${normalized:-/}"
+}
+
+remove_legacy_link() {
+  local link=$1 source_suffix=$2 actual parent expected
+  [[ -L "$link" ]] || return 0
+
+  actual=$(readlink "$link")
+  if [[ "$actual" != /* ]]; then
+    parent=$(cd -P "$(dirname "$link")" && pwd)
+    actual="$parent/$actual"
+  fi
+
+  actual=$(normalize_path "$actual")
+  expected=$(normalize_path "$working_tree/$source_suffix")
+  if [[ "$actual" == "$expected" ]]; then
+    rm -- "$link"
+    printf 'Removed legacy Stow link: %s\n' "$link"
+  fi
+}
+
+remove_legacy_tree_links() {
+  local target_root=$1 source_root=$2 link relative dir
+
+  if [[ -L "$target_root" ]]; then
+    remove_legacy_link "$target_root" "$source_root"
+    return 0
+  fi
+  [[ -d "$target_root" ]] || return 0
+
+  find "$target_root" -type l -print0 |
+    while IFS= read -r -d '' link; do
+      relative=${link#"$target_root"/}
+      remove_legacy_link "$link" "$source_root/$relative"
+    done
+
+  find "$target_root" -depth -type d -print0 |
+    while IFS= read -r -d '' dir; do
+      rmdir -- "$dir" 2>/dev/null || true
+    done
+}
+
+remove_legacy_tree_links \
+  "$HOME/.pi/agent/archive" \
+  "pi/.pi/agent/archive"
+remove_legacy_tree_links \
+  "$HOME/.pi/agent/extensions/kiro-acp/test" \
+  "pi/.pi/agent/extensions/kiro-acp/test"
+remove_legacy_tree_links \
+  "$HOME/.omp/agent/extensions/kiro-acp/test" \
+  "omp/.omp/agent/extensions/kiro-acp/test"
+
+remove_legacy_link \
+  "$HOME/.pi/agent/cursor-sdk.json" \
+  "pi/.pi/agent/cursor-sdk.json"
+remove_legacy_link \
+  "$HOME/.pi/agent/extensions/package.json" \
+  "pi/.pi/agent/extensions/package.json"
+remove_legacy_link \
+  "$HOME/.pi/agent/extensions/package-lock.json" \
+  "pi/.pi/agent/extensions/package-lock.json"
