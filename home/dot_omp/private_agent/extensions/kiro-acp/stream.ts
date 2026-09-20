@@ -29,7 +29,7 @@ import {
 } from "./session-persistence.ts";
 import { toKiroEffort, type AcpSession } from "./session.ts";
 import {
-  buildForwardedToolCatalog,
+  hostToolCatalog,
   KIRO_BUILTIN_NAMES,
 } from "./tool-catalog.ts";
 import { pruneIdleSessions, routeSession } from "./session-manager.ts";
@@ -96,7 +96,13 @@ export function streamKiroAcp(
       // for an empty conversation, which must not look like in-place recovery.
       const hadLiveConversation = !!session.acpSessionId;
       const catalogProvider = () =>
-        buildForwardedToolCatalog(pi.getAllTools(), pi.getActiveTools());
+        hostToolCatalog({
+          requestTools: context.tools,
+          sessionTools: () => ({
+            all: pi.getAllTools(),
+            active: pi.getActiveTools(),
+          }),
+        });
       await session.ensureStarted(
         catalogProvider,
         toKiroEffort(options?.reasoning),

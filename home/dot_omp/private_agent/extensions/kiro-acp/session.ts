@@ -1349,7 +1349,25 @@ export class AcpSession {
   private currentCatalog(): ForwardedToolCatalog {
     if (!this.catalogProvider)
       throw new Error("kiro-acp: catalog provider not set");
-    const catalog = this.catalogProvider();
+    let catalog: ForwardedToolCatalog;
+    try {
+      catalog = this.catalogProvider();
+    } catch (error) {
+      log("catalog provider threw", {
+        session: this.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      catalog = {
+        tools: [],
+        piNameByKiroName: new Map(),
+        fingerprint: "",
+        diagnostics: [
+          `catalog provider threw: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        ],
+      };
+    }
     if (catalog.fingerprint !== this.lastCatalogFingerprint) {
       this.lastCatalogFingerprint = catalog.fingerprint;
       // With tools: ["@pi_host"] an empty catalog leaves Kiro with zero tools
