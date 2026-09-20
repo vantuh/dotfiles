@@ -16,6 +16,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_local/bin` | `~/.local/bin` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
+| `home/.agents` | `~/.agents` (symlink into the repo) |
 | `home/Library/Application Support/...` | `~/Library/Application Support/...` |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
@@ -27,7 +28,6 @@ Repository-only content stays outside `home/`:
 
 | Directory | Contents |
 | --- | --- |
-| `agents` | Shared AI agent skills and instructions |
 | `fan_control` | Fan Control config and research notes |
 | `openspec` | OpenSpec design documents |
 | `archive` | Retired tmux and Alacritty configs; never applied |
@@ -71,13 +71,16 @@ shell helper runs `chezmoi update`.
 
 ## Shared agent skills
 
-`agents/.agents/` is the source of truth for skills and shared instructions.
-Chezmoi creates `~/.agents` as a symlink to that directory, then links its
-`skills` and `AGENTS.md` into Pi, OpenCode, Kiro, and Claude as appropriate.
-Writes through any linked agent path therefore update the repository.
+`home/.agents/` is the source of truth for skills and shared instructions.
+It is named `.agents` rather than `dot_agents` so chezmoi ignores the files
+(source entries starting with `.` are not applied) and only the symlink is
+applied. Chezmoi creates `~/.agents` as a symlink to that directory, then
+links its `skills` and `AGENTS.md` into Pi, OpenCode, Kiro, and Claude as
+appropriate. Writes through any linked agent path therefore update the
+repository.
 
 To add a shared skill, create
-`agents/.agents/skills/<name>/SKILL.md`, then run `chezmoi apply`.
+`home/.agents/skills/<name>/SKILL.md`, then run `chezmoi apply`.
 
 ## Retired Pi extensions
 
