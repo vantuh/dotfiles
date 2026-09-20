@@ -48,7 +48,7 @@ export default function (pi: ExtensionAPI) {
   // Kiro plan usage in the footer (via kiro-cli /usage). Shown only while a
   // kiro-acp model is active; toggle + poll interval live in
   // ~/.omp/agent/kiro-acp.json (defaults: off, poll every 10 minutes).
-  // /kiro-usage forces a refresh.
+  // Plan credits for omp /usage come from registerProvider `{ usage }`.
   let usageTimer: ReturnType<typeof setInterval> | undefined;
   // Guards against an in-flight kiro-cli fetch re-adding the status after the
   // user switched away from a kiro-acp model while the fetch was running.
@@ -101,27 +101,6 @@ export default function (pi: ExtensionAPI) {
   // omp has no model_select extension hook; re-sync from the current model
   // at each turn so switching to/from kiro-acp updates the footer.
   pi.on("turn_start", (_event, ctx) => syncKiroUsageFooter(ctx.model));
-
-  pi.registerCommand("kiro-usage", {
-    description: "Refresh Kiro plan usage (footer and /usage cache)",
-    handler: async (_args, ctx) => {
-      try {
-        const usage = await getKiroUsage();
-        if (usageFooterActive) {
-          ctx.ui.setStatus("kiro", kiroUsageStatusText(usage, getTheme()));
-        }
-        ctx.ui.notify(
-          `Kiro ${usage.plan}: ${usage.credits || `${usage.percent}% used`}, resets ${usage.resetDate}`,
-          "info",
-        );
-      } catch (error) {
-        ctx.ui.notify(
-          `Kiro usage unavailable: ${error instanceof Error ? error.message : String(error)}`,
-          "warning",
-        );
-      }
-    },
-  });
 
   pi.on("session_shutdown", () => {
     usageFooterActive = false;
