@@ -14,7 +14,7 @@ home/               Source state mapped one-to-one to $HOME
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
   .chezmoiscripts/  Migration and post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
-agents/             Shared AI skills/instructions; ~/.agents links here
+  .agents/          Shared AI skills/instructions (source-only; ~/.agents links here)
 archive/            Retired configs kept for reference; never applied
 ```
 
@@ -36,9 +36,9 @@ archive/            Retired configs kept for reference; never applied
 
 - **All config changes happen inside this repo, never directly in `$HOME`.**
   Apply them with `chezmoi apply` and test the resulting target.
-- Do not modify shared agent instructions (`agents/.agents/AGENTS.md`) unless
+- Do not modify shared agent instructions (`home/.agents/AGENTS.md`) unless
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
-- Add shared skills under `agents/.agents/skills/<name>/SKILL.md`.
+- Add shared skills under `home/.agents/skills/<name>/SKILL.md`.
 - Add managed home files under `home/` using the correct chezmoi attribute
   names. Update `home/.chezmoiignore.tmpl` for platform-only targets.
 - Keep shell scripts POSIX-compatible where practical; bash-specific features
