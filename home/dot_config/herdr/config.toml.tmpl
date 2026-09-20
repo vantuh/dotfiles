@@ -40,7 +40,7 @@ show_agent_labels_on_pane_borders = true
 prompt_new_tab_name = false
 tab_bar_position = "bottom"
 tab_bar_right = [
-  { type = "command", command = "~/.local/bin/my-usage-status", interval_seconds = 30, timeout_seconds = 10 },
+  { type = "command", command = "{{ .chezmoi.homeDir }}/.local/bin/my-usage-status", interval_seconds = 30, timeout_seconds = 10 },
 ]
 
 [ui.sidebar.spaces]

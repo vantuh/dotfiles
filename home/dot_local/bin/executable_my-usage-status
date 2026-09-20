@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # One-line usage summary for the Herdr tab-bar status area (ui.tab_bar_right).
 # Prints the cached summary instantly; refreshes the cache in the background
 # when older than MY_USAGE_STATUS_TTL seconds (default 300).
