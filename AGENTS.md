@@ -10,7 +10,7 @@ home/               Source state mapped one-to-one to $HOME
   dot_config/       XDG application configs
   dot_local/bin/    Executable commands and thin shims
   dot_pi/agent/     Pi configuration and extensions
-  dot_omp/agent/    Oh My Pi configuration and extensions
+  dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
   .chezmoiscripts/  Migration and post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
 agents/             Shared AI skills/instructions; ~/.agents links here
@@ -29,7 +29,7 @@ archive/            Retired configs kept for reference; never applied
 - Runtime/generated files are never source state. Keep them out of `home/` or
   add a precise ignore when source-only material must live beside config.
 - `kiro-acp` exists twice on purpose:
-  `home/dot_omp/agent/extensions/kiro-acp` is Oh My Pi and
+  `home/dot_omp/private_agent/extensions/kiro-acp` is Oh My Pi and
   `home/dot_pi/agent/extensions/kiro-acp` is Pi. Read the copy's `README.md`;
   do not port changes across hosts unless asked.
 
