@@ -179,15 +179,22 @@ run_cursor_usage() {
     token="$(tr -d '[:space:]' < "$token_file")"
   fi
 
-  # Accept either raw token, "WorkosCursorSessionToken=...", or full cookie header.
-  token="${token#WorkosCursorSessionToken=}"
+  # Accept raw token, WorkosCursorSessionToken=..., full Cookie header,
+  # or the old hint's accidental TOKEN_OR_WorkosCursorSessionToken= prefix.
+  if [[ "$token" == *WorkosCursorSessionToken=* ]]; then
+    token="${token#*WorkosCursorSessionToken=}"
+  fi
   token="${token%%;*}"
+  token="${token#\"}"
+  token="${token%\"}"
+  token="${token#\'}"
+  token="${token%\'}"
 
   if [[ -z "$token" ]]; then
     printf 'skip: cursor session token missing\n'
-    printf 'Open https://cursor.com/dashboard/usage, copy WorkosCursorSessionToken cookie, then:\n'
+    printf 'Open https://cursor.com/dashboard/usage, copy the WorkosCursorSessionToken cookie value, then:\n'
     printf '  mkdir -p ~/.config/my-usage\n'
-    printf '  printf %%s "TOKEN_OR_WorkosCursorSessionToken=TOKEN" > ~/.config/my-usage/cursor-token\n'
+    printf "  printf %%s 'COOKIE_VALUE' > ~/.config/my-usage/cursor-token\n"
     printf '  chmod 600 ~/.config/my-usage/cursor-token\n'
     return 0
   fi
