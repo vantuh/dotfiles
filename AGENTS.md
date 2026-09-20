@@ -45,7 +45,7 @@ archive/            Retired configs kept for reference; never applied
   are fine in files with a bash shebang.
 - Do not write executable helpers in Python. For non-trivial helpers, use Bun
   and TypeScript with `#!/usr/bin/env bun` in
-  `home/dot_local/bin/executable_*`. Trivial one-liners may use `node -e`.
+  `home/dot_local/bin/executable_*.ts`. Trivial one-liners may use `node -e`.
 - Validate source state with `chezmoi managed`, render/apply into an isolated
   destination, and exercise the changed runtime path before committing.
 - This repo works directly on `main`; local commits are authorized. Never push

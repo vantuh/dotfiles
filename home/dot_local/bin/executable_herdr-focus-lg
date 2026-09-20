@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compat wrapper → herdr-focus-tab lg -- lazygit
+# Compat wrapper → herdr-focus-tab.ts lg -- lazygit
 set -euo pipefail
 cwd="${1:-$PWD}"
-exec herdr-focus-tab lg --cwd "$cwd" -- lazygit
+exec "$(dirname "$0")/herdr-focus-tab.ts" lg --cwd "$cwd" -- lazygit

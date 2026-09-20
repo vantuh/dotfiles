@@ -1,0 +1,5 @@
+# Renamed to *.ts so bun shebang keeps the TypeScript extension.
+.local/bin/herdr-focus-tab
+.local/bin/herdr-nvim-edit
+.local/bin/herdr-setup
+.local/bin/herdr-tab-watcher

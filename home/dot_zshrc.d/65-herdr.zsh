@@ -7,7 +7,8 @@
 # the subshell takes the lock and then exec's the watcher, so the lock lives
 # and dies with the watcher process — pid files, retry loops and stale-lock
 # cleanup are not needed, and concurrent pane startups cannot spawn duplicates.
-if [[ $HERDR_ENV == 1 && ${HERDR_AGENT_CHILD:-} != 1 ]] && (( $+commands[herdr-tab-watcher] )) \
+if [[ $HERDR_ENV == 1 && ${HERDR_AGENT_CHILD:-} != 1 ]] \
+   && [[ -x $HOME/.local/bin/herdr-tab-watcher.ts ]] \
    && zmodload zsh/system 2>/dev/null; then
   () {
     local lock="${HERDR_SOCKET_PATH:-${TMPDIR:-/tmp}/herdr-tab-watcher}.lock"
@@ -15,7 +16,7 @@ if [[ $HERDR_ENV == 1 && ${HERDR_AGENT_CHILD:-} != 1 ]] && (( $+commands[herdr-t
     : > "$lock"
     (
       zsystem flock -t 0 -e -f fd "$lock" 2>/dev/null || exit 0
-      exec herdr-tab-watcher >/dev/null 2>&1
+      exec "$HOME/.local/bin/herdr-tab-watcher.ts" >/dev/null 2>&1
     ) &!
   }
 fi
