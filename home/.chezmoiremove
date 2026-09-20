@@ -3,3 +3,8 @@
 .local/bin/herdr-nvim-edit
 .local/bin/herdr-setup
 .local/bin/herdr-tab-watcher
+
+# Ghostty now uses the XDG path. A leftover Application Support copy would
+# override ~/.config/ghostty/config.ghostty.
+Library/Application Support/com.mitchellh.ghostty/config.ghostty
+Library/Application Support/com.mitchellh.ghostty/config
