@@ -14,18 +14,18 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_config/herdr` | `~/.config/herdr` |
 | `home/dot_config/llama-swap` | `~/.config/llama-swap` (WSL) |
 | `home/dot_config/ghostty` | `~/.config/ghostty` (macOS) |
+| `home/dot_config/lazygit` | `~/.config/lazygit` |
 | `home/dot_local/bin` | `~/.local/bin` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
 | `home/dot_omp/private_agent/.config.yml` | `~/.omp/agent/config.yml` (symlink into the repo) |
 | `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
-| `home/Library/Application Support/...` | `~/Library/Application Support/...` |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
-Karabiner, Ghostty, and the macOS Lazygit path. Linux receives the XDG Lazygit
-path; WSL additionally receives `llama-update`, `~/.config/llama-swap`, and
-Windows Terminal settings.
+Karabiner and Ghostty. Lazygit uses `~/.config/lazygit` on both platforms
+(macOS needs `CONFIG_DIR`). WSL additionally receives `llama-update`,
+`~/.config/llama-swap`, and Windows Terminal settings.
 
 Repository-only content stays outside `home/`:
 
