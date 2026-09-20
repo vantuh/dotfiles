@@ -14,14 +14,10 @@ function assert(condition: unknown, label: string): void {
 
 const events: string[] = [];
 const providers: Array<{ id: string; config: any }> = [];
-const commands: string[] = [];
 
 const pi = {
   on(event: string, _handler: unknown) {
     events.push(event);
-  },
-  registerCommand(name: string, _options: unknown) {
-    commands.push(name);
   },
   registerProvider(id: string, config: any) {
     providers.push({ id, config });
@@ -68,11 +64,6 @@ for (const event of [
 ]) {
   assert(events.includes(event), `the extension subscribes to ${event}`);
 }
-
-assert(
-  commands.includes("kiro-usage"),
-  "the extension registers the kiro-usage command",
-);
 
 console.log("✓ all extension-load tests passed");
 // Model discovery spawns kiro-cli in the background; nothing here waits on it.
