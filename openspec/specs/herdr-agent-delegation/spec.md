@@ -4,7 +4,7 @@
 > retired on 2026-09-04 and is not in use; the setup migrated to the
 > community-maintained [pi-subagents](https://github.com/nicobailon/pi-subagents).
 > The spec is kept as the design record of the one-shot delegation contract
-> (see `pi/.pi/agent/archive/herdr-agents`).
+> (see `home/dot_pi/agent/archive/herdr-agents`).
 
 ## Purpose
 Define the `herdr_agent` tool contract after the one-shot-only simplification: subagents are ephemeral job-doers that spawn, deliver a result, and close; continuation with accumulated context happens exclusively through session-file resume of a closed one-shot; no persistent lifecycle, no label-based reuse, and no standby mode exist in the tool.

@@ -4,7 +4,7 @@
 > retired on 2026-09-04 and is not in use; the setup migrated to the
 > community-maintained [pi-subagents](https://github.com/nicobailon/pi-subagents).
 > The spec is kept as the design record of the one-shot delegation contract
-> (see `pi/.pi/agent/archive/herdr-agents`).
+> (see `home/dot_pi/agent/archive/herdr-agents`).
 
 ## Purpose
 The `/council` command asks one question to several models in parallel through Herdr agents and produces a single consolidated answer, so the user gets cross-checked input from multiple models with one command.
