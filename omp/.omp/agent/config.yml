@@ -6,12 +6,12 @@ theme:
 setupVersion: 2
 modelRoles:
   default: cursor/cursor-grok-4.6:high
-  smol: cursor/composer-2.5:auto
-  advisor: openai-codex/gpt-5.6-sol:high
+  smol: cursor/composer-2.5
+  advisor: openai-codex/gpt-5.6-sol:medium
   plan: openai-codex/gpt-5.6-sol:high
-  commit: kiro-acp/claude-haiku-4.5:medium
-  slow: cursor/composer-2.5:auto
-  tiny: kiro-acp/claude-haiku-4.5:high
+  commit: kiro-acp/claude-haiku-4.5:low
+  slow: openai-codex/gpt-5.6-sol:high
+  tiny: kiro-acp/claude-haiku-4.5:low
 display:
   cacheMissMarker: true
   showTurnTime: true
