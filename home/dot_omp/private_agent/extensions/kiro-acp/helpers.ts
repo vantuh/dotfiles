@@ -350,6 +350,21 @@ export function estimateUsage(
   };
 }
 
+/**
+ * omp tok/s (footer, usage row, /models) reads `duration` and `ttft` on the
+ * AssistantMessage. Native providers stamp these from `performance.now()`;
+ * ACP never sends them, so the streamer must.
+ */
+export function stampAssistantTiming(
+  output: AssistantMessage,
+  startTime: number,
+  firstTokenTime: number | undefined,
+  now = performance.now(),
+): void {
+  output.duration = now - startTime;
+  if (firstTokenTime !== undefined) output.ttft = firstTokenTime - startTime;
+}
+
 export function appendKiroMetadataDiagnostic(
   output: AssistantMessage,
   metadata?: SessionMetadata | null,
