@@ -3,9 +3,9 @@
  * Focus a Herdr tab by label in the current workspace.
  * Create the tab and run a command if the tab/process is missing.
  *
- * Usage: herdr-focus-tab <label> [--cwd PATH] -- <cmd> [args...]
- *   herdr-focus-tab lg --cwd ~/repo -- lazygit
- *   herdr-focus-tab hunk --cwd ~/repo -- hunk diff --watch
+ * Usage: herdr-focus-tab.ts <label> [--cwd PATH] -- <cmd> [args...]
+ *   herdr-focus-tab.ts lg --cwd ~/repo -- lazygit
+ *   herdr-focus-tab.ts hunk --cwd ~/repo -- hunk diff --watch
  */
 import { execFileSync } from "node:child_process";
 
@@ -119,7 +119,7 @@ function parseArgs(argv: string[]): {
 } {
   if (!argv[0] || argv[0].startsWith("-")) {
     console.error(
-      "usage: herdr-focus-tab <label> [--cwd PATH] -- <cmd> [args...]",
+      "usage: herdr-focus-tab.ts <label> [--cwd PATH] -- <cmd> [args...]",
     );
     process.exit(2);
   }

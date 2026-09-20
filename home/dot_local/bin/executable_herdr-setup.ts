@@ -6,7 +6,7 @@
  * in the same workspace: lazygit, hunk_review, tests (split), and run.
  * Finally refocuses the original tab.
  *
- * Usage: herdr-setup
+ * Usage: herdr-setup.ts
  */
 import { execFileSync } from "node:child_process";
 

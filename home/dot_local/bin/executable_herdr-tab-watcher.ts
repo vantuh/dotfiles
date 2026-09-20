@@ -17,7 +17,7 @@
  *   label matches the label the watcher last set for it (or when the watcher
  *   has never renamed it).
  *
- * Usage: herdr-tab-watcher [--state FILE] [--reconcile-interval MS]
+ * Usage: herdr-tab-watcher.ts [--state FILE] [--reconcile-interval MS]
  */
 import net from "node:net";
 import * as fs from "node:fs";

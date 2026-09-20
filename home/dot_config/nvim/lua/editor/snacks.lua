@@ -283,7 +283,14 @@ vim.keymap.set('n', '<leader>gg', function()
     return
   end
   local cwd = git_root() or vim.uv.cwd() or vim.fn.getcwd()
-  vim.fn.jobstart({ 'herdr-focus-tab', 'lg', '--cwd', cwd, '--', 'lazygit' }, { detach = true })
+  vim.fn.jobstart({
+    vim.fn.expand '~/.local/bin/herdr-focus-tab.ts',
+    'lg',
+    '--cwd',
+    cwd,
+    '--',
+    'lazygit',
+  }, { detach = true })
 end, { desc = 'Lazygit (Herdr lg)' })
 vim.keymap.set('n', '<leader>gH', function()
   if vim.env.HERDR_ENV ~= '1' then
@@ -292,7 +299,7 @@ vim.keymap.set('n', '<leader>gH', function()
   end
   local cwd = git_root() or vim.uv.cwd() or vim.fn.getcwd()
   vim.fn.jobstart({
-    'herdr-focus-tab',
+    vim.fn.expand '~/.local/bin/herdr-focus-tab.ts',
     'hunk',
     '--cwd',
     cwd,
