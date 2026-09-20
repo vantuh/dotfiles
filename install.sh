@@ -35,16 +35,8 @@ fi
 # --- Handle WSL-specific setup ---
 if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null; then
   WINDOWS_USER=$(cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
-  ALACRITTY_WIN="/mnt/c/Users/$WINDOWS_USER/AppData/Roaming/alacritty"
 
   if [[ -n "$WINDOWS_USER" ]]; then
-    echo "Detected WSL. Setting up Alacritty for Windows..."
-    mkdir -p "$ALACRITTY_WIN"
-    cp "$DOTFILES_DIR/alacritty/.config/alacritty/base.toml" "$ALACRITTY_WIN/base.toml"
-    cp "$DOTFILES_DIR/alacritty/.config/alacritty/windows.toml" "$ALACRITTY_WIN/alacritty.toml"
-    echo "  -> Copied base.toml + windows.toml (as alacritty.toml) to $ALACRITTY_WIN"
-    echo ""
-
     echo "Detected WSL. Setting up Windows Terminal..."
     POWERSHELL_EXE="powershell.exe"
     if [[ -x "/mnt/c/Users/$WINDOWS_USER/AppData/Local/Microsoft/WindowsApps/pwsh.exe" ]]; then
@@ -85,10 +77,10 @@ if [[ "$PLATFORM" == "linux" ]] && grep -qi microsoft /proc/version 2>/dev/null;
 fi
 
 # --- Stow packages ---
-COMMON_PACKAGES="zsh tmux starship yazi pi herdr hunk nvim omp"
+COMMON_PACKAGES="zsh starship yazi pi herdr hunk nvim omp"
 
 if [[ "$PLATFORM" == "macos" ]]; then
-  PACKAGES="$COMMON_PACKAGES alacritty karabiner ghostty"
+  PACKAGES="$COMMON_PACKAGES karabiner ghostty"
 else
   PACKAGES="$COMMON_PACKAGES"
 fi

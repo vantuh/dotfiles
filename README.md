@@ -9,19 +9,15 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | Package   | Contents                          | macOS | WSL |
 | --------- | --------------------------------- | :---: | :-: |
 | zsh       | Zsh config with Zinit plugins     |   ✓   |  ✓  |
-| tmux      | Tmux config                       |   ✓   |  ✓  |
 | starship  | Starship prompt theme             |   ✓   |  ✓  |
 | yazi      | Yazi file manager config          |   ✓   |  ✓  |
 | pi        | Pi coding agent config            |   ✓   |  ✓  |
 | herdr     | Herdr config + plugins            |   ✓   |  ✓  |
 | hunk      | Hunk diff-review config           |   ✓   |  ✓  |
 | omp       | Oh My Pi coding agent config      |   ✓   |  ✓  |
-| alacritty | Alacritty terminal config         |   ✓   | ✓\* |
 | karabiner | Karabiner-Elements key remapping  |   ✓   |     |
 | ghostty   | Ghostty terminal configuration    |   ✓   |     |
 | nvim      | Neovim: personal config (default) + LazyVim (appname `lazyvim`) | ✓ | ✓ |
-
-\* On WSL, `alacritty.toml` is copied to the Windows-native config path instead of symlinked. On macOS the package tracks `alacritty.toml` → `macos.toml`; stow links it.
 
 ### Other directories (not stow packages)
 
@@ -33,6 +29,7 @@ Cross-platform dotfiles (macOS + WSL) managed with [GNU Stow](https://www.gnu.or
 | fan_control      | Fan Control app config + research docs                          |
 | windows-terminal | Windows Terminal `settings.json` (WSL: linked/copied by `install.sh`) |
 | openspec         | OpenSpec design docs (specs + archived changes)                 |
+| archive          | Retired tmux and Alacritty configs (not installed)             |
 
 ## Prerequisites
 
@@ -49,7 +46,7 @@ cd ~/dotfiles
 chsh -s $(which zsh)
 ```
 
-`install.sh` auto-detects the platform (macOS / WSL), stows the appropriate packages, symlinks lazygit config, and wires up shared agent skills. On WSL it also copies `alacritty.toml` to the Windows-native config path and links Windows Terminal settings.
+`install.sh` auto-detects the platform (macOS / WSL), stows the appropriate packages, symlinks lazygit config, and wires up shared agent skills. On WSL it also links Windows Terminal settings.
 
 Restart your terminal after install. Zinit will auto-install all plugins on first launch.
 
@@ -97,7 +94,7 @@ Start there before editing. `stow --restow` the matching package (`omp` or
 
 ```bash
 cd ~/dotfiles
-stow -D zsh tmux starship yazi pi omp herdr hunk alacritty karabiner ghostty nvim
+stow -D zsh starship yazi pi omp herdr hunk karabiner ghostty nvim
 ```
 
 ## Manual stow usage

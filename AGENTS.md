@@ -6,7 +6,8 @@ Personal dotfiles for macOS and WSL, managed with GNU Stow.
 
 ```
 <package>/          Stow package — symlinked to $HOME
-                    (zsh, tmux, starship, yazi, pi, omp, alacritty, karabiner)
+                    (zsh, starship, yazi, pi, omp, herdr, hunk, nvim,
+                     karabiner, ghostty)
 agents/             Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro, Claude)
   skills/           Shared SKILL.md files
   instructions/     Shared instruction files (AGENTS.md, caveman.md)
@@ -14,6 +15,7 @@ agents/             Shared AI agent skills & instructions (symlinked to Pi, OMP,
   link.sh           Creates symlinks from links.json (supports --dry-run)
   skills.json       GitHub sources for skill updates
   update-skills.sh  Fetch latest skills from GitHub
+archive/            Retired configs kept for reference; never installed
 install.sh          Cross-platform installer (stow + agent linking)
 ```
 
