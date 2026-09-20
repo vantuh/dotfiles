@@ -1,28 +1,28 @@
 #!/bin/bash
-# Generate commit message using pi AI from staged diff.
-# Post-processes the model output deterministically: subject line kept as-is
-# (trailing period stripped), body reflowed at 72 chars, bullets normalized to "-".
-git diff --staged > /tmp/pi-diff-input.txt
-if [ ! -s /tmp/pi-diff-input.txt ]; then
+# Generate a commit message via `omp commit --no-changelog --dry-run`.
+# Uses modelRoles.commit (@commit). Progress stays captured; only the
+# generated message is printed. Split plans are rejected: this helper feeds
+# a single `git commit -F`.
+# Post-process: subject trailing period stripped, body reflowed at 72, bullets "-".
+set -o pipefail
+if git diff --staged --quiet; then
   echo "No staged changes"
   exit 1
 fi
-pi --print --no-session --no-tools --no-extensions -e ~/.pi/agent/extensions/kiro-acp/index.ts --model kiro-acp/claude-haiku-4.5 \
-  --system-prompt "Write commit messages terse and exact. Conventional Commits format. No fluff. Why over what.
-
-Rules:
-- Subject: <type>(<scope>): <imperative summary>, scope optional
-- Types: feat, fix, refactor, perf, docs, test, chore, build, ci, style, revert
-- Imperative mood: add, fix, remove — not added, adds, adding
-- ≤50 chars when possible, hard cap 72, no trailing period
-- Body only for: non-obvious why, breaking changes, migration notes, linked issues; otherwise no body at all
-- Body max 3 sentences / 4 lines; do not narrate every change or restate the diff
-- Aim body lines ≤ 70 chars so wrapping never isolates a single word
-- Wrap body at 72 chars, bullets - not *
-- Never include: 'This commit does X', 'I', 'we', 'now', AI attribution, emoji
-- Output ONLY the commit message, no explanation, no markdown code block." \
-  "Generate commit message for this diff:" @/tmp/pi-diff-input.txt \
-| awk '
+raw=$(omp commit --no-changelog --dry-run) || exit $?
+if printf '%s\n' "$raw" | grep -qx 'Split commit plan (dry run):'; then
+  echo "omp proposed a split commit; stage one concern and retry" >&2
+  exit 1
+fi
+msg=$(printf '%s\n' "$raw" | awk '
+  $0 == "Generated commit message:" { capturing = 1; next }
+  capturing { print }
+')
+if [ -z "$msg" ]; then
+  echo "Failed to generate commit message" >&2
+  exit 1
+fi
+printf '%s\n' "$msg" | awk '
 # Wrap one pre-formatted line (bullet, indented) longer than 72 at the last
 # space before column 72. Never joins short lines.
 function wrapline(line,    base, cut, contIndent) {
