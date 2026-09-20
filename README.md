@@ -13,6 +13,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_config/nvim` | `~/.config/nvim` |
 | `home/dot_config/herdr` | `~/.config/herdr` |
 | `home/dot_config/llama-swap` | `~/.config/llama-swap` (WSL) |
+| `home/dot_config/ghostty` | `~/.config/ghostty` (macOS) |
 | `home/dot_local/bin` | `~/.local/bin` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
