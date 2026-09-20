@@ -43,5 +43,3 @@ task:
 edit:
   modelVariants:
     kiro-acp/: replace
-codexResets:
-  autoRedeem: "yes"
