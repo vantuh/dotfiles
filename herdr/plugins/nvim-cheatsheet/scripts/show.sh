@@ -2,8 +2,8 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-# herdr/plugins/nvim-cheatsheet -> ../../../nvim/COMMANDS.md
-commands_md="$(cd "$root/../../.." && pwd)/nvim/COMMANDS.md"
+# herdr/plugins/nvim-cheatsheet -> ../../../home/dot_config/nvim/COMMANDS.md
+commands_md="$(cd "$root/../../.." && pwd)/home/dot_config/nvim/COMMANDS.md"
 
 if [[ ! -f "$commands_md" ]]; then
   printf 'COMMANDS.md not found:\n  %s\n\nPress Enter to close.\n' "$commands_md"

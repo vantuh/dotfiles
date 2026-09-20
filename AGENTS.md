@@ -1,43 +1,53 @@
 # AGENTS.md — dotfiles repo
 
-Personal dotfiles for macOS and WSL, managed with GNU Stow.
+Personal dotfiles for macOS and WSL, managed with chezmoi.
 
 ## Structure
 
 ```
-<package>/          Stow package — symlinked to $HOME
-                    (zsh, starship, yazi, pi, omp, herdr, hunk, nvim,
-                     karabiner, ghostty)
-agents/             Shared AI agent skills & instructions (symlinked to Pi, OMP, OpenCode, Kiro, Claude)
-  skills/           Shared SKILL.md files
-  instructions/     Shared instruction files (AGENTS.md, caveman.md)
-  links.json        Manifest: agent paths, skill targets, instruction targets
-  link.sh           Creates symlinks from links.json (supports --dry-run)
-  skills.json       GitHub sources for skill updates
-  update-skills.sh  Fetch latest skills from GitHub
-archive/            Retired configs kept for reference; never installed
-install.sh          Cross-platform installer (stow + agent linking)
+.chezmoiroot        Selects home/ as the chezmoi source-state root
+home/               Source state mapped one-to-one to $HOME
+  dot_config/       XDG application configs
+  dot_local/bin/    Executable commands and thin shims
+  dot_pi/agent/     Pi configuration and extensions
+  dot_omp/agent/    Oh My Pi configuration and extensions
+  .chezmoiscripts/  Migration and post-apply integration scripts
+  .chezmoitemplates/ Shared rendered content
+agents/             Shared AI skills/instructions; ~/.agents links here
+herdr/plugins/      Herdr plugins linked after chezmoi apply
+scripts/            Repo-only utility implementations
+archive/            Retired configs kept for reference; never applied
 ```
 
 ## Conventions
 
-- Each top-level directory is a stow package mirroring `$HOME` structure.
-- `agents/` is NOT a stow package — it uses its own `link.sh` for symlinks.
-- Config files go inside their stow package at the path they'd have under `$HOME` (e.g. `zsh/.zshrc`, `pi/.pi/agent/settings.json`).
-- `kiro-acp` exists twice, on purpose: `omp/.omp/agent/extensions/kiro-acp`
-  is Oh My Pi (`omp`, `~/.omp`); `pi/.pi/agent/extensions/kiro-acp` is Pi
-  (`pi`, `~/.pi`). They are not the same tree. Start at the copy's
-  `README.md` before editing. Do not port a change across hosts unless
-  asked.
-- Platform-specific handling is in `install.sh`, not scattered across packages.
+- Source paths use chezmoi attributes: `dot_` for a leading dot,
+  `executable_` for executable targets, `symlink_` for symlinks, and `.tmpl`
+  for templates.
+- Platform selection belongs in `home/.chezmoiignore.tmpl` or a narrowly
+  scoped template/script, not in duplicate source trees.
+- Runtime/generated files are never source state. Keep them out of `home/` or
+  add a precise ignore when source-only material must live beside config.
+- `kiro-acp` exists twice on purpose:
+  `home/dot_omp/agent/extensions/kiro-acp` is Oh My Pi and
+  `home/dot_pi/agent/extensions/kiro-acp` is Pi. Read the copy's `README.md`;
+  do not port changes across hosts unless asked.
 
 ## Rules
 
-- **All changes happen inside this repo, never directly in `$HOME`.** Create/edit files here, then symlink them (via stow or `agents/link.sh`). After linking, tell the user to test. Don't create config files in `~` — they'll drift out of sync with the repo.
-- Don't modify shared agent instructions (`agents/.agents/AGENTS.md`) unless the user explicitly asks — changes apply to pi, OMP, OpenCode, and Kiro simultaneously.
-- When adding a new stow package, add it to `COMMON_PACKAGES` or platform-specific list in `install.sh`.
-- When adding a new shared skill, place it in `agents/skills/<name>/SKILL.md` and add targets to `agents/links.json`.
-- Keep shell scripts POSIX-compatible where possible; bash-specific features are fine in `.sh` files with `#!/bin/bash`.
-- Don't write executable helper scripts in Python. For anything more than a couple of lines, use bun + TypeScript (`#!/usr/bin/env bun` in `scripts/*.ts`, with a thin bash shim in `zsh/.local/bin/` — see `scripts/herdr-*.ts`). For trivial one-liners, use Node.js + JS (`node -e '...'`).
-- Test `install.sh` changes with `--dry-run` flag on `link.sh` before committing.
-- This repo works directly on `main`: committing there is authorized, no need to ask (see Incremental commits in the shared `AGENTS.md`). Pushing is still the user's job.
+- **All config changes happen inside this repo, never directly in `$HOME`.**
+  Apply them with `chezmoi apply` and test the resulting target.
+- Do not modify shared agent instructions (`agents/.agents/AGENTS.md`) unless
+  explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
+- Add shared skills under `agents/.agents/skills/<name>/SKILL.md`.
+- Add managed home files under `home/` using the correct chezmoi attribute
+  names. Update `home/.chezmoiignore.tmpl` for platform-only targets.
+- Keep shell scripts POSIX-compatible where practical; bash-specific features
+  are fine in files with a bash shebang.
+- Do not write executable helpers in Python. For non-trivial helpers, use Bun
+  and TypeScript in `scripts/*.ts` with a thin shim in
+  `home/dot_local/bin/executable_*`. Trivial one-liners may use `node -e`.
+- Validate source state with `chezmoi managed`, render/apply into an isolated
+  destination, and exercise the changed runtime path before committing.
+- This repo works directly on `main`; local commits are authorized. Never push
+  unless the user asks.

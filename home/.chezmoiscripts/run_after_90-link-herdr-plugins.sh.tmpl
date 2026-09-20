@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -u
+
+circular_link="$HOME/.agents/skills/skills"
+if [[ -L "$circular_link" ]]; then
+  rm -- "$circular_link"
+  printf 'Removed circular skills/skills symlink\n'
+fi
+
+plugins_dir="{{ .chezmoi.workingTree }}/herdr/plugins"
+if [[ ! -d "$plugins_dir" ]] || ! command -v herdr >/dev/null 2>&1; then
+  exit 0
+fi
+
+for plugin_dir in "$plugins_dir"/*; do
+  [[ -d "$plugin_dir" ]] || continue
+  if ! herdr plugin link "$plugin_dir" >/dev/null 2>&1; then
+    printf 'Herdr plugin link failed: %s\n' "$plugin_dir" >&2
+  fi
+done
