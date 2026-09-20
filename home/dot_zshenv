@@ -19,9 +19,10 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
-# Lazygit on macOS defaults to ~/Library/Application Support. Pin both
-# platforms to ~/.config/lazygit.
-export CONFIG_DIR="$HOME/.config/lazygit"
+# macOS default is ~/Library/Application Support. Linux already uses XDG.
+if [[ "$DOTFILES_PLATFORM" == macos ]]; then
+  export CONFIG_DIR="$HOME/.config/lazygit"
+fi
 
 # Tool env
 export NVM_COMPLETION=true
