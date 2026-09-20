@@ -9,7 +9,7 @@ if git diff --staged --quiet; then
   echo "No staged changes"
   exit 1
 fi
-raw=$(omp commit --no-changelog --dry-run) || exit $?
+raw=$(omp commit --legacy --no-changelog --dry-run) || exit $?
 if printf '%s\n' "$raw" | grep -qx 'Split commit plan (dry run):'; then
   echo "omp proposed a split commit; stage one concern and retry" >&2
   exit 1
