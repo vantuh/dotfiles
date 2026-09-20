@@ -9,9 +9,9 @@ not appear here.
 
 | | Oh My Pi (this tree) | Pi |
 |---|---|---|
-| Repo | [`home/dot_omp/agent/extensions/kiro-acp`](.) | [`home/dot_pi/agent/extensions/kiro-acp`](../../../../dot_pi/agent/extensions/kiro-acp) |
+| Repo | [`home/dot_omp/private_agent/extensions/kiro-acp`](.) | [`home/dot_pi/agent/extensions/kiro-acp`](../../../../dot_pi/agent/extensions/kiro-acp) |
 | Loaded from | `~/.omp/agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
-| Config | `~/.omp/agent/kiro-acp.json` → [`home/dot_omp/agent/kiro-acp.json`](../../kiro-acp.json) | `~/.pi/agent/kiro-acp.json` |
+| Config | `~/.omp/agent/kiro-acp.json` → [`home/dot_omp/private_agent/kiro-acp.json`](../../kiro-acp.json) | `~/.pi/agent/kiro-acp.json` |
 | Host binary | `omp` | `pi` |
 
 ## What "pi" means in this tree

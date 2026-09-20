@@ -12,7 +12,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_zshrc` | `~/.zshrc` |
 | `home/dot_config/nvim` | `~/.config/nvim` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
-| `home/dot_omp/agent` | `~/.omp/agent` |
+| `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
 | `home/Library/Application Support/...` | `~/Library/Application Support/...` |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
@@ -90,7 +90,7 @@ must not be updated as if they were mirrors.
 
 | Host | Source path | Applied path |
 | --- | --- | --- |
-| Oh My Pi (`omp`) | `home/dot_omp/agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
+| Oh My Pi (`omp`) | `home/dot_omp/private_agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
 | Pi (`pi`) | `home/dot_pi/agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
 
 Read the matching tree's `README.md` before editing, then apply that target and

@@ -49,6 +49,6 @@ agents/.agents/skills/skills
 # Editor backups
 *.bak
 # OMP atomic-write lock beside the managed config target
-home/dot_omp/agent/config.yml.lock
+home/dot_omp/private_agent/config.yml.lock
 # Repo-local Pi runtime state; home/dot_pi stays versioned
 /.pi/
