@@ -1,8 +1,12 @@
 // Test: buildPromptParts prompt assembly (omp string[] systemPrompt).
 // Run: test/run-all.sh test/helpers.test.ts
 
-import { buildPromptParts, lastUserMessage } from "../helpers.ts";
-import type { Context } from "@earendil-works/pi-ai";
+import {
+  buildPromptParts,
+  lastUserMessage,
+  stampAssistantTiming,
+} from "../helpers.ts";
+import type { AssistantMessage, Context } from "@earendil-works/pi-ai";
 
 function assert(condition: unknown, label: string): void {
   if (!condition) {
@@ -117,4 +121,18 @@ function assert(condition: unknown, label: string): void {
     current === "Just this",
     "plain user turn yields the bare user text",
   );
+}
+
+{
+  const output = { role: "assistant" } as AssistantMessage;
+  stampAssistantTiming(output, 1000, 1400, 2500);
+  assert(output.duration === 1500, "duration is now - startTime");
+  assert(output.ttft === 400, "ttft is firstTokenTime - startTime");
+}
+
+{
+  const output = { role: "assistant" } as AssistantMessage;
+  stampAssistantTiming(output, 1000, undefined, 2500);
+  assert(output.duration === 1500, "duration is stamped without a first token");
+  assert(output.ttft === undefined, "ttft is omitted until the first chunk");
 }

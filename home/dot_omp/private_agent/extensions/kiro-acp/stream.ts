@@ -14,6 +14,7 @@ import {
   estimateUsage,
   imagesFromToolResults,
   lastUserMessage,
+  stampAssistantTiming,
   sumMeteringCredits,
 } from "./helpers.ts";
 import { loadKiroAcpConfig, resolveCostConfig } from "./config.ts";
@@ -79,6 +80,8 @@ export function streamKiroAcp(
   (async () => {
     const output = createOutputMessage(model);
     const dollarsPerCredit = resolveCostConfig(loadKiroAcpConfig()).dollarsPerCredit;
+    let startTime = performance.now();
+    let firstTokenTime: number | undefined;
     // Set once the turn bumps streamGen so the finally below can clear the
     // turn's handlers without clobbering a newer turn's assignments.
     let turnGen: number | null = null;
@@ -184,6 +187,12 @@ export function streamKiroAcp(
         }
       }
       const promptReadyAt = Date.now();
+      // Clock starts when the prompt is in flight — not at streamKiroAcp()
+      // entry, which includes ensureStarted / kiro-cli spawn and would
+      // inflate duration (and deflate tok/s) like a native provider's
+      // pre-request setup does not.
+      startTime = performance.now();
+      output.timestamp = promptReadyAt;
 
       if (options?.signal) {
         const handler = () =>
@@ -256,6 +265,15 @@ export function streamKiroAcp(
           const block = output.content[idx] as any;
           if (kind === "text") block.text += text;
           else block.thinking += text;
+          firstTokenTime ??= performance.now();
+          // Live tok/s (status-line calculateTokensPerSecond) reads
+          // usage.output on partials; metadata ticks are too sparse.
+          output.usage = estimateUsage(
+            output,
+            model.contextWindow,
+            session.metadata,
+            dollarsPerCredit,
+          );
           stream.push({
             type: deltaType,
             contentIndex: idx,
@@ -677,11 +695,14 @@ export function streamKiroAcp(
         session.metadata,
         dollarsPerCredit,
       );
+      stampAssistantTiming(output, startTime, firstTokenTime);
       log("amortized cost", {
         session: session.id,
         dollarsPerCredit,
         credits: sumMeteringCredits(session.metadata?.meteringUsage),
         total: output.usage.cost.total,
+        duration: output.duration,
+        ttft: output.ttft,
       });
       appendKiroMetadataDiagnostic(output, session.metadata);
 
@@ -749,6 +770,7 @@ export function streamKiroAcp(
             error instanceof Error ? error.message : String(error),
         }) ??
         (error instanceof Error ? error.message : String(error));
+      stampAssistantTiming(output, startTime, firstTokenTime);
       stream.push({ type: "error", reason: "error", error: output });
       stream.end();
     } finally {
