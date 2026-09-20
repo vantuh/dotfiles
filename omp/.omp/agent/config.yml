@@ -1,6 +1,6 @@
 symbolPreset: nerd
 composer:
-  shape: band
+  shape: box
 theme:
   dark: titanium
 setupVersion: 2
