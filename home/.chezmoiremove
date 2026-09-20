@@ -8,3 +8,7 @@
 # override ~/.config/ghostty/config.ghostty.
 Library/Application Support/com.mitchellh.ghostty/config.ghostty
 Library/Application Support/com.mitchellh.ghostty/config
+
+# Lazygit is pinned to ~/.config/lazygit via CONFIG_DIR. Drop the macOS
+# default so a leftover file is not used if CONFIG_DIR is unset.
+Library/Application Support/lazygit/config.yml
