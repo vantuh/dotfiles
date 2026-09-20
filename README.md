@@ -11,6 +11,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | --- | --- |
 | `home/dot_zshrc` | `~/.zshrc` |
 | `home/dot_config/nvim` | `~/.config/nvim` |
+| `home/dot_config/herdr` | `~/.config/herdr` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
 | `home/Library/Application Support/...` | `~/Library/Application Support/...` |
@@ -24,7 +25,6 @@ Repository-only content stays outside `home/`:
 | Directory | Contents |
 | --- | --- |
 | `agents` | Shared AI agent skills and instructions |
-| `herdr/plugins` | Herdr plugin sources linked after each apply |
 | `scripts` | Utility scripts used by deployed shims and configs |
 | `fan_control` | Fan Control config and research notes |
 | `openspec` | OpenSpec design documents |

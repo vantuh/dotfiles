@@ -7,13 +7,14 @@ if [[ -L "$circular_link" ]]; then
   printf 'Removed circular skills/skills symlink\n'
 fi
 
-plugins_dir="{{ .chezmoi.workingTree }}/herdr/plugins"
+# Applied copies. Skip Herdr's plugins/config state directory.
+plugins_dir="{{ .chezmoi.destDir }}/.config/herdr/plugins"
 if [[ ! -d "$plugins_dir" ]] || ! command -v herdr >/dev/null 2>&1; then
   exit 0
 fi
 
 for plugin_dir in "$plugins_dir"/*; do
-  [[ -d "$plugin_dir" ]] || continue
+  [[ -d "$plugin_dir" && -f "$plugin_dir/herdr-plugin.toml" ]] || continue
   if ! herdr plugin link "$plugin_dir" >/dev/null 2>&1; then
     printf 'Herdr plugin link failed: %s\n' "$plugin_dir" >&2
   fi

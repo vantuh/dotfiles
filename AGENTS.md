@@ -8,13 +8,13 @@ Personal dotfiles for macOS and WSL, managed with chezmoi.
 .chezmoiroot        Selects home/ as the chezmoi source-state root
 home/               Source state mapped one-to-one to $HOME
   dot_config/       XDG application configs
+    herdr/plugins/  Herdr plugin sources; linked after apply
   dot_local/bin/    Executable commands and thin shims
   dot_pi/agent/     Pi configuration and extensions
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
   .chezmoiscripts/  Migration and post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
 agents/             Shared AI skills/instructions; ~/.agents links here
-herdr/plugins/      Herdr plugins linked after chezmoi apply
 scripts/            Repo-only utility implementations
 archive/            Retired configs kept for reference; never applied
 ```
