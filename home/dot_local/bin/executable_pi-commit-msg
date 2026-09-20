@@ -3,7 +3,7 @@
 # Uses modelRoles.commit (@commit). Progress stays captured; only the
 # generated message is printed. Split plans are rejected: this helper feeds
 # a single `git commit -F`.
-# Post-process: subject trailing period stripped, body reflowed at 72, bullets "-".
+# Body wrapped at 72 (git-style hanging indent on "- " bullets); subject as-is.
 set -o pipefail
 if git diff --staged --quiet; then
   echo "No staged changes"
@@ -23,91 +23,23 @@ if [ -z "$msg" ]; then
   exit 1
 fi
 printf '%s\n' "$msg" | awk '
-# Wrap one pre-formatted line (bullet, indented) longer than 72 at the last
-# space before column 72. Never joins short lines.
 function wrapline(line,    base, cut, contIndent) {
   match(line, /^ */)
   base = substr(line, 1, RLENGTH)
   contIndent = base
-  if (substr(line, base + 1, 2) == "- ")
+  if (substr(line, RLENGTH + 1, 2) == "- ")
     contIndent = base "  "
   while (length(line) > 72) {
     cut = 72
     while (cut > length(base) + 1 && substr(line, cut, 1) != " ")
       cut--
     if (cut <= length(base) + 1)
-      break  # single word longer than the limit, leave the line unwrapped
+      break
     printf "%s\n", substr(line, 1, cut - 1)
     line = contIndent substr(line, cut + 1)
   }
-  if (line != "")
-    print line
+  print line
 }
-# Reflow a run of prose lines: join them and re-wrap greedily at 72, so a
-# 75-char model line does not strand a single word on the next line.
-function wrappara(text,    joined, i, k, w, line) {
-  joined = text
-  gsub(/\n/, " ", joined)
-  k = split(joined, w, " ")
-  line = ""
-  for (i = 1; i <= k; i++) {
-    if (w[i] == "")
-      continue
-    if (line == "")
-      line = w[i]
-    else if (length(line) + 1 + length(w[i]) <= 72)
-      line = line " " w[i]
-    else {
-      print line
-      line = w[i]
-    }
-  }
-  if (line != "")
-    print line
-}
-function flushpara() {
-  if (para != "") {
-    wrappara(para)
-    para = ""
-  }
-}
-# Subject: strip trailing period, leave otherwise untouched (no wrapping).
-NR == 1 {
-  sub(/\.$/, "")
-  print
-  next
-}
-# Normalize markdown-style bullets to "-" (only at line start).
-/^\* / { sub(/^\* /, "- ") }
-# Comments: flush paragraph, pass through untouched.
-/^#/ {
-  flushpara()
-  print
-  next
-}
-# Bullet lines and indented lines: wrap individually, keep structure.
-/^- / || /^ / {
-  flushpara()
-  wrapline($0)
-  next
-}
-# Blank line: paragraph boundary.
-/^$/ {
-  flushpara()
-  print
-  next
-}
-# Prose: accumulate into a paragraph, reflow on boundary.
-# First prose line: drop a literal "Body:" label the model sometimes writes.
-{
-  if (!first_body) {
-    sub(/^[Bb]ody: */, "")
-    first_body = 1
-  }
-  if (para == "")
-    para = $0
-  else
-    para = para "\n" $0
-}
-END { flushpara() }
+NR == 1 { print; next }
+{ wrapline($0) }
 '
