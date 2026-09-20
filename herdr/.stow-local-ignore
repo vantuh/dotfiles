@@ -1,2 +1,0 @@
-# Plugins are linked with `herdr plugin link`, not into $HOME by Stow.
-^/plugins$

@@ -1,0 +1,41 @@
+{{- $isWSL := and (eq .chezmoi.os "linux") (contains "microsoft" (.chezmoi.kernel.osrelease | lower)) -}}
+{{- if $isWSL -}}
+#!/usr/bin/env bash
+set -euo pipefail
+
+windows_user=$(cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+[[ -n "$windows_user" ]] || exit 0
+
+packages_dir="/mnt/c/Users/$windows_user/AppData/Local/Packages"
+local_state=$(find "$packages_dir" -maxdepth 2 -name LocalState -path '*WindowsTerminal*' -print -quit 2>/dev/null)
+if [[ -z "$local_state" ]]; then
+  printf 'Windows Terminal not found; skipping settings sync\n' >&2
+  exit 0
+fi
+
+source_path="{{ .chezmoi.workingTree }}/home/.chezmoitemplates/windows-terminal/settings.json"
+powershell_exe=powershell.exe
+if [[ -x "/mnt/c/Users/$windows_user/AppData/Local/Microsoft/WindowsApps/pwsh.exe" ]]; then
+  powershell_exe="/mnt/c/Users/$windows_user/AppData/Local/Microsoft/WindowsApps/pwsh.exe"
+elif [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]]; then
+  powershell_exe="/mnt/c/Program Files/PowerShell/7/pwsh.exe"
+fi
+
+wsl_distro=${WSL_DISTRO_NAME:-Ubuntu}
+source_relative=${source_path#/}
+windows_source="\\\\wsl.localhost\\$wsl_distro\\${source_relative//\//\\}"
+windows_target="$(wslpath -w "$local_state")\\settings.json"
+
+if "$powershell_exe" -NoProfile -ExecutionPolicy Bypass -Command "
+  \$link = '$windows_target'
+  \$target = '$windows_source'
+  \$existing = Get-Item -LiteralPath \$link -Force -ErrorAction SilentlyContinue
+  if (\$existing) { Remove-Item -LiteralPath \$link -Force }
+  New-Item -ItemType SymbolicLink -Path \$link -Target \$target | Out-Null
+"; then
+  printf 'Linked Windows Terminal settings.json\n'
+else
+  cp -- "$source_path" "$local_state/settings.json"
+  printf 'Copied Windows Terminal settings.json (symlink failed)\n'
+fi
+{{- end -}}

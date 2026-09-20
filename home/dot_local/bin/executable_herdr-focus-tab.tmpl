@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Thin shim: full logic lives in scripts/herdr-focus-tab.ts.
+set -euo pipefail
+
+_ts="{{ .chezmoi.workingTree }}/scripts/herdr-focus-tab.ts"
+
+exec bun "$_ts" "$@"

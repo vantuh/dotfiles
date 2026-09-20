@@ -26,7 +26,7 @@ resolve_my_usage_bin() {
   fi
   if [[ -z "$bin" ]]; then
     echo "my-usage not found in PATH"
-    echo "Stow the zsh package or set MY_USAGE_BIN in plugin config." >&2
+    echo "Run chezmoi apply or set MY_USAGE_BIN in plugin config." >&2
     return 1
   fi
   printf '%s' "$bin"

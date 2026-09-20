@@ -5,7 +5,7 @@ Thumbs.db
 *~
 
 # Dependencies / build
-node_modules/
+node_modules
 
 # Local databases
 *.db
@@ -18,8 +18,8 @@ node_modules/
 !.env.example
 .tokens
 **/.tokens
-zsh/.zshrc.d/99-local.zsh
-zsh/.zcompdump*
+home/dot_zshrc.d/99-local.zsh
+home/dot_zcompdump*
 secrets/
 credentials*
 *.pem
@@ -37,8 +37,8 @@ id_rsa*
 agents/.pi/
 
 # herdr runtime state (only config.toml is versioned)
-herdr/.config/herdr/session.json
-herdr/.config/herdr/*.sock
+home/dot_config/herdr/session.json
+home/dot_config/herdr/*.sock
 
 # Generated Kiro ACP bridge agent config
 .kiro/agents/pi-kiro-*.json
@@ -48,7 +48,7 @@ agents/.agents/skills/skills
 
 # Editor backups
 *.bak
-# omp atomic-write lock beside the symlinked config target
-omp/.omp/agent/config.yml.lock
-# Repo-local skills/prompts only; the pi/ stow package's .pi stays versioned
+# OMP atomic-write lock beside the managed config target
+home/dot_omp/agent/config.yml.lock
+# Repo-local Pi runtime state; home/dot_pi stays versioned
 /.pi/
