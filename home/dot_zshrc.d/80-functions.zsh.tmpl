@@ -10,11 +10,14 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+{{- $isWSL := and (eq .chezmoi.os "linux") (contains "microsoft" (.chezmoi.kernel.osrelease | lower)) }}
+{{- if $isWSL }}
 llama-swap-start() {
   llama-swap \
-    --config "{{ .chezmoi.workingTree }}/scripts/llama-run/llama-swap.yaml" \
+    --config "$HOME/.config/llama-swap/config.yaml" \
     --listen localhost:8080
 }
+{{- end }}
 
 dotfix() {
   chezmoi update

@@ -12,20 +12,22 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_zshrc` | `~/.zshrc` |
 | `home/dot_config/nvim` | `~/.config/nvim` |
 | `home/dot_config/herdr` | `~/.config/herdr` |
+| `home/dot_config/llama-swap` | `~/.config/llama-swap` (WSL) |
+| `home/dot_local/bin` | `~/.local/bin` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
 | `home/Library/Application Support/...` | `~/Library/Application Support/...` |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
 Karabiner, Ghostty, and the macOS Lazygit path. Linux receives the XDG Lazygit
-path; WSL additionally receives `llama-update` and Windows Terminal settings.
+path; WSL additionally receives `llama-update`, `~/.config/llama-swap`, and
+Windows Terminal settings.
 
 Repository-only content stays outside `home/`:
 
 | Directory | Contents |
 | --- | --- |
 | `agents` | Shared AI agent skills and instructions |
-| `scripts` | Utility scripts used by deployed shims and configs |
 | `fan_control` | Fan Control config and research notes |
 | `openspec` | OpenSpec design documents |
 | `archive` | Retired tmux and Alacritty configs; never applied |

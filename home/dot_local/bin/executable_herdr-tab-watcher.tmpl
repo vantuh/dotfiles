@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Thin shim: full logic lives in scripts/herdr-tab-watcher.ts.
-set -euo pipefail
-
-_ts="{{ .chezmoi.workingTree }}/scripts/herdr-tab-watcher.ts"
-
-exec bun "$_ts" "$@"
