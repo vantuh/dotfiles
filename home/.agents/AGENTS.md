@@ -119,28 +119,15 @@ Prefer direct tools when the target is known: read known files, search known pat
 
 ## Delegation
 
-When the environment provides specialized agents, delegate only when fresh or isolated context materially improves the result. Do not delegate simple known-file edits, simple questions, one-command checks, or work you can do more cheaply with clear scope.
+Use the host's specialist agents and spawn tool. Follow the types, spawn policy, and mechanics it listed this session; do not invent flags, runtimes, or role names it did not provide. Honor explicit user requests like "use scout" or "send to reviewer" when that specialist exists.
 
-Roles when available: **Scout** (unknown code, entry points, flows); **Researcher** (official docs, APIs, current facts); **Worker** (clear isolated implementation slice); **Reviewer** (non-trivial/risky diff, migration, public contract). The parent owns the plan: scout first in unknown areas, then plan yourself, then hand the plan to a worker.
+When the host prefers or requires delegation, do that — don't keep work in the parent because the task looks small or the context is already fresh. The parent still owns the plan: scout unknown areas first, plan yourself, then implement as the host's spawn policy says. Child tasks must be self-contained. Parallelize only independent reads or disjoint writes. The parent synthesizes output, integrates changes, and owns final verification.
 
-Honor explicit user requests like "use scout" or "send to reviewer" when available and safe. Child tasks must be self-contained (goal, paths, constraints, expected output, read vs edit permission). Exploration and review should be read-only by default. The parent synthesizes agent output, integrates changes, and owns final verification. Parallelize only independent read work or explicitly disjoint write slices; keep to 4–5 agents; no overlapping write areas.
+## Parallel sessions
 
-When you finish implementing code changes, run a reviewer subagent before summarizing. Wait for that run to complete; then apply or report its findings — do not silently ignore them.
+If this host can message other live agent sessions (hub, intercom, or similar), use that to coordinate — don't reconstruct the same facts in isolation when a peer already has them.
 
-Workers follow Incremental commits too. Before launching a worker that may commit, record the current commit SHA as the base and require the worker to report the SHAs it created plus its final tip. Scope the reviewer to that immutable range (`base..tip`, or the exact task SHAs if unrelated commits interleaved) and have it review each commit plus the cumulative diff. Review the working tree only for uncommitted changes.
+When: same codebase (parallel work), a reference codebase (patterns), related repos (shared libraries).
+Not when: unrelated work, trivial questions, or you can proceed independently.
 
-A running subagent's long silence usually means the model is working — inspect it first (subagent status / FleetView live detail) before assuming it's stuck. Steer only with genuinely new information (steer / FleetView), not by launching foreground.
-
-From this chat, top-level subagent launches are background. Omit `async: false` and `foregroundOnly`. After launch, yield unless independent work remains; do not treat the launch itself as finished work.
-
-For slow-model launches (worker on cursor/*, long reviews), pass control: { needsAttentionAfterMs: 1200000 } so the attention notice doesn't fire early and tempt a nudge.
-
-<pi-intercom>
-Coordinate with other local pi sessions on related codebases. Use `/skill:pi-intercom` for patterns.
-
-**When:** Same codebase (parallel work), reference codebase (consulting patterns), related repos (shared libraries).
-
-**Not when:** Unrelated codebases, trivial questions, or when you can proceed independently.
-
-**Principle:** Prefer `send` for notifications; `ask` only when blocked waiting for input.
-</pi-intercom>
+Discover the live roster first; address peers by their exact names. Prefer a one-way send for notifications; wait for a reply only when blocked. The user is not a peer — talk to them in the chat, not through session messaging.
