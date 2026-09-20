@@ -12,6 +12,7 @@ home/               Source state mapped one-to-one to $HOME
   dot_local/bin/    Executable commands
   dot_pi/agent/     Pi configuration and extensions
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
+    .config.yml / .kiro-acp.json  source-only; dest-symlinked from ~/.omp/agent/
   .chezmoiscripts/  Migration and post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
   .agents/          Shared AI skills/instructions (source-only; ~/.agents links here)
@@ -35,7 +36,9 @@ archive/            Retired configs kept for reference; never applied
 ## Rules
 
 - **All config changes happen inside this repo, never directly in `$HOME`.**
-  Apply them with `chezmoi apply` and test the resulting target.
+  Apply them with `chezmoi apply` and test the resulting target. Oh My Pi may
+  write `~/.omp/agent/config.yml` and `~/.omp/agent/kiro-acp.json`; those dest
+  paths are symlinks into this repo.
 - Do not modify shared agent instructions (`home/.agents/AGENTS.md`) unless
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
 - Add shared skills under `home/.agents/skills/<name>/SKILL.md`.

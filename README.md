@@ -16,6 +16,8 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_local/bin` | `~/.local/bin` |
 | `home/dot_pi/agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
+| `home/dot_omp/private_agent/.config.yml` | `~/.omp/agent/config.yml` (symlink into the repo) |
+| `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
 | `home/Library/Application Support/...` | `~/Library/Application Support/...` |
 
@@ -59,6 +61,11 @@ first interactive launch.
 ## Daily workflow
 
 Edit files in this repository, never the generated copies under `$HOME`.
+Oh My Pi is the exception: `~/.omp/agent/config.yml` and
+`~/.omp/agent/kiro-acp.json` are dest-symlinks into the repo, so UI or
+in-place edits land in git. OMP's atomic writer preserves those symlink
+targets. Leave nvim, zsh, herdr, and the kiro-acp extension trees as
+regular applied files.
 
 ```bash
 chezmoi diff
