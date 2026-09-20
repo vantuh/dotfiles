@@ -9,7 +9,7 @@ platforms = ["linux", "macos"]
 id = "show"
 title = "Show usage"
 contexts = ["workspace"]
-command = ["bash", "scripts/open-popup.sh"]
+command = ["/bin/bash", "scripts/open-popup.sh"]
 
 [[panes]]
 id = "usage"
@@ -17,4 +17,4 @@ title = "Usage"
 placement = "popup"
 width = "92%"
 height = 28
-command = ["bash", "scripts/show.sh"]
+command = ["/bin/bash", "scripts/show.sh"]

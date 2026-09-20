@@ -9,7 +9,7 @@ platforms = ["linux", "macos"]
 id = "show"
 title = "Show nvim cheatsheet"
 contexts = ["workspace"]
-command = ["bash", "scripts/open-popup.sh"]
+command = ["/bin/bash", "scripts/open-popup.sh"]
 
 [[panes]]
 id = "cheatsheet"
@@ -17,4 +17,4 @@ title = "Nvim Commands"
 placement = "popup"
 width = "80%"
 height = "85%"
-command = ["bash", "scripts/show.sh"]
+command = ["/bin/bash", "scripts/show.sh"]
