@@ -9,13 +9,12 @@ Personal dotfiles for macOS and WSL, managed with chezmoi.
 home/               Source state mapped one-to-one to $HOME
   dot_config/       XDG application configs
     herdr/plugins/  Herdr plugin sources; linked after apply
-  dot_local/bin/    Executable commands and thin shims
+  dot_local/bin/    Executable commands
   dot_pi/agent/     Pi configuration and extensions
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
   .chezmoiscripts/  Migration and post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
 agents/             Shared AI skills/instructions; ~/.agents links here
-scripts/            Repo-only utility implementations
 archive/            Retired configs kept for reference; never applied
 ```
 
@@ -45,7 +44,7 @@ archive/            Retired configs kept for reference; never applied
 - Keep shell scripts POSIX-compatible where practical; bash-specific features
   are fine in files with a bash shebang.
 - Do not write executable helpers in Python. For non-trivial helpers, use Bun
-  and TypeScript in `scripts/*.ts` with a thin shim in
+  and TypeScript with `#!/usr/bin/env bun` in
   `home/dot_local/bin/executable_*`. Trivial one-liners may use `node -e`.
 - Validate source state with `chezmoi managed`, render/apply into an isolated
   destination, and exercise the changed runtime path before committing.

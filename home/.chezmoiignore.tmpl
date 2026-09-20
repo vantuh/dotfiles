@@ -29,4 +29,5 @@ Library/Application Support/lazygit
 {{- $isWSL := and (eq .chezmoi.os "linux") (contains "microsoft" (.chezmoi.kernel.osrelease | lower)) }}
 {{- if not $isWSL }}
 .local/bin/llama-update
+.config/llama-swap
 {{- end }}
