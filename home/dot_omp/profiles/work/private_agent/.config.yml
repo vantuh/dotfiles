@@ -1,0 +1,45 @@
+symbolPreset: nerd
+composer:
+  shape: box
+theme:
+  dark: titanium
+setupVersion: 2
+modelRoles:
+  default: kiro-acp/claude-sonnet-5
+  smol: kiro-acp/claude-haiku-4.5
+  advisor: kiro-acp/claude-opus-5
+  plan: kiro-acp/claude-opus-5:high
+  commit: kiro-acp/claude-haiku-4.5:low
+  slow: kiro-acp/claude-opus-5
+  tiny: kiro-acp/claude-haiku-4.5:low
+advisor:
+  enabled: false
+memory:
+  backend: local
+prewalk:
+  enabled: false
+compaction:
+  idleEnabled: true
+plan:
+  autosave: true
+checkpoint:
+  enabled: true
+vault:
+  enabled: true
+display:
+  cacheMissMarker: true
+  showTurnTime: true
+  showTokenUsage: true
+tui:
+  textSizing: true
+hideThinkingBlock: true
+read:
+  renderMarkdown: true
+lsp:
+  formatOnWrite: true
+  diagnosticsOnEdit: true
+task:
+  eager: preferred
+edit:
+  modelVariants:
+    kiro-acp/: replace

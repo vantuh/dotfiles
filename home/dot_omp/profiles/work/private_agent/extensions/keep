@@ -1,0 +1,1 @@
+# Ensures ~/.omp/profiles/work/agent/extensions exists before the kiro-acp symlink.
