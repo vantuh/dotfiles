@@ -15,6 +15,9 @@
 .pi/agent/**/node_modules
 .omp/agent/**/node_modules
 .omp/agent/config.yml.lock
+.omp/agent/.config.yml.lock
+.omp/profiles/*/agent/config.yml.lock
+.omp/profiles/*/agent/.config.yml.lock
 
 {{- if ne .chezmoi.os "darwin" }}
 # macOS-only applications
