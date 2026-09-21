@@ -13,7 +13,7 @@ home/               Source state mapped one-to-one to $HOME
   dot_pi/agent/     Pi configuration and extensions
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
     .config.yml / .kiro-acp.json  source-only; dest-symlinked from ~/.omp/agent/
-  .chezmoiscripts/  Migration and post-apply integration scripts
+  .chezmoiscripts/  Post-apply integration scripts
   .chezmoitemplates/ Shared rendered content
   .agents/          Shared AI skills/instructions (source-only; ~/.agents links here)
 archive/            Retired configs kept for reference; never applied
