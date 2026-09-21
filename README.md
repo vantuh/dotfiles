@@ -51,10 +51,9 @@ chezmoi init --source ~/dotfiles --apply
 chsh -s "$(command -v zsh)"
 ```
 
-The generated chezmoi config keeps the clone as `sourceDir`. The first apply
-removes legacy Stow symlinks and backs up pre-existing Pi/OMP generated configs
-before replacing them. On WSL, an apply also links (or copies, if Windows
-symlink creation is unavailable) Windows Terminal settings.
+The generated chezmoi config keeps the clone as `sourceDir`. On WSL, an apply
+also links (or copies, if Windows symlink creation is unavailable) Windows
+Terminal settings.
 
 Restart the terminal after the first apply. Zinit installs shell plugins on the
 first interactive launch.
