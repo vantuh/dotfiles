@@ -9,7 +9,7 @@
   ],
   "copyFormatting": "none",
   "copyOnSelect": false,
-  "defaultProfile": "{e454de88-5a64-5722-933e-b3135df7bd0d}",
+  "defaultProfile": "{3f4346a4-fd7d-448c-b9ac-5513e8c3d0a6}",
   "launchMode": "maximized",
   "initialCols": 180,
   "showTabsInTitlebar": false,
@@ -62,25 +62,25 @@
         "name": "Command Prompt"
       },
       {
-        "commandline": "wsl.exe -d Ubuntu -- /bin/bash -l -c herdr",
+        "commandline": "wsl.exe -d Ubuntu --cd ~ -- /bin/bash -l -c herdr",
+        "font": {
+          "face": "JetBrainsMonoNL Nerd Font",
+          "weight": "light"
+        },
+        "guid": "{3f4346a4-fd7d-448c-b9ac-5513e8c3d0a6}",
+        "hidden": false,
+        "name": "Ubuntu",
+        "startingDirectory": "~"
+      },
+      {
         "font": {
           "face": "JetBrainsMonoNL Nerd Font",
           "weight": "light"
         },
         "guid": "{e454de88-5a64-5722-933e-b3135df7bd0d}",
         "hidden": false,
-        "name": "Ubuntu",
+        "name": "Ubuntu (shell)",
         "source": "Microsoft.WSL"
-      },
-      {
-        "commandline": "wsl.exe -d Ubuntu",
-        "font": {
-          "face": "JetBrainsMonoNL Nerd Font",
-          "weight": "light"
-        },
-        "guid": "{a1b2c3d4-1234-5678-9abc-def012345678}",
-        "hidden": false,
-        "name": "Ubuntu (shell)"
       },
       {
         "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
