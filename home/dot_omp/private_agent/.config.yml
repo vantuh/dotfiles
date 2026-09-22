@@ -44,3 +44,4 @@ task:
 edit:
   modelVariants:
     kiro-acp/: replace
+defaultThinkingLevel: medium
