@@ -5,7 +5,7 @@ theme:
   dark: titanium
 setupVersion: 2
 modelRoles:
-  default: cursor/cursor-grok-4.6
+  default: cursor/grok-4.7-medium
   smol: opencode-go/deepseek-v4-flash
   advisor: openai-codex/gpt-5.6-sol
   plan: openai-codex/gpt-5.6-sol:high
