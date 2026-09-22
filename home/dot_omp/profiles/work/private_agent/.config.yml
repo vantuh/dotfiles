@@ -40,6 +40,8 @@ lsp:
   diagnosticsOnEdit: true
 task:
   eager: preferred
+  prewalk: false
 edit:
   modelVariants:
     kiro-acp/: replace
+defaultThinkingLevel: medium
