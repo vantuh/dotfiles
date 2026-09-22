@@ -17,7 +17,7 @@ advisor:
 memory:
   backend: local
 prewalk:
-  enabled: true
+  enabled: false
 compaction:
   idleEnabled: true
 plan:
@@ -40,6 +40,7 @@ lsp:
   diagnosticsOnEdit: true
 task:
   eager: preferred
+  prewalk: false
 edit:
   modelVariants:
     kiro-acp/: replace
