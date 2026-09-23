@@ -96,7 +96,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **For non-trivial work spanning multiple verifiable concerns, commit each completed concern as you go instead of accumulating one large diff.** A trivial single-concern task needs at most one commit.
 
-- One independently reviewable concern per commit, including the tests and docs that make it complete. Order dependencies before dependents. The message states the concern and the intent, and follows the repository's existing message style (check recent `git log`).
+- One independently reviewable concern per commit, including the tests and docs that make it complete. Order dependencies before dependents. Follow the repository's existing subject style (check recent `git log`).
+- Subject line only. Do not add a commit body, extended description, trailers, or a "why / what / how tested" paragraph — the subject already states the concern, and the diff shows the rest. A body is the exception, and only when omitting it would hide something the diff does not show: a breaking change, a reverted decision, or a non-obvious constraint a future reader would otherwise get wrong. If you are unsure whether a body is necessary, it is not.
 - Commit a slice once it is coherent and every available check relevant to it passes. If no check exists or a relevant one can't run, say so and don't imply it passed. Never commit a state you know is broken — keep working until the slice stands on its own.
 - This is standing authorization to create local commits: don't ask before each one. Never push — the user pushes.
 - Stay on the current branch, including default/`main`. Do not create a feature or task branch unless the user explicitly asks. Commits on `main` are authorized.
