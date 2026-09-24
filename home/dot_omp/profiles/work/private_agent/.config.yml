@@ -40,7 +40,7 @@ lsp:
   formatOnWrite: true
   diagnosticsOnEdit: true
 task:
-  eager: preferred
+  eager: always
   prewalk: false
 edit:
   modelVariants:
