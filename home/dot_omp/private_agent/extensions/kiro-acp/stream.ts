@@ -32,7 +32,7 @@ import {
   hostToolCatalog,
   KIRO_BUILTIN_NAMES,
 } from "./tool-catalog.ts";
-import { pruneIdleSessions, routeSession } from "./session-manager.ts";
+import { SessionManager } from "./session-manager.ts";
 
 /**
  * How long to keep collecting tool calls before handing the batch to pi.
@@ -63,6 +63,7 @@ const REFUSAL_RETRIES = 1;
 
 export function streamKiroAcp(
   pi: ExtensionAPI,
+  sessionManager: SessionManager,
   model: Model<any>,
   context: Context,
   options?: SimpleStreamOptions,
@@ -88,8 +89,8 @@ export function streamKiroAcp(
     let session: AcpSession | null = null;
 
     try {
-      pruneIdleSessions();
-      const routed = await routeSession(context, options);
+      sessionManager.pruneIdleSessions();
+      const routed = await sessionManager.routeSession(context, options);
       session = routed.session;
       session.lastUsedAt = Date.now();
       // Capture before ensureStarted: a cold/parallel process gets an acpSessionId
