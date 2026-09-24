@@ -39,10 +39,16 @@ read:
 lsp:
   formatOnWrite: true
   diagnosticsOnEdit: true
+  enabled: true
 task:
   eager: always
   prewalk: false
+  enableLsp: false
 edit:
   modelVariants:
     kiro-acp/: replace
 defaultThinkingLevel: medium
+codexResets:
+  autoRedeem: "no"
+dev:
+  autoqaConsent: granted
