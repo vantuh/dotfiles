@@ -104,7 +104,7 @@ parsed by 2.21 but has no effect there; written for CLI 3+.
 | `extension loaded` | `{ pid, models, logFile }` | Extension initialized |
 | `dynamic models registered` | `{ models, ids }` | Model list discovered from kiro-cli |
 | `dynamic model discovery failed; using fallback models` | `{ error }` | Discovery failed; `KIRO_MODELS` used |
-| `session_shutdown` | none (omp sends only `type`; pi's `reason`/`targetSessionFile` are gone) | Session shutdown → all ACP sessions stopped |
+| `session_shutdown` | none (omp sends only `type`; pi's `reason`/`targetSessionFile` are gone) | Session shutdown → ACP sessions owned by that extension instance stopped |
 
 ### stream.ts — request flow
 
