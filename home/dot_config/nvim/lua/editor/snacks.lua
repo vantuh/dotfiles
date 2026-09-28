@@ -128,6 +128,15 @@ end, { desc = 'Find Files (Root Dir)' })
 vim.keymap.set('n', '<leader>,', function()
   Snacks.picker.buffers()
 end, { desc = 'Buffers' })
+vim.keymap.set('n', '<leader>bd', function()
+  Snacks.bufdelete()
+end, { desc = 'Delete Buffer' })
+vim.keymap.set('n', '<leader>bo', function()
+  Snacks.bufdelete.other()
+end, { desc = 'Delete Other Buffers' })
+vim.keymap.set('n', '<leader>bi', function()
+  Snacks.bufdelete.invisible()
+end, { desc = 'Delete Invisible Buffers' })
 vim.keymap.set('n', '<leader>/', function()
   Snacks.picker.grep { cwd = git_root() }
 end, { desc = 'Search Text (Root Dir)' })
@@ -323,13 +332,6 @@ Snacks.toggle
     name = 'Conceal Level',
   })
   :map '<leader>uc'
-Snacks.toggle
-  .option('showtabline', {
-    off = 0,
-    on = vim.o.showtabline > 0 and vim.o.showtabline or 2,
-    name = 'Tabline',
-  })
-  :map '<leader>uA'
 Snacks.toggle.treesitter():map '<leader>uT'
 Snacks.toggle.option('background', { off = 'light', on = 'dark', name = 'Dark Background' }):map '<leader>ub'
 Snacks.toggle.dim():map '<leader>uD'

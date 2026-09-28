@@ -65,6 +65,15 @@ Context: [AGENTS.md](AGENTS.md) · audit prompt: [PARITY-AUDIT-PROMPT.md](PARITY
   mappings; and corrected module ownership, Fidget UI, and the nonexistent
   `ftplugin/` references in `README.md` / `AGENTS.md`.
 
+### 2026-09-28
+
+- **Removed bufferline.nvim.** There is no top bar; buffers remain the internal
+  mechanism for pickers, persistence, and LSP. `<S-h>`/`<S-l>` and `[b`/`]b`
+  now use built-in `:bprev`/`:bnext`; removed BufferLine-only pin, move, pick,
+  and close-left/right keymaps plus the `<leader>uA` `showtabline` toggle.
+- **Buffer deletion moved to Snacks.** `<leader>bd`/`bo`/`bi` moved from
+  `bufferline.lua` to `editor/snacks.lua` and use `Snacks.bufdelete`.
+
 ### 2026-07-30
 
 - **Isolated deferred module load errors.** Added `defer.safe_require` (xpcall +
