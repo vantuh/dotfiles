@@ -32,7 +32,6 @@ vim.api.nvim_create_autocmd('VimEnter', {
 -- Everything else loads in order after the first screen.
 local after_ui = {
   'editor.mini',
-  'ui.bufferline',
   'ui.lualine',
   'lang.treesitter',
   'lang.ts_expand_hover',

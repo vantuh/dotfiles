@@ -118,6 +118,15 @@ vim.keymap.set('n', '<leader>-', '<C-w>s', { remap = true, desc = 'Split window 
 vim.keymap.set('n', '<leader>|', '<C-w>v', { remap = true, desc = 'Split window right' })
 vim.keymap.set('n', '<leader>wd', '<C-w>c', { remap = true, desc = 'Delete window' })
 
+-- Buffers.
+vim.keymap.set('n', '<S-h>', '<cmd>bprevious<CR>', { desc = 'Previous Buffer' })
+vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>', { desc = 'Next Buffer' })
+vim.keymap.set('n', '[b', '<cmd>bprevious<CR>', { desc = 'Previous Buffer' })
+vim.keymap.set('n', ']b', '<cmd>bnext<CR>', { desc = 'Next Buffer' })
+vim.keymap.set('n', '<leader>bb', '<cmd>e #<CR>', { desc = 'Switch to Other Buffer' })
+vim.keymap.set('n', '<leader>`', '<cmd>e #<CR>', { desc = 'Switch to Other Buffer' })
+vim.keymap.set('n', '<leader>bD', '<cmd>bdelete<CR>', { desc = 'Delete Buffer and Window' })
+
 -- Inspect (plugin-free)
 vim.keymap.set('n', '<leader>ui', vim.show_pos, { desc = 'Code Inspect Position' })
 vim.keymap.set('n', '<leader>uI', function()

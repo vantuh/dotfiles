@@ -94,7 +94,6 @@ lua/
   ui/
     colorscheme.lua   theme (catppuccin)
     lualine.lua       statusline
-    bufferline.lua    tabline
     noice.lua         cmdline/messages UI
     which_key.lua     which-key
     ui_extras.lua     virt-column, hardtime

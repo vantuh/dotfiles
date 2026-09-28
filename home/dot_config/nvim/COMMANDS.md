@@ -86,9 +86,10 @@ Learn these first:
 
 ## 3. Tabs and buffers (navigation)
 
-The top bar shows **buffers** (bufferline), not classic vim-tabs:
+Files live in buffers without a visual top bar. Switch files with `␣␣` or open
+the buffer list with `␣,`:
 
-### Buffers (like tabs at the top)
+### Buffers
 
 | Key | Action |
 |--------|-----|
