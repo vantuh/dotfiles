@@ -42,6 +42,10 @@ archive/            Retired configs kept for reference; never applied
 - Do not modify shared agent instructions (`home/.agents/AGENTS.md`) unless
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
 - Add shared skills under `home/.agents/skills/<name>/SKILL.md`.
+- Refresh upstream skills with `npx skills update` run from `~/.agents`. That
+  CLI writes to `<cwd>/.agents/skills`, so `home/.agents/.agents/skills` must
+  stay a symlink to `../skills`; flattening it silently sends updates to a
+  duplicate directory instead of the repository.
 - Add managed home files under `home/` using the correct chezmoi attribute
   names. Update `home/.chezmoiignore.tmpl` for platform-only targets.
 - Keep shell scripts POSIX-compatible where practical; bash-specific features
