@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Refresh the shared skills tracked in ~/.agents/skills-lock.json.
+#
+# Run from ~/.agents: the skills CLI treats the working directory as its
+# project root, so its canonical directory is <cwd>/.agents/skills, which
+# home/.agents/.agents/skills links back to the committed skills tree.
+#
+# `update` skips any skill whose upstream repository publishes the same skill
+# name at more than one path, because it refuses to guess which one is current
+# (caveman is mirrored into plugins/caveman/skills/). `experimental_install`
+# reinstalls every locked skill from its recorded path, so those skipped skills
+# still get refreshed; it also picks up deletions only `update` detects.
+set -Eeuo pipefail
+
+skills_dir="${SKILLS_DIR:-$HOME/.agents}"
+cli=(npx -y skills)
+
+cd "$skills_dir"
+"${cli[@]}" update -y
+"${cli[@]}" experimental_install -y
+
+if git -C "$skills_dir" rev-parse --show-toplevel >/dev/null 2>&1; then
+  echo
+  git -C "$skills_dir" status --short -- skills skills-lock.json
+fi
