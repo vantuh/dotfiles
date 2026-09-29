@@ -89,20 +89,28 @@ repository.
 To add a shared skill, create
 `home/.agents/skills/<name>/SKILL.md`, then run `chezmoi apply`.
 
-Upstream skills are refreshed with the [`skills`](https://github.com/vercel-labs/skills)
-CLI from `~/.agents`, where `skills-lock.json` lives:
+Upstream skills are refreshed with `skills-update`, which drives the
+[`skills`](https://github.com/vercel-labs/skills) CLI from `~/.agents` where
+`skills-lock.json` lives:
 
 ```bash
-cd ~/.agents && npx skills update
+skills-update
 ```
 
-That CLI treats the working directory as its project root and writes the
+The CLI treats the working directory as its project root and writes the
 canonical copy to `<cwd>/.agents/skills`. `home/.agents/.agents/skills` is
 therefore a symlink to `../skills` so the update lands in the repository
 directory and propagates through every agent link. Do not flatten or delete
 that symlink. The CLI also creates `~/.agents/.claude/`, which is unused and
 git-ignored. Hand-written skills in the same directory are not listed in
 `skills-lock.json` and are left alone.
+
+`skills-update` runs `npx skills update` and then
+`npx skills experimental_install`. The updater skips a skill whose upstream
+repository publishes the same name at more than one path (it refuses to guess
+which copy is current), and `caveman` is one: upstream mirrors it into
+`plugins/caveman/skills/`. The second pass reinstalls every locked skill from
+its recorded path, so skipped skills are still refreshed.
 
 ## Retired Pi extensions
 
