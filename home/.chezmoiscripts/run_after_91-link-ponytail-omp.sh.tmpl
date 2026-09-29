@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -u
+
+# Link the pinned Ponytail checkout into each OMP plugin root (default + every profile).
+# Each profile has its own plugins dir; `plugin link` replaces an existing link, so this is idempotent.
+src="{{ .chezmoi.homeDir }}/.local/share/ponytail"
+if [[ ! -f "$src/package.json" ]] || ! command -v omp >/dev/null 2>&1; then
+  exit 0
+fi
+
+if ! omp plugin link "$src" >/dev/null 2>&1; then
+  printf 'OMP ponytail link failed (default profile)\n' >&2
+fi
+
+for profile_dir in "{{ .chezmoi.homeDir }}"/.omp/profiles/*/; do
+  [[ -d "$profile_dir" ]] || continue
+  profile=$(basename "$profile_dir")
+  if ! omp --profile "$profile" plugin link "$src" >/dev/null 2>&1; then
+    printf 'OMP ponytail link failed (profile %s)\n' "$profile" >&2
+  fi
+done
