@@ -31,6 +31,40 @@ Before using a library, framework, command, or test script, verify it exists in 
 
 - Follow loaded project instructions. When instructions conflict, the more specific file nearest the code being changed takes precedence.
 
+## Code Style
+
+These are defaults for TypeScript, React, and NestJS. Existing project conventions and configured compiler, linter, and formatter rules take precedence. Do not rewrite unchanged code solely to impose these preferences.
+
+### TypeScript
+
+- Do not introduce `any`. Use `unknown` at untrusted boundaries and narrow it before use. If an external declaration exposes `any`, contain it behind an accurately typed local boundary.
+- Give exported APIs and framework boundaries explicit parameter and return types; allow inference for obvious local implementation details. **NEVER use `ReturnType<>`** to avoid naming a contract — use the actual type name.
+- Keep imports at module scope. **NEVER use inline type imports** such as `import("pkg").Type` or dynamic type imports. Runtime `import()` is allowed only for deliberate lazy loading or code splitting supported by the existing project, never as a convenience.
+- Inspect the installed package's declarations or source, including `node_modules`, for external API types instead of guessing them.
+- Prefer narrowing, type guards, schema validation, and `satisfies` over `as` assertions or non-null `!`. Use an assertion only when the runtime invariant is already proven and the API cannot express it; explain non-obvious cases.
+- Use `readonly` for data that crosses public boundaries and must not be mutated. Local mutation is acceptable when it does not escape and is clearer or avoids needless allocation.
+- Use barrel files only as intentional package or feature public APIs. Use direct imports within an implementation and avoid chains of barrel re-exports.
+- Prefer guard clauses and early returns over deep nesting. Avoid positional boolean arguments; use separate functions or a named options object when a boolean selects behavior.
+- String enums are allowed when a runtime enum object is useful. Do not replace existing string enums solely to impose a union or const-object preference.
+- Use JSDoc for exported reusable contracts when their behavior is not clear from their types. Comments should explain reasons, constraints, and non-obvious decisions, not narrate the code.
+- Catch errors only to recover, translate, or add useful context. Preserve the original error with `cause`; do not catch and rethrow without adding value.
+
+### React
+
+- Use function components and hooks unless existing code requires a class component.
+- Keep one primary exported component per `.tsx` file. Cohesive private subcomponents and helpers may stay alongside it, but define components at module scope, never inside another component.
+- Use effects only to synchronize with external systems. Derive values during rendering and handle user-triggered work in event handlers; do not mirror derived data in state.
+- Do not add `memo`, `useMemo`, `useCallback`, or custom equality checks reflexively. Optimize after profiling or when a concrete identity requirement makes it necessary.
+- Prefer semantic HTML. Interactive UI must have accessible names and keyboard behavior; add ARIA only where native semantics are insufficient.
+
+### NestJS
+
+- Keep controllers limited to transport concerns and delegate business behavior to providers or services.
+- Validate and transform untrusted input at the application boundary using the project's existing validation system. With `ValidationPipe` and decorator-based validation, DTOs must be concrete classes imported as runtime values, not type-only imports.
+- Use constructor injection for managed dependencies. Do not instantiate providers manually or use a service locator. Resolve circular dependencies through clearer module boundaries or events instead of adding `forwardRef()` by default.
+- Use guards for authorization, pipes for validation and transformation, interceptors for cross-cutting request behavior, and filters for exception mapping.
+- Follow the project's established error model, persistence boundaries, and validation library. Do not introduce a second validation stack, repository abstraction, or exception hierarchy by default.
+
 ## 2. Simplicity First
 
 **Minimum code that solves the problem. Nothing speculative.**
