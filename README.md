@@ -89,6 +89,21 @@ repository.
 To add a shared skill, create
 `home/.agents/skills/<name>/SKILL.md`, then run `chezmoi apply`.
 
+Upstream skills are refreshed with the [`skills`](https://github.com/vercel-labs/skills)
+CLI from `~/.agents`, where `skills-lock.json` lives:
+
+```bash
+cd ~/.agents && npx skills update
+```
+
+That CLI treats the working directory as its project root and writes the
+canonical copy to `<cwd>/.agents/skills`. `home/.agents/.agents/skills` is
+therefore a symlink to `../skills` so the update lands in the repository
+directory and propagates through every agent link. Do not flatten or delete
+that symlink. The CLI also creates `~/.agents/.claude/`, which is unused and
+git-ignored. Hand-written skills in the same directory are not listed in
+`skills-lock.json` and are left alone.
+
 ## Retired Pi extensions
 
 Retired personal extensions live under `home/dot_pi/agent/archive/` and are
