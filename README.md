@@ -33,7 +33,7 @@ Repository-only content stays outside `home/`:
 | --- | --- |
 | `fan_control` | Fan Control config and research notes |
 | `openspec` | OpenSpec design documents |
-| `archive` | Retired tmux and Alacritty configs; never applied |
+| `archive` | Retired tmux and Alacritty configs, the Herdr `my-usage` and `nvim-cheatsheet` plugins with the `my-usage` CLIs, and the nvim `COMMANDS.md` cheatsheet; never applied |
 
 ## Prerequisites
 
