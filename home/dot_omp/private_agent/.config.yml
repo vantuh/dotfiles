@@ -29,6 +29,12 @@ checkpoint:
   enabled: true
 vault:
   enabled: true
+ida:
+  enabled: false
+recap:
+  enabled: false
+ttsr:
+  enabled: false
 display:
   cacheMissMarker: true
   showTurnTime: true
