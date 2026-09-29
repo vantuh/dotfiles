@@ -12,3 +12,10 @@ Library/Application Support/com.mitchellh.ghostty/config
 # Lazygit is pinned to ~/.config/lazygit via CONFIG_DIR. Drop the macOS
 # default so a leftover file is not used if CONFIG_DIR is unset.
 Library/Application Support/lazygit/config.yml
+
+# Herdr usage/cheatsheet plugins and the my-usage CLIs are archived; drop the
+# applied copies so nothing launches them.
+.config/herdr/plugins/my-usage
+.config/herdr/plugins/nvim-cheatsheet
+.local/bin/my-usage
+.local/bin/my-usage-status
