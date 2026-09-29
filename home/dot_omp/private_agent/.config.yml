@@ -54,3 +54,6 @@ codexResets:
   autoRedeem: "no"
 dev:
   autoqaConsent: granted
+todo:
+  enabled: false
+  reminders: false
