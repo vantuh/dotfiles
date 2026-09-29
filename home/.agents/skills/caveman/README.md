@@ -44,8 +44,9 @@ Caveman (full):
 > New object ref each render. Inline object prop = new ref = re-render. Wrap in `useMemo`.
 
 Caveman (ultra):
-> Inline obj prop → new ref → re-render. `useMemo`.
+> Inline obj prop, new ref, re-render. `useMemo`.
 
 ## See also
 
 - [`SKILL.md`](./SKILL.md): full LLM-facing instructions
+- [Caveman README](../../README.md): repo overview, install, benchmarks
