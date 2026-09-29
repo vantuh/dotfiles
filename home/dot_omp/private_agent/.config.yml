@@ -1,6 +1,6 @@
 symbolPreset: nerd
 composer:
-  shape: box
+  shape: band
   tokenRate: true
 theme:
   dark: titanium
@@ -63,3 +63,4 @@ dev:
 todo:
   enabled: false
   reminders: false
+
