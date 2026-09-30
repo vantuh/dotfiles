@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -75,6 +76,17 @@ const hasPrettierKey = (dir: string): boolean => {
   }
 };
 
+/** Content fingerprint for "did the toolchain rewrite this file?". Hashed
+ * in-process: the external binaries differ per platform (md5sum on Linux,
+ * md5 on macOS), so shelling out only worked on one of them. */
+const checksum = (file: string): string | null => {
+  try {
+    return createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  } catch {
+    return null;
+  }
+};
+
 const scanCache = new Map<string, Toolchain>();
 
 /** ONE upward scan; nearest dir with any relevant config decides all roles. */
@@ -134,12 +146,7 @@ export default function oxcAuto(pi: ExtensionAPI) {
     return withFileMutationQueue(absFile, async () => {
       const toolchain = resolveToolchain(path.dirname(absFile));
 
-      const checksum = () =>
-        pi
-          .exec('md5sum', [absFile])
-          .then((r) => r.stdout.trim().split(' ')[0])
-          .catch(() => null);
-      const before = await checksum();
+      const before = checksum(absFile);
 
       // Lint --fix (output parsed after fixes; exec always resolves with stdout —
       // dist/core/exec.js never rejects, even on non-zero exit), then format
@@ -178,7 +185,7 @@ export default function oxcAuto(pi: ExtensionAPI) {
         await pi.exec('oxfmt', ['--write', absFile]).catch(() => {});
       }
 
-      const after = await checksum();
+      const after = checksum(absFile);
       const notes: string[] = [];
       const tools = [`${toolchain.linter} --fix`, usedFormatter].join(' / ');
       if (before !== null && after !== null && before !== after) {
