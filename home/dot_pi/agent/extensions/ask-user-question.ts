@@ -90,6 +90,36 @@ const AskUserQuestionParams = Type.Object({
   ),
 });
 
+/** Mirrors AskUserQuestionResultDetails. Programmatic callers (codemode
+ * scripts, RPC clients) read structuredContent instead of the model-facing
+ * text, so they get the answers as fields rather than as prose to parse. */
+const AskUserQuestionResultSchema = Type.Object({
+  status: Type.Union([
+    Type.Literal("answered"),
+    Type.Literal("cancelled"),
+    Type.Literal("unavailable"),
+  ]),
+  question: Type.String(),
+  context: Type.Optional(Type.String()),
+  mode: Type.Union([
+    Type.Literal("text"),
+    Type.Literal("single-select"),
+    Type.Literal("multi-select"),
+  ]),
+  answers: Type.Array(
+    Type.Object({
+      type: Type.Union([
+        Type.Literal("text"),
+        Type.Literal("option"),
+        Type.Literal("other"),
+      ]),
+      label: Type.String(),
+      index: Type.Optional(Type.Number()),
+    }),
+  ),
+  message: Type.Optional(Type.String()),
+});
+
 // Labels come straight from the model, and the "Other" answer comes straight
 // from the user's multi-line editor. Both are rendered as single TUI lines.
 // truncateToWidth() measures visible width, and control characters including
@@ -193,13 +223,15 @@ function buildStructuredResult(
   context?: string,
   message?: string,
 ) {
+  // structuredContent is a JsonValue, which admits no undefined, so the
+  // optional keys are omitted rather than set to undefined.
   return {
     status,
     question,
-    context,
     mode,
     answers,
-    message,
+    ...(context === undefined ? {} : { context }),
+    ...(message === undefined ? {} : { message }),
   } as AskUserQuestionResultDetails;
 }
 
@@ -210,16 +242,18 @@ function cancelledResult(
 ) {
   const message =
     "User cancelled without answering. Do not repeat this question in this turn — continue with the most reasonable assumption and state it explicitly.";
+  const details = buildStructuredResult(
+    "cancelled",
+    question,
+    mode,
+    [],
+    context,
+    message,
+  );
   return {
     content: [{ type: "text" as const, text: message }],
-    details: buildStructuredResult(
-      "cancelled",
-      question,
-      mode,
-      [],
-      context,
-      message,
-    ),
+    details,
+    structuredContent: details,
   };
 }
 
@@ -229,16 +263,18 @@ function unavailableResult(
   message: string,
   context?: string,
 ) {
+  const details = buildStructuredResult(
+    "unavailable",
+    question,
+    mode,
+    [],
+    context,
+    message,
+  );
   return {
     content: [{ type: "text" as const, text: message }],
-    details: buildStructuredResult(
-      "unavailable",
-      question,
-      mode,
-      [],
-      context,
-      message,
-    ),
+    details,
+    structuredContent: details,
   };
 }
 
@@ -261,15 +297,17 @@ function buildResult(
     text = `User selected:\n${answers.map((answer) => `- ${formatAnswerForModel(answer)}`).join("\n")}`;
   }
 
+  const details = buildStructuredResult(
+    "answered",
+    question,
+    mode,
+    answers,
+    context,
+  );
   return {
     content: [{ type: "text" as const, text }],
-    details: buildStructuredResult(
-      "answered",
-      question,
-      mode,
-      answers,
-      context,
-    ),
+    details,
+    structuredContent: details,
   };
 }
 
@@ -747,6 +785,7 @@ export default function askUserQuestion(pi: ExtensionAPI) {
       "Send one question per ask_user_question call; make separate calls for separate questions.",
     ],
     parameters: AskUserQuestionParams,
+    outputSchema: AskUserQuestionResultSchema,
 
     async execute(_toolCallId, params, signal, _onUpdate, ctx) {
       const options = normalizeOptions(params.options);
