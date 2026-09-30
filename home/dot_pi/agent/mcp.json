@@ -1,9 +1,9 @@
 {
-  "imports": ["claude-code"],
   "mcpServers": {
     "storybook": {
       "url": "http://localhost:6006/mcp",
-      "directTools": false
+      "exposure": "codemode",
+      "enabled": false
     }
   }
 }
