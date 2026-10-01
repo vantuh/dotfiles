@@ -21,7 +21,7 @@
         ]
       },
       "worker": {
-        "model": "opencode-go/deepseek-v4.1-flash",
+        "model": "openrouter/stealth/space-bunny-alpha",
         "thinking": "high",
         "skills": [
           "tdd",
