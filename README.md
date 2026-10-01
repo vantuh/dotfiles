@@ -22,7 +22,8 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
 | `home/dot_pi/agent/.settings.json` | `~/.pi/agent/settings.json` (symlink into the repo) |
 | `home/dot_pi/agent/.pi-autoname.json` | `~/.pi/agent/pi-autoname.json` (symlink into the repo) |
-| `home/dot_pi/agent/profiles/pi-subagents/.*.json` | `~/.pi/agent/profiles/pi-subagents/<name>.json` (symlink into the repo) |
+| `home/dot_pi/profiles/work/agent` | `~/.pi/profiles/work/agent` (Pi work profile; `piw`) |
+| `home/dot_pi/profiles/work/agent/.settings.json` | `~/.pi/profiles/work/agent/settings.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
@@ -76,13 +77,12 @@ git config core.hooksPath .githooks
 Edit files in this repository, never the generated copies under `$HOME`.
 Oh My Pi and Pi are the exceptions: `~/.omp/agent/config.yml`,
 `~/.omp/agent/kiro-acp.json`, `~/.pi/agent/settings.json`,
-`~/.pi/agent/pi-autoname.json` and the pi-subagents profiles under
-`~/.pi/agent/profiles/pi-subagents/` are dest-symlinks into the repo, so UI or
-in-place edits land in git. OMP's atomic writer preserves those symlink
+`~/.pi/agent/pi-autoname.json`, and the work profile's
+`~/.pi/profiles/work/agent/settings.json` are dest-symlinks into the repo, so
+UI or in-place edits land in git. OMP's atomic writer preserves those symlink
 targets; Pi rewrites its JSON files in place (`settings.json` under a
-`~/.pi/agent/settings.json.lock` guard that never enters the repo, and
-pi-subagents profiles with a plain write). Leave nvim, zsh, herdr, and the
-kiro-acp extension trees as regular applied files.
+`settings.json.lock` guard that never enters the repo). Leave nvim, zsh, herdr,
+and the kiro-acp extension trees as regular applied files.
 
 ```bash
 chezmoi diff
@@ -128,6 +128,25 @@ repository publishes the same name at more than one path (it refuses to guess
 which copy is current), and `caveman` is one: upstream mirrors it into
 `plugins/caveman/skills/`. The second pass reinstalls every locked skill from
 its recorded path, so skipped skills are still refreshed.
+
+## Pi profiles
+
+Pi has no `--profile` flag; isolation goes through `PI_CODING_AGENT_DIR`. `piw`
+runs Pi against `~/.pi/profiles/work/agent`, a second agent directory whose
+`settings.json` pins the pi-subagents roles to the work providers.
+
+```bash
+piw   # work profile
+pi    # default profile
+```
+
+Everything both profiles must agree on — `extensions/`, packages (`npm/`,
+`git/`), `skills/`, `prompts/`, `agents/`, `AGENTS.md`, `models.json`,
+`mcp.json`, `keybindings.json`, `auth.json`, `intercom/`, `trust.json` — is a
+symlink into `~/.pi/agent` (OMP does the same under `~/.omp/profiles/work`).
+Sessions, caches, and `run-history.jsonl` stay per-profile. Add another
+`symlink_*.tmpl` under `home/dot_pi/profiles/work/agent/` for anything else that
+must stay shared, or leave it out to get a fresh per-profile copy.
 
 ## Retired Pi extensions
 

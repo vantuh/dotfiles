@@ -13,8 +13,9 @@ home/               Source state mapped one-to-one to $HOME
   dot_pi/agent/     Pi configuration and extensions
     .settings.json / .pi-autoname.json  source-only; dest-symlinked
                      from ~/.pi/agent/
-    profiles/pi-subagents/.*.json       source-only; dest-symlinked from
-                     ~/.pi/agent/profiles/pi-subagents/
+  dot_pi/profiles/work/agent/  Pi work profile (`piw`): own .settings.json
+                     (source-only, dest-symlinked) plus symlinks into
+                     ~/.pi/agent for everything else it shares
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
     .config.yml / .kiro-acp.json  source-only; dest-symlinked from ~/.omp/agent/
   .chezmoiscripts/  Post-apply integration scripts
@@ -43,9 +44,9 @@ archive/            Retired configs kept for reference; never applied
   Apply them with `chezmoi apply` and test the resulting target. Oh My Pi may
   write `~/.omp/agent/config.yml` and `~/.omp/agent/kiro-acp.json`; those dest
   paths are symlinks into this repo. Pi writes `~/.pi/agent/settings.json`,
-  `~/.pi/agent/pi-autoname.json` and the pi-subagents profiles in place, so
-  those dest paths are symlinked too — use a writer that resolves symlinks
-  before an atomic rename.
+  `~/.pi/agent/pi-autoname.json`, and `~/.pi/profiles/work/agent/settings.json`
+  in place, so those dest paths are symlinked too — use a writer that resolves
+  symlinks before an atomic rename.
 - Do not modify shared agent instructions (`home/.agents/AGENTS.md`) unless
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
 - Add shared skills under `home/.agents/skills/<name>/SKILL.md`.
