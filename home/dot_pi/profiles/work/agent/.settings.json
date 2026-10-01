@@ -1,4 +1,40 @@
 {
+  "defaultProvider": "openrouter",
+  "defaultModel": "stealth/space-bunny-alpha",
+  "packages": [
+    "npm:pi-web-access",
+    "npm:pi-autoname",
+    "npm:pi-intercom",
+    "npm:pi-prompt-template-model",
+    "npm:pi-subagents",
+    "git:github.com/DietrichGebert/ponytail",
+    "npm:@gotgenes/pi-anthropic-auth"
+  ],
+  "lastChangelogVersion": "0.99.2",
+  "hideThinkingBlock": true,
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 8192,
+    "keepRecentTokens": 16000
+  },
+  "theme": "dark",
+  "enabledModels": [
+    "opencode-go/glm-5.3-flash",
+    "simplex/qwen3.8-27b-exl3-3.0bpw",
+    "openrouter/stealth/space-bunny-alpha",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-luna",
+    "opencode-go/deepseek-v4.1-flash",
+    "anthropic/claude-opus-5-5",
+    "anthropic/claude-sonnet-5-5"
+  ],
+  "defaultThinkingLevel": "medium",
+  "kiroSubagentsBridge": {
+    "enabled": false
+  },
+  "showHardwareCursor": false,
+  "collapseChangelog": true,
+  "tuiMode": "fullscreen",
   "subagents": {
     "agentOverrides": {
       "scout": {
@@ -65,5 +101,6 @@
         "model": "openai/gpt-6.1-sol"
       }
     }
-  }
+  },
+  "deviceId": "faf2e207-5602-4512-b672-bf788257bea8"
 }
