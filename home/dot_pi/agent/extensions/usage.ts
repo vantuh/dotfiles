@@ -4,6 +4,8 @@ import { join } from 'node:path';
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
+import { getKiroUsage } from './kiro-acp/usage.ts';
+
 interface Bucket {
   label: string;
   /** 0-100, or null when the provider reports spend without a limit. */
@@ -112,6 +114,77 @@ async function opencodeGo(): Promise<Provider | undefined> {
   return buckets.length > 0 ? { name: 'OpenCode Go', buckets } : undefined;
 }
 
+interface CodexWindow {
+  used_percent?: number;
+  limit_window_seconds?: number;
+  reset_at?: number;
+}
+
+interface CodexUsage {
+  plan_type?: string;
+  rate_limit?: {
+    primary_window?: CodexWindow | null;
+    secondary_window?: CodexWindow | null;
+  };
+  additional_rate_limits?: {
+    limit_name?: string;
+    rate_limit?: { primary_window?: CodexWindow | null };
+  }[];
+  rate_limit_reset_credits?: { available_count?: number };
+}
+
+/**
+ * Codex rate limits are only readable with the codex CLI's own OAuth token —
+ * Pi's OpenAI token is rejected by the ChatGPT backend.
+ */
+async function codexFromCli(): Promise<Provider | undefined> {
+  const dir = process.env.CODEX_HOME ?? join(homedir(), '.codex');
+  let tokens: { access_token?: string; account_id?: string };
+  try {
+    tokens =
+      (
+        JSON.parse(await readFile(join(dir, 'auth.json'), 'utf8')) as {
+          tokens?: { access_token?: string; account_id?: string };
+        }
+      ).tokens ?? {};
+  } catch {
+    return undefined;
+  }
+  if (!tokens.access_token || !tokens.account_id) return undefined;
+
+  const payload = (await getJson('https://chatgpt.com/backend-api/wham/usage', {
+    authorization: `Bearer ${tokens.access_token}`,
+    'chatgpt-account-id': tokens.account_id,
+  })) as CodexUsage;
+
+  const buckets: Bucket[] = [];
+  const add = (label: string, window: CodexWindow | null | undefined) => {
+    if (!window || typeof window.used_percent !== 'number') return;
+    buckets.push({
+      label,
+      pct: window.used_percent,
+      resetsAt: toMs(window.reset_at?.toString()),
+    });
+  };
+  add('5 hours', payload.rate_limit?.primary_window);
+  add('7 days', payload.rate_limit?.secondary_window);
+  for (const extra of payload.additional_rate_limits ?? []) {
+    add(extra.limit_name ?? 'extra', extra.rate_limit?.primary_window);
+  }
+
+  const resets = payload.rate_limit_reset_credits?.available_count ?? 0;
+  return {
+    name: 'OpenAI Codex',
+    buckets,
+    note: [
+      payload.plan_type,
+      resets > 0 ? `${resets} resets available` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  };
+}
+
 async function openrouter(): Promise<Provider | undefined> {
   const token = (await getAuth('openrouter'))?.access;
   if (!token) return undefined;
@@ -129,6 +202,22 @@ async function openrouter(): Promise<Provider | undefined> {
     note: limit
       ? `$${usage.toFixed(2)} of $${limit}`
       : `$${usage.toFixed(2)} spent, no key limit`,
+  };
+}
+
+/** Kiro reports plan usage only through the kiro CLI; reuse the kiro-acp parser. */
+async function kiro(): Promise<Provider | undefined> {
+  const usage = await getKiroUsage();
+  return {
+    name: `Kiro (${usage.plan})`,
+    buckets: [
+      {
+        label: 'plan credits',
+        pct: usage.percent,
+        resetsAt: toMs(usage.resetDate),
+      },
+    ],
+    note: usage.credits || undefined,
   };
 }
 
@@ -173,24 +262,29 @@ export default function usage(pi: ExtensionAPI) {
         await Promise.all([
           anthropic().catch(() => undefined),
           opencodeGo().catch(() => undefined),
+          codexFromCli().catch(() => undefined),
           openrouter().catch(() => undefined),
+          kiro().catch(() => undefined),
         ])
       ).filter((p): p is Provider => p !== undefined);
 
-      const codexPct = codexHeaders['x-codex-primary-used-percent'];
-      if (codexPct) {
-        const resetAt = codexHeaders['x-codex-primary-reset-at'];
-        providers.push({
-          name: 'OpenAI Codex',
-          buckets: [
-            {
-              label: 'primary window',
-              pct: Number(codexPct),
-              resetsAt: toMs(resetAt),
-            },
-          ],
-          note: 'from response headers',
-        });
+      // Codex headers only appear on some responses (typically 429s), so they
+      // stand in when the wham endpoint is unavailable.
+      if (!providers.some((p) => p.name === 'OpenAI Codex')) {
+        const codexPct = codexHeaders['x-codex-primary-used-percent'];
+        if (codexPct) {
+          providers.push({
+            name: 'OpenAI Codex',
+            buckets: [
+              {
+                label: 'primary window',
+                pct: Number(codexPct),
+                resetsAt: toMs(codexHeaders['x-codex-primary-reset-at']),
+              },
+            ],
+            note: 'from response headers',
+          });
+        }
       }
 
       if (providers.length === 0) {
