@@ -6,7 +6,8 @@
     "npm:pi-autoname",
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
-    "npm:pi-subagents"
+    "npm:pi-subagents",
+    "git:github.com/DietrichGebert/ponytail"
   ],
   "lastChangelogVersion": "0.99.2",
   "hideThinkingBlock": true,
