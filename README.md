@@ -21,6 +21,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_omp/private_agent/.config.yml` | `~/.omp/agent/config.yml` (symlink into the repo) |
 | `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
 | `home/dot_pi/agent/.settings.json` | `~/.pi/agent/settings.json` (symlink into the repo) |
+| `home/dot_pi/agent/.pi-autoname.json` | `~/.pi/agent/pi-autoname.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
@@ -63,12 +64,12 @@ first interactive launch.
 
 Edit files in this repository, never the generated copies under `$HOME`.
 Oh My Pi and Pi are the exceptions: `~/.omp/agent/config.yml`,
-`~/.omp/agent/kiro-acp.json` and `~/.pi/agent/settings.json` are
-dest-symlinks into the repo, so UI or in-place edits land in git. OMP's atomic
-writer preserves those symlink targets, and Pi rewrites `settings.json` in
-place under a `~/.pi/agent/settings.json.lock` guard that never enters the repo.
-Leave nvim, zsh, herdr, and the kiro-acp extension trees as regular applied
-files.
+`~/.omp/agent/kiro-acp.json`, `~/.pi/agent/settings.json` and
+`~/.pi/agent/pi-autoname.json` are dest-symlinks into the repo, so UI or
+in-place edits land in git. OMP's atomic writer preserves those symlink
+targets; Pi rewrites its two JSON files in place (`settings.json` under a
+`~/.pi/agent/settings.json.lock` guard that never enters the repo). Leave nvim,
+zsh, herdr, and the kiro-acp extension trees as regular applied files.
 
 ```bash
 chezmoi diff
