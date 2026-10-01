@@ -37,26 +37,26 @@
   "subagents": {
     "agentOverrides": {
       "scout": {
-        "model": "openai-codex/gpt-5.6-luna",
+        "model": "openai-codex/gpt-6-luna",
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "openai-codex/gpt-6.1-sol"
       },
       "researcher": {
-        "model": "openai-codex/gpt-5.6-terra",
+        "model": "anthropic/claude-sonnet-5-5",
         "extensions": [
           "~/.pi/agent/npm/node_modules/pi-web-access"
         ]
       },
       "reviewer": {
-        "model": "openai-codex/gpt-5.6-sol",
+        "model": "anthropic/claude-opus-5-5",
         "skills": [
           "hunk"
         ]
       },
       "worker": {
-        "model": "opencode-go/deepseek-v4.1-flash",
+        "model": "openrouter/stealth/space-bunny-alpha",
         "thinking": "high",
         "skills": [
           "tdd",
@@ -68,7 +68,7 @@
         ]
       },
       "oracle": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "anthropic/claude-opus-5-5"
       },
       "claude-code": {
         "disabled": true
@@ -87,6 +87,15 @@
       },
       "cursor-agent-writer": {
         "disabled": true
+      },
+      "council-codex": {
+        "model": "openai-codex/gpt-6.1-sol"
+      },
+      "council-opus": {
+        "model": "anthropic/claude-opus-5-5"
+      },
+      "evidence-auditor": {
+        "model": "anthropic/claude-opus-4-5"
       }
     }
   }
