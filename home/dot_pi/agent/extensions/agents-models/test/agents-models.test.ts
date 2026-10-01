@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 
 import type { Theme } from '@earendil-works/pi-coding-agent';
+import { getAgentDir } from '@earendil-works/pi-coding-agent';
 import type { KeybindingsManager, TUI } from '@earendil-works/pi-tui';
 
 import { type DiscoveredAgent, selectPinnableAgents } from '../agents.ts';
@@ -21,7 +22,9 @@ import {
   type PickerResult,
 } from '../picker.ts';
 import {
+  findProjectRoot,
   profileSettingsScopes,
+  projectSettingsScope,
   type SettingsScope,
   writeAgentModelOverride,
 } from '../settings.ts';
@@ -195,7 +198,7 @@ const data: PickerData = {
         {
           agent: 'oracle',
           model: 'openai-codex/gpt-6.1-sol',
-          scopeKind: 'project',
+          scope: PROJECT_SCOPE,
         },
       ]),
     'saving applies the tab-selected scope',
@@ -227,8 +230,29 @@ const data: PickerData = {
   await settle();
   assert(
     JSON.stringify(applied) ===
-      JSON.stringify([{ agent: 'oracle', model: null, scopeKind: 'user' }]),
+      JSON.stringify([{ agent: 'oracle', model: null, scope: USER_SCOPE }]),
     'the clear-override entry applies a null model',
+  );
+}
+
+{
+  const { picker, applied } = createPicker(() => ({
+    ...data,
+    scopes: [USER_SCOPE, PROFILE_SCOPE],
+  }));
+  picker.handleInput('\t');
+  picker.handleInput('\r');
+  picker.handleInput('\r');
+  assert(
+    JSON.stringify(applied) ===
+      JSON.stringify([
+        {
+          agent: 'oracle',
+          model: 'openai-codex/gpt-6.1-sol',
+          scope: PROFILE_SCOPE,
+        },
+      ]),
+    'a profile result carries that profile, not the first one',
   );
 }
 
@@ -250,7 +274,7 @@ const data: PickerData = {
         {
           agent: 'oracle',
           model: 'openai-codex/gpt-6.1-sol',
-          scopeKind: 'user',
+          scope: USER_SCOPE,
         },
       ]),
     'tab is inert without a local scope',
@@ -293,6 +317,21 @@ const data: PickerData = {
   assert(
     JSON.stringify(closed) === '[false]',
     'a failed write does not count as a change',
+  );
+}
+
+{
+  const repoRoot = '/Users/vantuh/dotfiles';
+  const homeUnder = findProjectRoot(repoRoot);
+  assert(
+    homeUnder !== path.dirname(getAgentDir()),
+    'the home config root is never treated as a project root',
+  );
+  assert(
+    projectSettingsScope(repoRoot) === undefined ||
+      projectSettingsScope(repoRoot)?.path !==
+        path.join(path.dirname(getAgentDir()), '.pi', 'settings.json'),
+    'the local target never points at the global settings file',
   );
 }
 

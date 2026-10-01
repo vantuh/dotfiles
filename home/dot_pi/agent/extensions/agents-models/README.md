@@ -32,6 +32,12 @@ pins (`profile override: …` or `no override in this profile`) rather than the
 global one. When no project settings file exists, the
 `local: no project settings for this project` note appears mid-modal.
 
+`$HOME/.pi` is pi's own config root and is never treated as a project, so for a
+repository under `$HOME` the `local` target is reported as absent rather than
+silently resolving to the global settings file. (pi-subagents' own project-root
+lookup does not make that distinction, so it reads `~/.pi/settings.json` as the
+project scope for such repositories.)
+
 Typing filters the current step, `↑`/`↓` move, `enter` selects, `esc` goes back
 (a close on the first step), `tab` switches the write target. Saving a model
 does not close the modal: it reports the pin (`saved worker → <model>`) and
