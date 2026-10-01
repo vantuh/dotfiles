@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import type {
   ExtensionAPI,
@@ -408,19 +408,46 @@ async function openrouter(): Promise<Provider | undefined> {
 
 /**
  * Kiro usage means spawning `kiro-cli chat --usage`, which takes ~3s against
- * ~0.5s for every HTTP provider combined. Cache it and never block the panel on
- * a cold cache for more than KIRO_WAIT_MS.
+ * ~0.5s for every HTTP provider combined. Cache it on disk so the wait happens
+ * once ever, and never block the panel on a cold cache for more than
+ * KIRO_WAIT_MS.
  */
 const KIRO_TTL_MS = 10 * 60_000;
 const KIRO_WAIT_MS = 1_200;
 
-let kiroCache: { at: number; usage: KiroUsage } | undefined;
+interface KiroCache {
+  at: number;
+  usage: KiroUsage;
+}
+
+function kiroCacheFile(): string {
+  return join(
+    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent'),
+    'cache',
+    'kiro-usage.json',
+  );
+}
+
+let kiroCache: KiroCache | undefined;
 let kiroPending: Promise<KiroUsage> | undefined;
+
+async function loadKiroCache(): Promise<KiroCache | undefined> {
+  if (kiroCache) return kiroCache;
+  try {
+    kiroCache = JSON.parse(await readFile(kiroCacheFile(), 'utf8')) as KiroCache;
+  } catch {
+    return undefined;
+  }
+  return kiroCache;
+}
 
 function refreshKiro(): Promise<KiroUsage> {
   kiroPending ??= getKiroUsage()
     .then((usage) => {
       kiroCache = { at: Date.now(), usage };
+      void mkdir(dirname(kiroCacheFile()), { recursive: true })
+        .then(() => writeFile(kiroCacheFile(), JSON.stringify(kiroCache)))
+        .catch(() => undefined);
       return usage;
     })
     .finally(() => {
@@ -437,8 +464,15 @@ const kiroProvider = (usage: KiroUsage): Provider => ({
   note: usage.credits || undefined,
 });
 
+/** Shown when nothing has ever been fetched; the row keeps Kiro visible. */
+const KIRO_LOADING: Provider = {
+  name: 'Kiro',
+  buckets: [{ label: 'plan credits', pct: null, resetsAt: null }],
+  note: 'reading kiro-cli in the background — run /usage again in a moment',
+};
+
 async function kiro(): Promise<Provider | undefined> {
-  const cached = kiroCache;
+  const cached = await loadKiroCache();
   if (cached && Date.now() - cached.at < KIRO_TTL_MS) {
     // Warm the cache for the next run without making this one wait.
     void refreshKiro().catch(() => undefined);
@@ -449,7 +483,9 @@ async function kiro(): Promise<Provider | undefined> {
   );
   const usage = await Promise.race([refreshKiro().catch(() => undefined), timeout]);
   const resolved = usage ?? cached?.usage;
-  return resolved ? kiroProvider(resolved) : undefined;
+  if (resolved) return kiroProvider(resolved);
+  void refreshKiro().catch(() => undefined);
+  return KIRO_LOADING;
 }
 
 /** Codex only sends rate-limit headers on some responses, so keep the last ones seen. */
