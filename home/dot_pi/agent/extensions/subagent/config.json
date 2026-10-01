@@ -1,6 +1,8 @@
 {
   "forceTopLevelAsync": true,
   "maxActiveAsyncRunsPerSession": 10,
+  "timeoutMs": 18000000,
+  "checkpointBeforeDeadlineMs": 120000,
   "parallel": {
     "maxTasks": 8,
     "concurrency": 4
