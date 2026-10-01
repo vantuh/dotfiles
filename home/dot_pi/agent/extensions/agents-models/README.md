@@ -23,11 +23,13 @@ the `local: no project settings for this project` note appears mid-modal when
 the project has no local settings file.
 
 Typing filters the current step, `↑`/`↓` move, `enter` selects, `esc` goes back
-(a cancel on the first step), `tab` switches the write target. The write is
-atomic and preserves every other setting, including the other fields of an
-existing override (for example `scout.thinking` survives clearing only its
-model). The extension reloads Pi afterwards so the change takes effect
-immediately.
+(a close on the first step), `tab` switches the write target. Saving a model
+does not close the modal: it reports the pin (`saved worker → <model>`) and
+returns to the agent list, so several agents can be pinned in one pass and each
+row shows its updated model. Pi reloads once, when the modal closes and
+something changed. The write is atomic and preserves every other setting,
+including the other fields of an existing override (for example
+`scout.thinking` survives clearing only its model).
 
 ## Agent discovery
 
@@ -54,6 +56,7 @@ in place, so the popup and `/settings` agree on the same file.
 bun test/agents-models.test.ts
 ```
 
-Covers the picker's step machine (filter, back, cancel, confirm, clear, tab
-target switching), the disabled-agent filter, the settings write, and writing
-through a symlinked target.
+Covers the picker's step machine (filter, back, close, confirm, clear, tab
+target switching), the save-then-return-to-agents cycle including a failed
+write, the disabled-agent filter, the settings write, and writing through a
+symlinked target.

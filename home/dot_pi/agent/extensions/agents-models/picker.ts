@@ -39,6 +39,8 @@ export interface PickerData {
 
 type StepKey = 'agent' | 'model';
 
+type StatusKind = 'info' | 'error';
+
 const STEP_ORDER: readonly StepKey[] = ['agent', 'model'];
 
 const CLEAR_VALUE = '__clear__';
@@ -59,16 +61,26 @@ class ScopeLine implements Component {
   invalidate(): void {}
 }
 
+/**
+ * Two-step overlay: pick an agent, pick a model. Saving a model returns to the
+ * agent list so several agents can be pinned in one pass; the caller reloads Pi
+ * when the overlay closes if anything changed.
+ */
 export class AgentModelPicker extends Container {
   private step: StepKey = 'agent';
   private searchInput: Input | undefined;
   private selectList: SelectList | undefined;
   private scopeLine: ScopeLine | undefined;
+  private statusLine: ScopeLine | undefined;
   private listIndex = 0;
   private allItems: readonly SelectItem[] = [];
   private scopeIndex = 0;
   private agent: string | undefined;
-  private model: string | null | undefined;
+  private busy = false;
+  private changed = false;
+  private status:
+    | { readonly text: string; readonly kind: StatusKind }
+    | undefined;
 
   /** Propagates TUI focus so the search input can position the cursor. */
   get focused(): boolean {
@@ -83,11 +95,18 @@ export class AgentModelPicker extends Container {
     private readonly tui: TUI,
     private readonly theme: Theme,
     private readonly keybindings: KeybindingsManager,
-    private readonly data: PickerData,
-    private readonly done: (result: PickerResult | null) => void,
+    private readonly buildData: () => PickerData,
+    private readonly apply: (
+      result: PickerResult,
+    ) => Promise<string | undefined>,
+    private readonly done: (changed: boolean) => void,
   ) {
     super();
     this.showStep('agent');
+  }
+
+  private get data(): PickerData {
+    return this.buildData();
   }
 
   private get scopeKind(): SettingsScopeKind {
@@ -104,7 +123,7 @@ export class AgentModelPicker extends Container {
     const scope = this.data.scopes[this.scopeIndex];
     const label = SCOPE_LABELS[this.scopeKind];
     const path = scope ? ` → ${scope.path}` : '';
-    const toggle = this.data.scopes.length > 1 ? '   [tab] switch target' : '';
+    const toggle = this.data.scopes.length > 1 ? '   [tab] switch' : '';
     return `target: ${label}${path}${toggle}`;
   }
 
@@ -114,14 +133,25 @@ export class AgentModelPicker extends Container {
       : this.data.modelItems(this.agent ?? '', this.scopeKind);
   }
 
+  private hintText(): string {
+    return this.step === 'agent'
+      ? 'type to filter · ↑↓ move · enter select · esc close'
+      : 'type to filter · ↑↓ move · enter save · esc back · tab target';
+  }
+
   private showStep(step: StepKey): void {
+    const data = this.data;
     this.step = step;
-    this.allItems = this.itemsForStep();
+    this.allItems =
+      step === 'agent'
+        ? data.agentItems
+        : data.modelItems(this.agent ?? '', this.scopeKind);
     this.searchInput = new Input({ placeholder: 'type to filter' });
     this.searchInput.onSubmit = () => {
       this.selectList?.handleInput('\r');
     };
     this.scopeLine = new ScopeLine(() => this.scopeText());
+    this.statusLine = new ScopeLine(() => this.status?.text ?? '');
 
     this.clear();
     this.addChild(new DynamicBorder((text) => this.theme.fg('accent', text)));
@@ -129,12 +159,20 @@ export class AgentModelPicker extends Container {
       new Text(this.theme.bold(this.theme.fg('accent', this.stepTitle()))),
     );
     this.addChild(this.scopeLine);
-    if (this.step === 'agent' && this.data.agentListNote) {
-      this.addChild(new Text(this.theme.fg('dim', this.data.agentListNote)));
+    if (step === 'agent' && data.agentListNote) {
+      this.addChild(new Text(this.theme.fg('dim', data.agentListNote)));
     }
-    if (this.data.localMissingNote) {
+    if (data.localMissingNote) {
+      this.addChild(new Text(this.theme.fg('warning', data.localMissingNote)));
+    }
+    if (this.status) {
       this.addChild(
-        new Text(this.theme.fg('warning', this.data.localMissingNote)),
+        new Text(
+          this.theme.fg(
+            this.status.kind === 'error' ? 'error' : 'success',
+            this.status.text,
+          ),
+        ),
       );
     }
     this.addChild(new Spacer(1));
@@ -144,16 +182,13 @@ export class AgentModelPicker extends Container {
     this.listIndex = this.children.length;
     this.addChild(this.selectList);
     this.addChild(new Spacer(1));
-    this.addChild(
-      new Text(
-        this.theme.fg(
-          'dim',
-          'type to filter · ↑↓ move · enter select · esc back/cancel · tab target',
-        ),
-      ),
-    );
+    this.addChild(new Text(this.theme.fg('dim', this.hintText())));
     this.addChild(new DynamicBorder((text) => this.theme.fg('accent', text)));
     this.invalidate();
+  }
+
+  private setStatus(text: string, kind: StatusKind): void {
+    this.status = { text, kind };
   }
 
   private buildList(items: readonly SelectItem[]): SelectList {
@@ -197,17 +232,39 @@ export class AgentModelPicker extends Container {
       return;
     }
     const agent = this.agent;
-    const model = this.model === undefined ? item.value : this.model;
-    if (!agent) return;
-    this.model = item.value === CLEAR_VALUE ? null : model;
-    this.done({ agent, model: this.model, scopeKind: this.scopeKind });
+    if (!agent || this.busy) return;
+    const model = item.value === CLEAR_VALUE ? null : item.value;
+    void this.commit({ agent, model, scopeKind: this.scopeKind });
+  }
+
+  private async commit(result: PickerResult): Promise<void> {
+    this.busy = true;
+    this.setStatus('saving…', 'info');
+    this.tui.requestRender();
+    try {
+      const error = await this.apply(result);
+      if (error) {
+        this.setStatus(error, 'error');
+      } else {
+        this.changed = true;
+        this.setStatus(
+          `saved ${result.agent} → ${result.model ?? 'no override'}`,
+          'info',
+        );
+      }
+    } finally {
+      this.busy = false;
+      this.showStep('agent');
+      this.tui.requestRender();
+    }
   }
 
   private onCancel(): void {
+    if (this.busy) return;
     const index = STEP_ORDER.indexOf(this.step);
     const previous = index > 0 ? STEP_ORDER[index - 1] : undefined;
     if (!previous) {
-      this.done(null);
+      this.done(this.changed);
       return;
     }
     this.showStep(previous);
