@@ -1,6 +1,5 @@
 import {
   existsSync,
-  readdirSync,
   readFileSync,
   realpathSync,
   renameSync,
@@ -10,13 +9,13 @@ import * as path from 'node:path';
 
 import { CONFIG_DIR_NAME, getAgentDir } from '@earendil-works/pi-coding-agent';
 
-export type SettingsScopeKind = 'user' | 'project' | 'profile';
+export type SettingsScopeKind = 'user' | 'project';
 
 export interface SettingsScope {
   readonly kind: SettingsScopeKind;
   /** Absolute path of the settings.json that will be written. */
   readonly path: string;
-  /** Tab label: `global`, `local`, or `profile: <name>`. */
+  /** Tab label: `global` or `local`. */
   readonly label: string;
 }
 
@@ -107,28 +106,6 @@ export function projectSettingsScope(cwd: string): SettingsScope | undefined {
     path: path.join(root, CONFIG_DIR_NAME, 'settings.json'),
     label: 'local',
   };
-}
-
-/**
- * Saved pi-subagents profiles. Each one is a settings-shaped JSON file, so the
- * popup writes the same `subagents.agentOverrides` block into them.
- */
-export function profileSettingsScopes(): SettingsScope[] {
-  const dir = path.join(getAgentDir(), 'profiles', 'pi-subagents');
-  let entries: string[];
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    return [];
-  }
-  return entries
-    .filter((entry) => entry.endsWith('.json'))
-    .sort()
-    .map((entry) => ({
-      kind: 'profile' as const,
-      path: path.join(dir, entry),
-      label: `profile: ${entry.slice(0, -5)}`,
-    }));
 }
 
 export function readSubagentSettingsForScope(

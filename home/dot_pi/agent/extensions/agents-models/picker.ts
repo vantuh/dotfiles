@@ -18,13 +18,13 @@ export interface PickerResult {
   readonly agent: string;
   /** `null` clears the existing override. */
   readonly model: string | null;
-  /** The exact target the user tabbed to; profiles share one `kind`. */
+  /** The exact target the user tabbed to. */
   readonly scope: SettingsScope;
 }
 
 export interface PickerData {
-  /** Step 1: one item per discovered agent, described for the active target. */
-  readonly agentItems: (scope: SettingsScope) => readonly SelectItem[];
+  /** Step 1: one item per discovered agent. */
+  readonly agentItems: () => readonly SelectItem[];
   /** Step 2: models for the chosen agent, scoped models first. */
   readonly modelItems: (
     agent: string,
@@ -135,7 +135,7 @@ export class AgentModelPicker extends Container {
     this.step = step;
     this.allItems =
       step === 'agent'
-        ? data.agentItems(this.scope)
+        ? data.agentItems()
         : data.modelItems(this.agent ?? '', this.scopeKind);
     this.searchInput = new Input({ placeholder: 'type to filter' });
     this.searchInput.onSubmit = () => {

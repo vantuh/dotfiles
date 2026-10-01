@@ -127,7 +127,7 @@ export function discoverAgents(cwd: string): DiscoveredAgent[] {
 }
 
 /** Adds agents that only exist as a settings override, with no definition file. */
-/** User and project settings views; profiles are read per active target. */
+/** User and project settings views. */
 export type SettingsViews = Readonly<{
   user: SubagentSettingsView | undefined;
   project: SubagentSettingsView | undefined;
