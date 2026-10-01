@@ -29,8 +29,7 @@
           "fix-sonar"
         ],
         "extensions": [
-          "~/.pi/agent/extensions/oxc-auto",
-          "~/.pi/agent/npm/node_modules/pi-cursor-sdk"
+          "~/.pi/agent/extensions/oxc-auto"
         ]
       },
       "oracle": {
