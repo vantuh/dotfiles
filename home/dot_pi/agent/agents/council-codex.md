@@ -1,6 +1,6 @@
 ---
 name: council-codex
-description: Council advisor on openai-codex/gpt-5.6-sol — a second independent model perspective to counter same-family bias.
+description: Council advisor on openai-codex/gpt-6.1-sol — a second independent model perspective to counter same-family bias.
 tools: read, grep, find, ls, contact_supervisor
 model: openai-codex/gpt-6.1-sol
 skills: none
