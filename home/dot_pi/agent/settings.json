@@ -6,7 +6,6 @@
     "npm:pi-autoname",
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
-    "npm:pi-cursor-sdk",
     "npm:pi-subagents"
   ],
   "lastChangelogVersion": "0.85.1",
@@ -23,8 +22,6 @@
     "kiro-acp/auto",
     "kiro-acp/claude-sonnet-5",
     "kiro-acp/claude-opus-5",
-    "cursor/grok-4.6",
-    "cursor/composer-2-5",
     "openai-codex/gpt-6-astra",
     "opencode-go/glm-5.3-flash",
     "simplex/qwen3.8-27b-exl3-3.0bpw",
