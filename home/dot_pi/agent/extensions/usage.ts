@@ -383,11 +383,13 @@ async function codexFromCli(): Promise<Provider | undefined> {
   }
 
   return {
-    name: 'OpenAI Codex',
+    // The plan reads better in the header than as its own row.
+    name: payload.plan_type
+      ? `OpenAI Codex (${payload.plan_type})`
+      : 'OpenAI Codex',
     buckets,
     resets,
     redeem: (id) => redeemCodexReset(headers, id),
-    note: payload.plan_type,
   };
 }
 
@@ -573,7 +575,7 @@ async function collectProviders(): Promise<Provider[]> {
 
   // Codex headers only appear on some responses (typically 429s), so they
   // stand in when the wham endpoint is unavailable.
-  if (!providers.some((p) => p.name === 'OpenAI Codex')) {
+  if (!providers.some((p) => p.name.startsWith('OpenAI Codex'))) {
     const codexPct = codexHeaders['x-codex-primary-used-percent'];
     if (codexPct) {
       providers.push({
