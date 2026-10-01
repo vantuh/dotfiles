@@ -21,11 +21,12 @@
     "kiro-acp/auto",
     "opencode-go/glm-5.3-flash",
     "simplex/qwen3.8-27b-exl3-3.0bpw",
-    "opencode-go/deepseek-v4.1-flash",
     "openrouter/stealth/space-bunny-alpha",
     "openai-codex/gpt-6.1-sol",
     "openai-codex/gpt-6-luna",
-    "opencode-go/deepseek-v4.1-flash"
+    "opencode-go/deepseek-v4.1-flash",
+    "anthropic/claude-opus-5-5",
+    "anthropic/claude-sonnet-5-5"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
