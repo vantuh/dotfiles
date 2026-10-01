@@ -38,8 +38,6 @@ interface Provider {
 /** Anthropic only reports limit resets to the Claude Code CLI surface. */
 const CLAUDE_CLI_UA = 'claude-cli/2.19.1 (external, cli)';
 
-const CLOSE_ROW = '  Esc: back · here to close';
-
 type Auth = Record<
   string,
   { type?: string; key?: string; access?: string } | undefined
@@ -566,7 +564,6 @@ export default function usage(pi: ExtensionAPI) {
           }
           if (provider.note) lines.push(`  ${provider.note}`);
         }
-        lines.push('', CLOSE_ROW);
         return { lines, resetRows };
       };
 
@@ -579,10 +576,11 @@ export default function usage(pi: ExtensionAPI) {
         return;
       }
 
+      // Esc (and ctrl+c, which is the same select.cancel binding) leaves the
+      // top-level list; inside the reset picker Esc returns here instead.
       for (;;) {
         const selected = await ctx.ui.select('Provider usage', lines);
-        if (selected === undefined) continue;
-        if (selected === CLOSE_ROW) return;
+        if (selected === undefined) return;
         const provider = resetRows.get(selected);
         if (!provider) continue;
         if (await pickReset(provider, ctx)) {
