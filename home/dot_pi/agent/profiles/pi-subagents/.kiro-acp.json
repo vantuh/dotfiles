@@ -19,7 +19,7 @@
         ]
       },
       "reviewer": {
-        "model": "kiro-acp/claude-opus-5",
+        "model": "kiro-acp/claude-opus-5.5",
         "skills": [
           "hunk"
         ],
@@ -41,7 +41,7 @@
         ]
       },
       "oracle": {
-        "model": "kiro-acp/claude-opus-5"
+        "model": "kiro-acp/claude-opus-5.5"
       },
       "claude-code": {
         "disabled": true
