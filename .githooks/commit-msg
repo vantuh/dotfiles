@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Enforce Conventional Commits on the subject line.
+# Same rules as ~/.local/bin/pi-commit-msg, so generated messages pass too.
+set -u
+
+types='feat|fix|refactor|perf|docs|test|chore|build|ci|style'
+subject="$(sed -n '1p' "$1")"
+subject="${subject%%#*}" # strip commit-template comments
+subject="$(printf '%s' "$subject" | tr -d '\r' | sed -e 's/[[:space:]]*$//')"
+[[ -z "$subject" ]] && exit 0 # aborted message, git reports it
+
+if ! printf '%s' "$subject" | grep -Eq "^(revert: )?($types)(\([a-zA-Z0-9._/-]+\))?!?: .+"; then
+  {
+    echo "commit message subject must be Conventional Commits:"
+    echo "  <type>[(scope)][: <imperative summary>]"
+    echo "  types: $types, or 'revert: <subject>'"
+    echo "  got: $subject"
+  } >&2
+  exit 1
+fi
+
+# ponytail: soft limit only, a long subject is more annoying to reject than to allow.
+if [ "${#subject}" -gt 72 ]; then
+  printf 'warning: subject is %s chars (>72): %s\n' "${#subject}" "$subject" >&2
+fi
