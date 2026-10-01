@@ -6,30 +6,31 @@ theme:
   dark: titanium
 setupVersion: 2
 modelRoles:
-  default: anthropic/claude-sonnet-5-5
   smol: openai-codex/gpt-6-luna
-  advisor: anthropic/claude-opus-5-5
   plan: anthropic/claude-opus-5-5
   commit: openai-codex/gpt-6-luna
   slow: anthropic/claude-opus-5-5
   tiny: openai-codex/gpt-6-luna
-  task: openrouter/stealth/space-bunny-alpha
+  task: opencode-go/deepseek-v4.1-flash:max
   judge: openrouter/~typesafe/jev-latest:auto
   memory: openai-codex/gpt-6-luna
+  default: opencode-go/deepseek-v4.1-flash:max
 advisor:
   enabled: false
 memory:
-  backend: local
+  backend: "off"
 prewalk:
   enabled: false
 compaction:
-  idleEnabled: true
+  idleEnabled: false
+  enabled: true
 plan:
   autosave: true
+  enabled: false
 checkpoint:
-  enabled: true
+  enabled: false
 vault:
-  enabled: true
+  enabled: false
 ida:
   enabled: false
 recap:
@@ -38,8 +39,8 @@ ttsr:
   enabled: false
 display:
   cacheMissMarker: true
-  showTurnTime: true
-  showTokenUsage: true
+  showTurnTime: false
+  showTokenUsage: false
 tui:
   textSizing: true
 hideThinkingBlock: true
@@ -50,9 +51,13 @@ lsp:
   diagnosticsOnEdit: true
   enabled: true
 task:
-  eager: always
+  eager: preferred
   prewalk: false
   enableLsp: false
+  isolation:
+    enabled: true
+  disabledAgents:
+    - security-reviewer
 edit:
   modelVariants:
     kiro-acp/: replace
@@ -61,27 +66,35 @@ codexResets:
   autoRedeem: "no"
 dev:
   autoqaConsent: granted
+  autoqa: false
 todo:
   enabled: false
   reminders: false
 retry:
   fallbackChains:
-    default:
-      - opencode-go/deepseek-v4.1-flash
     smol:
       - anthropic/claude-haiku-4-5
-    slow:
-      - openai-codex/gpt-6-sol
-    plan:
-      - anthropic/claude-opus-5-5
-      - openai-codex/gpt-6-sol
     commit:
       - anthropic/claude-haiku-4-5
     tiny:
       - anthropic/claude-haiku-4-5
     memory:
       - anthropic/claude-haiku-4-5
-    advisor:
-      - openai-codex/gpt-6-sol
+    slow:
+      - openai-codex/gpt-6.1-sol
 claudeResets:
   autoRedeem: "no"
+statusLine:
+  transparent: false
+browser:
+  enabled: false
+astEdit:
+  enabled: false
+debug:
+  enabled: false
+mcp:
+  enableProjectConfig: false
+  renderMarkdownResults: false
+bash:
+  autoBackground:
+    enabled: true
