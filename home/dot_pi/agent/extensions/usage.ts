@@ -8,7 +8,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 
-import { getKiroUsage } from './kiro-acp/usage.ts';
+import { getKiroUsage, type KiroUsage } from './kiro-acp/usage.ts';
 
 interface Bucket {
   label: string;
@@ -406,24 +406,56 @@ async function openrouter(): Promise<Provider | undefined> {
   };
 }
 
-/** Kiro reports plan usage only through the kiro CLI; reuse the kiro-acp parser. */
+/**
+ * Kiro usage means spawning `kiro-cli chat --usage`, which takes ~3s against
+ * ~0.5s for every HTTP provider combined. Cache it and never block the panel on
+ * a cold cache for more than KIRO_WAIT_MS.
+ */
+const KIRO_TTL_MS = 10 * 60_000;
+const KIRO_WAIT_MS = 1_200;
+
+let kiroCache: { at: number; usage: KiroUsage } | undefined;
+let kiroPending: Promise<KiroUsage> | undefined;
+
+function refreshKiro(): Promise<KiroUsage> {
+  kiroPending ??= getKiroUsage()
+    .then((usage) => {
+      kiroCache = { at: Date.now(), usage };
+      return usage;
+    })
+    .finally(() => {
+      kiroPending = undefined;
+    });
+  return kiroPending;
+}
+
+const kiroProvider = (usage: KiroUsage): Provider => ({
+  name: `Kiro (${usage.plan})`,
+  buckets: [
+    { label: 'plan credits', pct: usage.percent, resetsAt: toMs(usage.resetDate) },
+  ],
+  note: usage.credits || undefined,
+});
+
 async function kiro(): Promise<Provider | undefined> {
-  const usage = await getKiroUsage();
-  return {
-    name: `Kiro (${usage.plan})`,
-    buckets: [
-      {
-        label: 'plan credits',
-        pct: usage.percent,
-        resetsAt: toMs(usage.resetDate),
-      },
-    ],
-    note: usage.credits || undefined,
-  };
+  const cached = kiroCache;
+  if (cached && Date.now() - cached.at < KIRO_TTL_MS) {
+    // Warm the cache for the next run without making this one wait.
+    void refreshKiro().catch(() => undefined);
+    return kiroProvider(cached.usage);
+  }
+  const timeout = new Promise<undefined>((resolve) =>
+    setTimeout(() => resolve(undefined), KIRO_WAIT_MS).unref?.(),
+  );
+  const usage = await Promise.race([refreshKiro().catch(() => undefined), timeout]);
+  const resolved = usage ?? cached?.usage;
+  return resolved ? kiroProvider(resolved) : undefined;
 }
 
 /** Codex only sends rate-limit headers on some responses, so keep the last ones seen. */
 let codexHeaders: Record<string, string> = {};
+
+const SPINNER = ['\u280b', '\u2819', '\u2839', '\u2838', '\u283c', '\u2834', '\u2826', '\u2827', '\u2807', '\u280f'];
 
 const BAR_WIDTH = 16;
 
@@ -528,7 +560,23 @@ export default function usage(pi: ExtensionAPI) {
   pi.registerCommand('usage', {
     description: 'Show provider rate-limit usage',
     handler: async (_args, ctx) => {
-      let providers = await collectProviders();
+      // Non-modal widget first: the panel itself can only open once the data is
+      // in, so something has to occupy the screen during the fetch.
+      let frame = 0;
+      const spinner = setInterval(() => {
+        ctx.ui.setWidget('usage', [
+          `Loading provider usage ${SPINNER[frame++ % SPINNER.length]}`,
+        ]);
+      }, 100);
+      spinner.unref?.();
+
+      let providers: Provider[];
+      try {
+        providers = await collectProviders();
+      } finally {
+        clearInterval(spinner);
+        ctx.ui.setWidget('usage', undefined);
+      }
       if (providers.length === 0) {
         ctx.ui.notify(
           'No provider usage available (missing or expired credentials)',
