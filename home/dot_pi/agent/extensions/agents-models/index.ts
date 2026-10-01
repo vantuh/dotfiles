@@ -19,8 +19,6 @@ import {
 } from './picker.ts';
 import {
   type SettingsScope,
-  type SubagentSettingsView,
-  profileSettingsScopes,
   projectSettingsScope,
   readSubagentSettingsForScope,
   userSettingsScope,
@@ -35,13 +33,12 @@ function modelRef(model: Model<Api>): string {
 
 function agentItems(
   agents: readonly DiscoveredAgent[],
-  scope: SettingsScope,
-  describe: (agent: DiscoveredAgent, scope: SettingsScope) => string,
+  describe: (agent: DiscoveredAgent) => string,
 ): SelectItem[] {
   return agents.map((agent) => ({
     value: agent.name,
     label: agent.name,
-    description: describe(agent, scope),
+    description: describe(agent),
   }));
 }
 
@@ -49,13 +46,13 @@ function createPickerData(
   ctx: ExtensionCommandContext,
   agents: readonly DiscoveredAgent[],
   scopes: PickerData['scopes'],
-  describe: (agent: DiscoveredAgent, scope: SettingsScope) => string,
+  describe: (agent: DiscoveredAgent) => string,
   hiddenCount: number,
 ): PickerData {
   const hasLocal = scopes.some((scope) => scope.kind === 'project');
 
   return {
-    agentItems: (scope) => agentItems(agents, scope, describe),
+    agentItems: () => agentItems(agents, describe),
     scopes,
     agentListNote:
       hiddenCount > 0
@@ -122,12 +119,10 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
 
       const userScope = userSettingsScope();
       const projectScope = projectSettingsScope(ctx.cwd);
-      // Tab order: global, local (when the project has settings), then every
-      // saved pi-subagents profile.
+      // Tab order: global, then local when the project has settings.
       const scopes: PickerData['scopes'] = [
         userScope,
         ...(projectScope ? [projectScope] : []),
-        ...profileSettingsScopes(),
       ];
       const parentModel = ctx.model
         ? `${ctx.model.provider}/${ctx.model.id}`
@@ -142,26 +137,10 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
             ? readSubagentSettingsForScope(projectScope)
             : undefined,
         };
-        const describe = (
-          agent: DiscoveredAgent,
-          scope: SettingsScope,
-        ): string => {
-          if (scope.kind === 'profile') {
-            const pinned = profileViews
-              .get(scope.path)
-              ?.overrides.get(agent.name)?.model;
-            return pinned
-              ? `profile override: ${pinned}`
-              : 'no override in this profile';
-          }
+        const describe = (agent: DiscoveredAgent): string => {
           const origin = resolveModelOrigin(agent, views, parentModel);
           return `${origin.source}: ${origin.model}`;
         };
-        const profileViews = new Map<string, SubagentSettingsView>();
-        for (const scope of scopes) {
-          if (scope.kind !== 'profile') continue;
-          profileViews.set(scope.path, readSubagentSettingsForScope(scope));
-        }
         const discovered = withOverrideOnlyAgents(
           discoverAgents(ctx.cwd),
           views,
@@ -170,7 +149,7 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
         return createPickerData(ctx, pinnable, scopes, describe, hiddenCount);
       };
 
-      const initial = buildData().agentItems(scopes[0]);
+      const initial = buildData().agentItems();
       if (initial.length === 0) {
         ctx.ui.notify('No pinnable subagents found', 'warning');
         return;

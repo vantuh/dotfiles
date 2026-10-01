@@ -23,7 +23,6 @@ import {
 } from '../picker.ts';
 import {
   findProjectRoot,
-  profileSettingsScopes,
   projectSettingsScope,
   type SettingsScope,
   writeAgentModelOverride,
@@ -99,12 +98,6 @@ const PROJECT_SCOPE: SettingsScope = {
   path: '/repo/.pi/settings.json',
   label: 'local',
 };
-const PROFILE_SCOPE: SettingsScope = {
-  kind: 'profile',
-  path: '/home/u/.pi/agent/profiles/pi-subagents/kiro-acp.json',
-  label: 'profile: kiro-acp',
-};
-
 const data: PickerData = {
   agentItems: () => [
     {
@@ -130,7 +123,7 @@ const data: PickerData = {
       description: `remove the pinned model for ${agent}`,
     },
   ],
-  scopes: [USER_SCOPE, PROJECT_SCOPE, PROFILE_SCOPE],
+  scopes: [USER_SCOPE, PROJECT_SCOPE],
 };
 
 {
@@ -169,11 +162,6 @@ const data: PickerData = {
   assert(
     picker.render(80).join('\n').includes('target: local'),
     'tab switches the target to local',
-  );
-  picker.handleInput('\t');
-  assert(
-    picker.render(80).join('\n').includes('target: profile: kiro-acp'),
-    'tab reaches the saved profiles',
   );
   picker.handleInput('\t');
   assert(
@@ -232,27 +220,6 @@ const data: PickerData = {
     JSON.stringify(applied) ===
       JSON.stringify([{ agent: 'oracle', model: null, scope: USER_SCOPE }]),
     'the clear-override entry applies a null model',
-  );
-}
-
-{
-  const { picker, applied } = createPicker(() => ({
-    ...data,
-    scopes: [USER_SCOPE, PROFILE_SCOPE],
-  }));
-  picker.handleInput('\t');
-  picker.handleInput('\r');
-  picker.handleInput('\r');
-  assert(
-    JSON.stringify(applied) ===
-      JSON.stringify([
-        {
-          agent: 'oracle',
-          model: 'openai-codex/gpt-6.1-sol',
-          scope: PROFILE_SCOPE,
-        },
-      ]),
-    'a profile result carries that profile, not the first one',
   );
 }
 
@@ -333,20 +300,6 @@ const data: PickerData = {
         path.join(path.dirname(getAgentDir()), '.pi', 'settings.json'),
     'the local target never points at the global settings file',
   );
-}
-
-{
-  const scopes = profileSettingsScopes();
-  assert(
-    scopes.every((scope) => scope.kind === 'profile'),
-    'profile scopes are only profile files',
-  );
-  for (const scope of scopes) {
-    assert(
-      scope.label === `profile: ${path.basename(scope.path, '.json')}`,
-      `a profile scope is labelled from its file name (${scope.label})`,
-    );
-  }
 }
 
 {

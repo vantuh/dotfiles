@@ -23,14 +23,11 @@ The write target is a header line, not a step. `tab` cycles, in order:
 | --- | --- |
 | `global` | `~/.pi/agent/settings.json` |
 | `local` | `<projectRoot>/.pi/settings.json` (skipped when absent) |
-| `profile: <name>` | `~/.pi/agent/profiles/pi-subagents/<name>.json`, one per saved pi-subagents profile |
 
 Every target is a settings-shaped file, so the same
-`subagents.agentOverrides.<agent>.model` block is written into it. The agent
-list describes each row against the active target, so a profile shows its own
-pins (`profile override: …` or `no override in this profile`) rather than the
-global one. When no project settings file exists, the
-`local: no project settings for this project` note appears mid-modal.
+`subagents.agentOverrides.<agent>.model` block is written into it. When no
+project settings file exists, the `local: no project settings for this project`
+note appears mid-modal.
 
 `$HOME/.pi` is pi's own config root and is never treated as a project, so for a
 repository under `$HOME` the `local` target is reported as absent rather than
@@ -75,6 +72,6 @@ bun test/agents-models.test.ts
 ```
 
 Covers the picker's step machine (filter, back, close, confirm, clear, tab
-target switching across global/local/profiles), the save-then-return-to-agents
-cycle including a failed write, the disabled-agent filter, the settings write,
-and writing through a symlinked target.
+target switching across global/local), the save-then-return-to-agents cycle
+including a failed write, the disabled-agent filter, the settings write, and
+writing through a symlinked target.
