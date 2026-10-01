@@ -17,8 +17,13 @@ interface Bucket {
 interface Provider {
   name: string;
   buckets: Bucket[];
+  /** Manually redeemable rate-limit resets, when the provider reports them. */
+  resets?: { count: number; detail?: string };
   note?: string;
 }
+
+/** Anthropic only reports limit resets to the Claude Code CLI surface. */
+const CLAUDE_CLI_UA = 'claude-cli/2.19.1 (external, cli)';
 
 type Auth = Record<
   string,
@@ -71,14 +76,40 @@ const ANTHROPIC_WINDOWS = [
   'seven_day_sonnet',
 ];
 
-/** Anthropic reports utilization as 0-100 on the OAuth usage endpoint. */
+interface ClaudeGrant {
+  id?: string;
+  label?: string;
+  resets_left?: number;
+  ends_at?: string;
+  paused?: boolean;
+  clears?: string[];
+}
+
+interface ClaudeUsage {
+  five_hour?: { utilization?: number; resets_at?: string } | null;
+  seven_day?: { utilization?: number; resets_at?: string } | null;
+  seven_day_opus?: { utilization?: number; resets_at?: string } | null;
+  seven_day_sonnet?: { utilization?: number; resets_at?: string } | null;
+  cedar_ember?: { grants?: ClaudeGrant[]; next_grant_id?: string | null } | null;
+}
+
+/**
+ * Anthropic reports utilization as 0-100. The `cedar_ember` reset-credit block
+ * is only populated by the `cedar_ember=1` probe query, and it answers
+ * `ineligible_reason: "surface"` unless the request identifies as Claude Code,
+ * so one probe call covers both the windows and the resets.
+ */
 async function anthropic(): Promise<Provider | undefined> {
   const token = (await getAuth('anthropic'))?.access;
   if (!token) return undefined;
-  const payload = (await getJson('https://api.anthropic.com/api/oauth/usage', {
-    authorization: `Bearer ${token}`,
-    'anthropic-beta': 'oauth-2025-04-20',
-  })) as Record<string, { utilization?: number; resets_at?: string } | null>;
+  const payload = (await getJson(
+    'https://api.anthropic.com/api/oauth/usage?cedar_ember=1&skip_spend=1',
+    {
+      authorization: `Bearer ${token}`,
+      'anthropic-beta': 'oauth-2025-04-20',
+      'user-agent': CLAUDE_CLI_UA,
+    },
+  )) as ClaudeUsage;
 
   const buckets: Bucket[] = [];
   for (const id of ANTHROPIC_WINDOWS) {
@@ -90,7 +121,42 @@ async function anthropic(): Promise<Provider | undefined> {
       resetsAt: toMs(window.resets_at),
     });
   }
-  return buckets.length > 0 ? { name: 'Anthropic', buckets } : undefined;
+  if (buckets.length === 0) return undefined;
+  return { name: 'Anthropic', buckets, resets: claudeResets(payload.cedar_ember) };
+}
+
+function claudeResets(block: ClaudeUsage['cedar_ember']): Provider['resets'] {
+  const grants = (block?.grants ?? []).filter(
+    (grant) =>
+      !grant.paused &&
+      typeof grant.resets_left === 'number' &&
+      grant.resets_left > 0 &&
+      (!grant.ends_at || Date.parse(grant.ends_at) > Date.now()),
+  );
+  const count = grants.reduce(
+    (sum, grant) => sum + (grant.resets_left ?? 0),
+    0,
+  );
+  if (count === 0) return undefined;
+
+  const next =
+    grants.find((grant) => grant.id === block?.next_grant_id) ?? grants[0];
+  const expiresAt = toMs(next?.ends_at);
+  return {
+    count,
+    detail: [
+      next?.label,
+      `${count} reset${count === 1 ? '' : 's'} left`,
+      expiresAt
+        ? `expires ${new Date(expiresAt).toISOString().replace('T', ' ').slice(0, 16)} UTC (${until(expiresAt)})`
+        : 'no expiry reported',
+      next?.clears?.length
+        ? `clears: ${next.clears.map((id) => id.replace(/_/g, ' ')).join(', ')}`
+        : undefined,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+  };
 }
 
 async function opencodeGo(): Promise<Provider | undefined> {
@@ -176,12 +242,8 @@ async function codexFromCli(): Promise<Provider | undefined> {
   return {
     name: 'OpenAI Codex',
     buckets,
-    note: [
-      payload.plan_type,
-      resets > 0 ? `${resets} resets available` : undefined,
-    ]
-      .filter(Boolean)
-      .join(' · '),
+    resets: resets > 0 ? { count: resets } : undefined,
+    note: payload.plan_type,
   };
 }
 
@@ -261,10 +323,10 @@ export default function usage(pi: ExtensionAPI) {
       const providers = (
         await Promise.all([
           anthropic().catch(() => undefined),
-          opencodeGo().catch(() => undefined),
           codexFromCli().catch(() => undefined),
-          openrouter().catch(() => undefined),
+          opencodeGo().catch(() => undefined),
           kiro().catch(() => undefined),
+          openrouter().catch(() => undefined),
         ])
       ).filter((p): p is Provider => p !== undefined);
 
@@ -296,9 +358,14 @@ export default function usage(pi: ExtensionAPI) {
       }
 
       const lines: string[] = [];
+      const details = new Map<string, string>();
       for (const provider of providers) {
         lines.push(provider.name);
-        if (provider.buckets.length === 0 && provider.note === undefined)
+        if (
+          provider.buckets.length === 0 &&
+          provider.resets === undefined &&
+          provider.note === undefined
+        )
           continue;
         for (const bucket of provider.buckets) {
           const value =
@@ -309,9 +376,16 @@ export default function usage(pi: ExtensionAPI) {
             `  ${bucket.label.padEnd(12)} ${value.padEnd(21)}  ${until(bucket.resetsAt)}`,
           );
         }
+        if (provider.resets) {
+          const line = `  ↩ resets       ${provider.resets.count} available  (Enter for details)`;
+          lines.push(line);
+          if (provider.resets.detail) details.set(line, provider.resets.detail);
+        }
         if (provider.note) lines.push(`  ${provider.note}`);
       }
-      await ctx.ui.select('Provider usage', lines);
+      const selected = await ctx.ui.select('Provider usage', lines);
+      const detail = selected ? details.get(selected) : undefined;
+      if (detail) await ctx.ui.confirm('Reset credits', detail);
     },
   });
 }
