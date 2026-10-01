@@ -27,6 +27,7 @@ function assert(condition: unknown, label: string): void {
 
 const KEYS: Record<string, string> = {
   '\r': 'tui.select.confirm',
+  '\t': 'tui.input.tab',
   '\x1b': 'tui.select.cancel',
   '\x1b[A': 'tui.select.up',
   '\x1b[B': 'tui.select.down',
@@ -48,6 +49,15 @@ function createPicker(data: PickerData) {
   return { picker, results };
 }
 
+const USER_SCOPE: SettingsScope = {
+  kind: 'user',
+  path: '/home/u/.pi/agent/settings.json',
+};
+const PROJECT_SCOPE: SettingsScope = {
+  kind: 'project',
+  path: '/repo/.pi/settings.json',
+};
+
 const data: PickerData = {
   agentItems: [
     {
@@ -61,36 +71,25 @@ const data: PickerData = {
       description: 'user override: kiro-acp/claude-sonnet-5',
     },
   ],
-  modelItems: () => [
+  modelItems: (agent) => [
     {
       value: 'openai-codex/gpt-6.1-sol',
       label: 'openai-codex/gpt-6.1-sol',
-      description: 'scoped · GPT-6.1 Sol',
+      description: 'scoped \u00b7 GPT-6.1 Sol',
     },
     {
       value: '__clear__',
       label: 'clear override',
-      description: 'remove the pinned model',
+      description: `remove the pinned model for ${agent}`,
     },
   ],
-  scopeItems: () => [
-    {
-      value: 'user',
-      label: 'User settings',
-      description: '/home/u/.pi/agent/settings.json',
-    },
-    {
-      value: 'project',
-      label: 'Project settings',
-      description: '/repo/.pi/settings.json',
-    },
-  ],
+  scopes: [USER_SCOPE, PROJECT_SCOPE],
 };
 
 {
   const { picker, results } = createPicker(data);
   assert(
-    picker.render(80).join('\n').includes('1/3 agent'),
+    picker.render(80).join('\n').includes('Subagent model \u00b7 agent'),
     'starts on the agent step',
   );
 
@@ -104,7 +103,7 @@ const data: PickerData = {
 
   picker.handleInput('\x1b');
   assert(
-    picker.render(80).join('\n').includes('1/3 agent'),
+    picker.render(80).join('\n').includes('Subagent model \u00b7 agent'),
     'escape goes back to the agent step',
   );
 
@@ -114,20 +113,33 @@ const data: PickerData = {
     'escape on step 1 cancels',
   );
 
+  assert(
+    picker.render(80).join('\n').includes('target: global'),
+    'the target starts on global',
+  );
+
+  picker.handleInput('\t');
+  assert(
+    picker.render(80).join('\n').includes('target: local'),
+    'tab switches the target to local',
+  );
+  picker.handleInput('\t');
+  assert(
+    picker.render(80).join('\n').includes('target: global'),
+    'tab switches the target back to global',
+  );
+
   picker.handleInput('\r'); // oracle
   assert(
-    picker.render(80).join('\n').includes('2/3 model for oracle'),
+    picker
+      .render(80)
+      .join('\n')
+      .includes('Subagent model \u00b7 model for oracle'),
     'enter advances to the model step',
   );
 
+  picker.handleInput('\t'); // pick the local target
   picker.handleInput('\r'); // first model
-  assert(
-    picker.render(80).join('\n').includes('3/3 write to'),
-    'enter advances to the scope step',
-  );
-
-  picker.handleInput('\x1b[B'); // move to project settings
-  picker.handleInput('\r');
   assert(
     JSON.stringify(results.at(-1)) ===
       JSON.stringify({
@@ -135,7 +147,7 @@ const data: PickerData = {
         model: 'openai-codex/gpt-6.1-sol',
         scopeKind: 'project',
       }),
-    'confirming returns agent, model and scope',
+    'confirming returns the tab-selected scope',
   );
 }
 
@@ -144,11 +156,45 @@ const data: PickerData = {
   picker.handleInput('\r');
   picker.handleInput('\x1b[B'); // clear override
   picker.handleInput('\r');
-  picker.handleInput('\r');
   assert(
     JSON.stringify(results.at(-1)) ===
       JSON.stringify({ agent: 'oracle', model: null, scopeKind: 'user' }),
     'the clear-override entry reports a null model',
+  );
+}
+
+{
+  const { picker, results } = createPicker({ ...data, scopes: [USER_SCOPE] });
+  assert(
+    !picker.render(80).join('\n').includes('[tab]'),
+    'a single scope hides the tab hint',
+  );
+  picker.handleInput('\t');
+  picker.handleInput('\r');
+  picker.handleInput('\r');
+  assert(
+    JSON.stringify(results.at(-1)) ===
+      JSON.stringify({
+        agent: 'oracle',
+        model: 'openai-codex/gpt-6.1-sol',
+        scopeKind: 'user',
+      }),
+    'tab is inert without a local scope',
+  );
+}
+
+{
+  const { picker } = createPicker({
+    ...data,
+    scopes: [USER_SCOPE],
+    localMissingNote: 'local: no project settings for this project',
+  });
+  assert(
+    picker
+      .render(80)
+      .join('\n')
+      .includes('local: no project settings for this project'),
+    'the missing local scope is reported mid-modal',
   );
 }
 

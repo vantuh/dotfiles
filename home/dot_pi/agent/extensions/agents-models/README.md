@@ -1,7 +1,7 @@
 # agents-models
 
 `/agents-models` — a searchable popup for pinning a model to a pi-subagents
-agent. Three steps in one overlay: **agent → model → settings file**.
+agent. Two steps in one overlay: **agent → model**.
 
 - Step 1 lists every discovered agent with where its current model comes from
   (`project override`, `user override`, `agent frontmatter`,
@@ -9,15 +9,20 @@ agent. Three steps in one overlay: **agent → model → settings file**.
 - Step 2 searches the model registry with the session's scoped models
   (`/scoped-models`, i.e. `enabledModels`) pinned at the top, then every other
   available model. Models without configured auth are marked `no auth`. If the
-  agent already has an override, a `clear override` entry sits at the bottom.
-- Step 3 chooses `~/.pi/agent/settings.json` (all projects) or
-  `<projectRoot>/.pi/settings.json` (this repository only).
+  agent already has an override in the current target, a `clear override` entry
+  sits at the bottom.
+
+The write target is a header line, not a step: `tab` cycles `global`
+(`~/.pi/agent/settings.json`) ↔ `local` (`<projectRoot>/.pi/settings.json`), and
+the `local: no project settings for this project` note appears mid-modal when
+the project has no local settings file.
 
 Typing filters the current step, `↑`/`↓` move, `enter` selects, `esc` goes back
-(a cancel on the first step). The write is atomic and preserves every other
-setting, including the other fields of an existing override (for example
-`scout.thinking` survives clearing only its model). The extension reloads Pi
-afterwards so the change takes effect immediately.
+(a cancel on the first step), `tab` switches the write target. The write is
+atomic and preserves every other setting, including the other fields of an
+existing override (for example `scout.thinking` survives clearing only its
+model). The extension reloads Pi afterwards so the change takes effect
+immediately.
 
 ## Agent discovery
 
@@ -44,5 +49,5 @@ in place, so the popup and `/settings` agree on the same file.
 bun test/agents-models.test.ts
 ```
 
-Covers the picker's step machine (filter, back, cancel, confirm, clear), the
-settings write, and writing through a symlinked target.
+Covers the picker's step machine (filter, back, cancel, confirm, clear, tab
+target switching), the settings write, and writing through a symlinked target.

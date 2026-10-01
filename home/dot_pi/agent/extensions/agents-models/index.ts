@@ -47,12 +47,16 @@ function createPickerData(
   scopes: readonly SettingsScope[],
   describe: (agent: DiscoveredAgent) => string,
 ): PickerData {
-  const items = agentItems(agents, describe);
+  const hasLocal = scopes.some((scope) => scope.kind === 'project');
 
   return {
-    agentItems: items,
+    agentItems: agentItems(agents, describe),
+    scopes,
+    localMissingNote: hasLocal
+      ? undefined
+      : 'local: no project settings for this project',
 
-    modelItems: (agent) => {
+    modelItems: (agent, scopeKind) => {
       const scoped = ctx.scopedModels.map((entry) => entry.model);
       const scopedIds = new Set(scoped.map(modelRef));
       const available = ctx.modelRegistry
@@ -76,9 +80,10 @@ function createPickerData(
         };
       };
 
-      const hasOverride = scopes.some((scope) =>
-        readSubagentSettingsForScope(scope).overrides.has(agent),
-      );
+      const scope = scopes.find((entry) => entry.kind === scopeKind);
+      const hasOverride =
+        scope !== undefined &&
+        readSubagentSettingsForScope(scope).overrides.has(agent);
 
       return [
         ...scoped.map((model) => toItem(model, true)),
@@ -88,21 +93,12 @@ function createPickerData(
               {
                 value: CLEAR_VALUE,
                 label: 'clear override',
-                description: 'remove the pinned model for this agent',
+                description: `remove the pinned model in ${scope?.path}`,
               } satisfies SelectItem,
             ]
           : []),
       ];
     },
-
-    scopeItems: (agent, model) =>
-      scopes.map((scope) => ({
-        value: scope.kind,
-        label: scope.kind === 'user' ? 'User settings' : 'Project settings',
-        description: `${scope.path} → subagents.agentOverrides.${agent}.model${
-          model === null ? ' (remove)' : ''
-        }`,
-      })),
   };
 }
 
