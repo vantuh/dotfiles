@@ -33,6 +33,8 @@ export interface PickerData {
   readonly scopes: readonly SettingsScope[];
   /** Shown mid-modal when no project settings file exists for this project. */
   readonly localMissingNote?: string;
+  /** Dim note under the target line on the agent step, e.g. the hidden count. */
+  readonly agentListNote?: string;
 }
 
 type StepKey = 'agent' | 'model';
@@ -127,6 +129,9 @@ export class AgentModelPicker extends Container {
       new Text(this.theme.bold(this.theme.fg('accent', this.stepTitle()))),
     );
     this.addChild(this.scopeLine);
+    if (this.step === 'agent' && this.data.agentListNote) {
+      this.addChild(new Text(this.theme.fg('dim', this.data.agentListNote)));
+    }
     if (this.data.localMissingNote) {
       this.addChild(
         new Text(this.theme.fg('warning', this.data.localMissingNote)),

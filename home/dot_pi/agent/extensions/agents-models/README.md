@@ -5,7 +5,12 @@ agent. Two steps in one overlay: **agent → model**.
 
 - Step 1 lists every discovered agent with where its current model comes from
   (`project override`, `user override`, `agent frontmatter`,
-  `subagents.defaultModel`, `parent session`).
+  `subagents.defaultModel`, `parent session`). Agents with `disabled: true` in
+  `subagents.agentOverrides` are left out and counted in a dim note, mirroring
+  what pi-subagents would launch. The six external-CLI agents
+  (`claude-code`, `claude-code-writer`, `codex-exec`, `codex-exec-writer`,
+  `cursor-agent`, `cursor-agent-writer`) are disabled that way; the
+  self-pinned `council-*` advisors stay selectable.
 - Step 2 searches the model registry with the session's scoped models
   (`/scoped-models`, i.e. `enabledModels`) pinned at the top, then every other
   available model. Models without configured auth are marked `no auth`. If the
@@ -50,4 +55,5 @@ bun test/agents-models.test.ts
 ```
 
 Covers the picker's step machine (filter, back, cancel, confirm, clear, tab
-target switching), the settings write, and writing through a symlinked target.
+target switching), the disabled-agent filter, the settings write, and writing
+through a symlinked target.
