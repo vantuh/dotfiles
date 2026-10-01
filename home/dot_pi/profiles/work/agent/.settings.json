@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "openrouter",
-  "defaultModel": "stealth/space-bunny-alpha",
+  "defaultProvider": "kiro-acp",
+  "defaultModel": "claude-sonnet-5",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-autoname",
@@ -19,14 +19,10 @@
   },
   "theme": "dark",
   "enabledModels": [
-    "opencode-go/glm-5.3-flash",
-    "simplex/qwen3.8-27b-exl3-3.0bpw",
-    "openrouter/stealth/space-bunny-alpha",
-    "openai/gpt-6.1-sol",
-    "openai/gpt-6-luna",
-    "opencode-go/deepseek-v4.1-flash",
-    "anthropic/claude-opus-5-5",
-    "anthropic/claude-sonnet-5-5"
+    "kiro-acp/auto",
+    "kiro-acp/claude-opus-5.5",
+    "kiro-acp/claude-sonnet-5",
+    "kiro-acp/claude-haiku-4.5"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
