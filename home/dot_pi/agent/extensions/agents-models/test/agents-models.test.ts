@@ -1,7 +1,13 @@
 // Test: the /agents-models picker step machine and the settings write it drives.
 // Run: bun test/agents-models.test.ts
 
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  lstatSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 
@@ -194,5 +200,25 @@ const data: PickerData = {
   assert(
     readFileSync(file, 'utf8').endsWith('}\n'),
     'the file keeps its trailing newline',
+  );
+}
+
+{
+  const dir = mkdtempSync(path.join(tmpdir(), 'agents-models-link-'));
+  const real = path.join(dir, 'real-settings.json');
+  const link = path.join(dir, 'settings.json');
+  writeFileSync(real, '{}\n');
+  symlinkSync(real, link);
+
+  writeAgentModelOverride({ kind: 'user', path: link }, 'worker', 'a/b');
+
+  assert(
+    lstatSync(link).isSymbolicLink(),
+    'a symlinked target stays a symlink',
+  );
+  assert(
+    JSON.parse(readFileSync(real, 'utf8')).subagents.agentOverrides.worker
+      .model === 'a/b',
+    'the write lands in the symlink target',
   );
 }
