@@ -1,6 +1,6 @@
 ---
 name: council-glm
-description: Council advisor on openrouter glm-5.3-flash — fast diverse-perspective check that catches consensus bias cheaply.
+description: Council advisor on opencode-go/glm-5.3-flash — fast diverse-perspective check that catches consensus bias cheaply.
 tools: read, grep, find, ls, contact_supervisor
 model: opencode-go/glm-5.3-flash
 skills: none
