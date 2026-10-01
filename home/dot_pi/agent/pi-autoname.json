@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "model": "openai-codex/gpt-5.6-luna",
+  "model": "openai-codex/gpt-6-luna",
   "fallbackModels": [],
   "cooldownMinutes": 10,
   "debug": false,
