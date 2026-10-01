@@ -31,10 +31,12 @@ the live mapping.
 
 ## chezmoi
 
-`~/.pi/agent/settings.json` is chezmoi-managed source state. A write from this
-popup changes the applied file only — copy the change into
-`dotfiles/home/dot_pi/agent/settings.json` (or run `chezmoi add`) before the next
-`chezmoi apply`, or it will be overwritten.
+`~/.pi/agent/settings.json` is a dest-symlink into
+`dotfiles/home/dot_pi/agent/.settings.json`, so a write from this popup edits the
+tracked source directly — no `chezmoi add` needed. The write resolves the
+symlink before its atomic rename, because renaming onto the link path would
+replace the link with a regular file. Pi's own settings writer rewrites the file
+in place, so the popup and `/settings` agree on the same file.
 
 ## Tests
 
@@ -42,5 +44,5 @@ popup changes the applied file only — copy the change into
 bun test/agents-models.test.ts
 ```
 
-Covers the picker's step machine (filter, back, cancel, confirm, clear) and the
-settings write.
+Covers the picker's step machine (filter, back, cancel, confirm, clear), the
+settings write, and writing through a symlinked target.

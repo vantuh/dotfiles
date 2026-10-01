@@ -1,4 +1,10 @@
-import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  writeFileSync,
+} from 'node:fs';
 import * as path from 'node:path';
 
 import { CONFIG_DIR_NAME, getAgentDir } from '@earendil-works/pi-coding-agent';
@@ -144,7 +150,11 @@ function parseOrThrow(text: string, filePath: string): unknown {
 }
 
 function writeJsonAtomically(filePath: string, contents: string): void {
-  const tempPath = `${filePath}.agents-models.tmp`;
+  // The target can be a dest-symlink into this repo (chezmoi links
+  // ~/.pi/agent/settings.json), and rename() would replace the link itself, so
+  // resolve it first and swap the real file in place.
+  const targetPath = existsSync(filePath) ? realpathSync(filePath) : filePath;
+  const tempPath = `${targetPath}.agents-models.tmp`;
   writeFileSync(tempPath, contents, 'utf8');
-  renameSync(tempPath, filePath);
+  renameSync(tempPath, targetPath);
 }
