@@ -20,7 +20,11 @@ import {
   type PickerData,
   type PickerResult,
 } from '../picker.ts';
-import { type SettingsScope, writeAgentModelOverride } from '../settings.ts';
+import {
+  profileSettingsScopes,
+  type SettingsScope,
+  writeAgentModelOverride,
+} from '../settings.ts';
 
 function assert(condition: unknown, label: string): void {
   if (!condition) {
@@ -85,14 +89,21 @@ function createPicker(
 const USER_SCOPE: SettingsScope = {
   kind: 'user',
   path: '/home/u/.pi/agent/settings.json',
+  label: 'global',
 };
 const PROJECT_SCOPE: SettingsScope = {
   kind: 'project',
   path: '/repo/.pi/settings.json',
+  label: 'local',
+};
+const PROFILE_SCOPE: SettingsScope = {
+  kind: 'profile',
+  path: '/home/u/.pi/agent/profiles/pi-subagents/kiro-acp.json',
+  label: 'profile: kiro-acp',
 };
 
 const data: PickerData = {
-  agentItems: [
+  agentItems: () => [
     {
       value: 'oracle',
       label: 'oracle',
@@ -116,7 +127,7 @@ const data: PickerData = {
       description: `remove the pinned model for ${agent}`,
     },
   ],
-  scopes: [USER_SCOPE, PROJECT_SCOPE],
+  scopes: [USER_SCOPE, PROJECT_SCOPE, PROFILE_SCOPE],
 };
 
 {
@@ -158,8 +169,13 @@ const data: PickerData = {
   );
   picker.handleInput('\t');
   assert(
+    picker.render(80).join('\n').includes('target: profile: kiro-acp'),
+    'tab reaches the saved profiles',
+  );
+  picker.handleInput('\t');
+  assert(
     picker.render(80).join('\n').includes('target: global'),
-    'tab switches the target back to global',
+    'tab wraps back to global',
   );
 
   picker.handleInput('\r'); // oracle
@@ -278,6 +294,20 @@ const data: PickerData = {
     JSON.stringify(closed) === '[false]',
     'a failed write does not count as a change',
   );
+}
+
+{
+  const scopes = profileSettingsScopes();
+  assert(
+    scopes.every((scope) => scope.kind === 'profile'),
+    'profile scopes are only profile files',
+  );
+  for (const scope of scopes) {
+    assert(
+      scope.label === `profile: ${path.basename(scope.path, '.json')}`,
+      `a profile scope is labelled from its file name (${scope.label})`,
+    );
+  }
 }
 
 {

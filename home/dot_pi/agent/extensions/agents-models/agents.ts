@@ -5,11 +5,7 @@ import * as path from 'node:path';
 
 import { CONFIG_DIR_NAME, getAgentDir } from '@earendil-works/pi-coding-agent';
 
-import {
-  findProjectRoot,
-  type SettingsScope,
-  type SubagentSettingsView,
-} from './settings.ts';
+import { findProjectRoot, type SubagentSettingsView } from './settings.ts';
 
 export type AgentOrigin = 'builtin' | 'user' | 'project';
 
@@ -131,11 +127,15 @@ export function discoverAgents(cwd: string): DiscoveredAgent[] {
 }
 
 /** Adds agents that only exist as a settings override, with no definition file. */
+/** User and project settings views; profiles are read per active target. */
+export type SettingsViews = Readonly<{
+  user: SubagentSettingsView | undefined;
+  project: SubagentSettingsView | undefined;
+}>;
+
 export function withOverrideOnlyAgents(
   agents: DiscoveredAgent[],
-  views: Readonly<
-    Record<SettingsScope['kind'], SubagentSettingsView | undefined>
-  >,
+  views: SettingsViews,
 ): DiscoveredAgent[] {
   const known = new Set(agents.map((agent) => agent.name));
   const disabled = new Set<string>();
@@ -175,9 +175,7 @@ export function selectPinnableAgents(agents: readonly DiscoveredAgent[]): {
 /** Mirrors pi-subagents precedence: project override, user override, frontmatter, default, parent. */
 export function resolveModelOrigin(
   agent: DiscoveredAgent,
-  views: Readonly<
-    Record<SettingsScope['kind'], SubagentSettingsView | undefined>
-  >,
+  views: SettingsViews,
   parentModel: string,
 ): ModelOrigin {
   const project = views.project?.overrides.get(agent.name);

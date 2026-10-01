@@ -17,10 +17,20 @@ agent. Two steps in one overlay: **agent → model**.
   agent already has an override in the current target, a `clear override` entry
   sits at the bottom.
 
-The write target is a header line, not a step: `tab` cycles `global`
-(`~/.pi/agent/settings.json`) ↔ `local` (`<projectRoot>/.pi/settings.json`), and
-the `local: no project settings for this project` note appears mid-modal when
-the project has no local settings file.
+The write target is a header line, not a step. `tab` cycles, in order:
+
+| Target | File |
+| --- | --- |
+| `global` | `~/.pi/agent/settings.json` |
+| `local` | `<projectRoot>/.pi/settings.json` (skipped when absent) |
+| `profile: <name>` | `~/.pi/agent/profiles/pi-subagents/<name>.json`, one per saved pi-subagents profile |
+
+Every target is a settings-shaped file, so the same
+`subagents.agentOverrides.<agent>.model` block is written into it. The agent
+list describes each row against the active target, so a profile shows its own
+pins (`profile override: …` or `no override in this profile`) rather than the
+global one. When no project settings file exists, the
+`local: no project settings for this project` note appears mid-modal.
 
 Typing filters the current step, `↑`/`↓` move, `enter` selects, `esc` goes back
 (a close on the first step), `tab` switches the write target. Saving a model
@@ -57,6 +67,6 @@ bun test/agents-models.test.ts
 ```
 
 Covers the picker's step machine (filter, back, close, confirm, clear, tab
-target switching), the save-then-return-to-agents cycle including a failed
-write, the disabled-agent filter, the settings write, and writing through a
-symlinked target.
+target switching across global/local/profiles), the save-then-return-to-agents
+cycle including a failed write, the disabled-agent filter, the settings write,
+and writing through a symlinked target.

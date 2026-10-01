@@ -22,15 +22,15 @@ export interface PickerResult {
 }
 
 export interface PickerData {
-  /** Step 1: one item per discovered agent. */
-  readonly agentItems: readonly SelectItem[];
+  /** Step 1: one item per discovered agent, described for the active target. */
+  readonly agentItems: (scope: SettingsScope) => readonly SelectItem[];
   /** Step 2: models for the chosen agent, scoped models first. */
   readonly modelItems: (
     agent: string,
     scopeKind: SettingsScopeKind,
   ) => readonly SelectItem[];
-  /** Writable settings files in tab order; always contains the user scope. */
-  readonly scopes: readonly SettingsScope[];
+  /** Writable settings files in tab order; the first entry is the user scope. */
+  readonly scopes: readonly [SettingsScope, ...SettingsScope[]];
   /** Shown mid-modal when no project settings file exists for this project. */
   readonly localMissingNote?: string;
   /** Dim note under the target line on the agent step, e.g. the hidden count. */
@@ -44,11 +44,6 @@ type StatusKind = 'info' | 'error';
 const STEP_ORDER: readonly StepKey[] = ['agent', 'model'];
 
 const CLEAR_VALUE = '__clear__';
-
-const SCOPE_LABELS: Record<SettingsScopeKind, string> = {
-  user: 'global',
-  project: 'local',
-};
 
 /** Re-renders its text on demand, so a tab toggle does not reset the filter. */
 class ScopeLine implements Component {
@@ -109,8 +104,12 @@ export class AgentModelPicker extends Container {
     return this.buildData();
   }
 
+  private get scope(): SettingsScope {
+    return this.data.scopes[this.scopeIndex] ?? this.data.scopes[0];
+  }
+
   private get scopeKind(): SettingsScopeKind {
-    return this.data.scopes[this.scopeIndex]?.kind ?? 'user';
+    return this.scope.kind;
   }
 
   private stepTitle(): string {
@@ -120,17 +119,8 @@ export class AgentModelPicker extends Container {
   }
 
   private scopeText(): string {
-    const scope = this.data.scopes[this.scopeIndex];
-    const label = SCOPE_LABELS[this.scopeKind];
-    const path = scope ? ` → ${scope.path}` : '';
     const toggle = this.data.scopes.length > 1 ? '   [tab] switch' : '';
-    return `target: ${label}${path}${toggle}`;
-  }
-
-  private itemsForStep(): readonly SelectItem[] {
-    return this.step === 'agent'
-      ? this.data.agentItems
-      : this.data.modelItems(this.agent ?? '', this.scopeKind);
+    return `target: ${this.scope.label} → ${this.scope.path}${toggle}`;
   }
 
   private hintText(): string {
@@ -144,7 +134,7 @@ export class AgentModelPicker extends Container {
     this.step = step;
     this.allItems =
       step === 'agent'
-        ? data.agentItems
+        ? data.agentItems(this.scope)
         : data.modelItems(this.agent ?? '', this.scopeKind);
     this.searchInput = new Input({ placeholder: 'type to filter' });
     this.searchInput.onSubmit = () => {
