@@ -184,8 +184,11 @@ function sync(repoRoot: string): number {
   }
   const conflicts = entries.filter((entry) => entry.result === 'conflict');
   const changed = entries.filter((entry) => entry.result !== 'unchanged');
+  const nextStep = process.env.CHEZMOI_SOURCE_DIR
+    ? ''
+    : ' Run `chezmoi apply` to install.';
   console.log(
-    `\n${changed.length} changed, ${conflicts.length} conflict(s). Run \`chezmoi apply\` to install.`,
+    `\n${changed.length} changed, ${conflicts.length} conflict(s).${nextStep}`,
   );
   return conflicts.length > 0 ? 1 : 0;
 }
