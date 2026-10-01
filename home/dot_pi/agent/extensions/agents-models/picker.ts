@@ -1,6 +1,7 @@
 import { DynamicBorder, type Theme } from '@earendil-works/pi-coding-agent';
 import {
   Container,
+  type Component,
   Input,
   type KeybindingsManager,
   type SelectItem,
@@ -11,37 +12,59 @@ import {
   type TUI,
 } from '@earendil-works/pi-tui';
 
+import type { SettingsScope, SettingsScopeKind } from './settings.ts';
+
 export interface PickerResult {
   readonly agent: string;
   /** `null` clears the existing override. */
   readonly model: string | null;
-  readonly scopeKind: 'user' | 'project';
+  readonly scopeKind: SettingsScopeKind;
 }
 
 export interface PickerData {
   /** Step 1: one item per discovered agent. */
   readonly agentItems: readonly SelectItem[];
   /** Step 2: models for the chosen agent, scoped models first. */
-  readonly modelItems: (agent: string) => readonly SelectItem[];
-  /** Step 3: settings files that can receive the override. */
-  readonly scopeItems: (
+  readonly modelItems: (
     agent: string,
-    model: string | null,
+    scopeKind: SettingsScopeKind,
   ) => readonly SelectItem[];
+  /** Writable settings files in tab order; always contains the user scope. */
+  readonly scopes: readonly SettingsScope[];
+  /** Shown mid-modal when no project settings file exists for this project. */
+  readonly localMissingNote?: string;
 }
 
-type StepKey = 'agent' | 'model' | 'scope';
+type StepKey = 'agent' | 'model';
 
-const STEP_ORDER: readonly StepKey[] = ['agent', 'model', 'scope'];
+const STEP_ORDER: readonly StepKey[] = ['agent', 'model'];
 
 const CLEAR_VALUE = '__clear__';
+
+const SCOPE_LABELS: Record<SettingsScopeKind, string> = {
+  user: 'global',
+  project: 'local',
+};
+
+/** Re-renders its text on demand, so a tab toggle does not reset the filter. */
+class ScopeLine implements Component {
+  constructor(private readonly text: () => string) {}
+
+  render(_width: number): string[] {
+    return this.text().split('\n');
+  }
+
+  invalidate(): void {}
+}
 
 export class AgentModelPicker extends Container {
   private step: StepKey = 'agent';
   private searchInput: Input | undefined;
   private selectList: SelectList | undefined;
+  private scopeLine: ScopeLine | undefined;
   private listIndex = 0;
   private allItems: readonly SelectItem[] = [];
+  private scopeIndex = 0;
   private agent: string | undefined;
   private model: string | null | undefined;
 
@@ -65,18 +88,28 @@ export class AgentModelPicker extends Container {
     this.showStep('agent');
   }
 
+  private get scopeKind(): SettingsScopeKind {
+    return this.data.scopes[this.scopeIndex]?.kind ?? 'user';
+  }
+
   private stepTitle(): string {
-    if (this.step === 'agent') return 'Subagent model · 1/3 agent';
-    if (this.step === 'model') {
-      return `Subagent model · 2/3 model for ${this.agent ?? ''}`;
-    }
-    return `Subagent model · 3/3 write to`;
+    return this.step === 'agent'
+      ? 'Subagent model · agent'
+      : `Subagent model · model for ${this.agent ?? ''}`;
+  }
+
+  private scopeText(): string {
+    const scope = this.data.scopes[this.scopeIndex];
+    const label = SCOPE_LABELS[this.scopeKind];
+    const path = scope ? ` → ${scope.path}` : '';
+    const toggle = this.data.scopes.length > 1 ? '   [tab] switch target' : '';
+    return `target: ${label}${path}${toggle}`;
   }
 
   private itemsForStep(): readonly SelectItem[] {
-    if (this.step === 'agent') return this.data.agentItems;
-    if (this.step === 'model') return this.data.modelItems(this.agent ?? '');
-    return this.data.scopeItems(this.agent ?? '', this.model ?? null);
+    return this.step === 'agent'
+      ? this.data.agentItems
+      : this.data.modelItems(this.agent ?? '', this.scopeKind);
   }
 
   private showStep(step: StepKey): void {
@@ -86,12 +119,19 @@ export class AgentModelPicker extends Container {
     this.searchInput.onSubmit = () => {
       this.selectList?.handleInput('\r');
     };
+    this.scopeLine = new ScopeLine(() => this.scopeText());
 
     this.clear();
     this.addChild(new DynamicBorder((text) => this.theme.fg('accent', text)));
     this.addChild(
       new Text(this.theme.bold(this.theme.fg('accent', this.stepTitle()))),
     );
+    this.addChild(this.scopeLine);
+    if (this.data.localMissingNote) {
+      this.addChild(
+        new Text(this.theme.fg('warning', this.data.localMissingNote)),
+      );
+    }
     this.addChild(new Spacer(1));
     this.addChild(this.searchInput);
     this.addChild(new Spacer(1));
@@ -103,7 +143,7 @@ export class AgentModelPicker extends Container {
       new Text(
         this.theme.fg(
           'dim',
-          'type to filter · ↑↓ move · enter select · esc back/cancel',
+          'type to filter · ↑↓ move · enter select · esc back/cancel · tab target',
         ),
       ),
     );
@@ -151,19 +191,11 @@ export class AgentModelPicker extends Container {
       this.showStep('model');
       return;
     }
-    if (this.step === 'model') {
-      this.model = item.value === CLEAR_VALUE ? null : item.value;
-      this.showStep('scope');
-      return;
-    }
     const agent = this.agent;
-    const model = this.model;
-    if (!agent || model === undefined) return;
-    this.done({
-      agent,
-      model,
-      scopeKind: item.value === 'project' ? 'project' : 'user',
-    });
+    const model = this.model === undefined ? item.value : this.model;
+    if (!agent) return;
+    this.model = item.value === CLEAR_VALUE ? null : model;
+    this.done({ agent, model: this.model, scopeKind: this.scopeKind });
   }
 
   private onCancel(): void {
@@ -177,9 +209,21 @@ export class AgentModelPicker extends Container {
     this.tui.requestRender();
   }
 
+  /** Tab cycles the write target; the model list depends on it, so it rebuilds. */
+  private toggleScope(): void {
+    if (this.data.scopes.length < 2) return;
+    this.scopeIndex = (this.scopeIndex + 1) % this.data.scopes.length;
+    this.showStep(this.step);
+    this.tui.requestRender();
+  }
+
   handleInput(data: string): void {
     if (this.keybindings.matches(data, 'tui.select.cancel')) {
       this.onCancel();
+      return;
+    }
+    if (this.keybindings.matches(data, 'tui.input.tab')) {
+      this.toggleScope();
       return;
     }
     const isNavigation =
