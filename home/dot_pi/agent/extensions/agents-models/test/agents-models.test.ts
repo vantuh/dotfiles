@@ -14,6 +14,7 @@ import * as path from 'node:path';
 import type { Theme } from '@earendil-works/pi-coding-agent';
 import type { KeybindingsManager, TUI } from '@earendil-works/pi-tui';
 
+import { type DiscoveredAgent, selectPinnableAgents } from '../agents.ts';
 import { AgentModelPicker, type PickerData } from '../picker.ts';
 import { type SettingsScope, writeAgentModelOverride } from '../settings.ts';
 
@@ -247,6 +248,25 @@ const data: PickerData = {
     readFileSync(file, 'utf8').endsWith('}\n'),
     'the file keeps its trailing newline',
   );
+}
+
+{
+  const agent = (name: string, disabled: boolean): DiscoveredAgent => ({
+    name,
+    origin: 'builtin',
+    disabled,
+  });
+  const { pinnable, hiddenCount } = selectPinnableAgents([
+    agent('worker', false),
+    agent('council-opus', false),
+    agent('claude-code', true),
+    agent('reviewer', true),
+  ]);
+  assert(
+    pinnable.map((entry) => entry.name).join(',') === 'worker,council-opus',
+    'only disabled agents drop out of the picker',
+  );
+  assert(hiddenCount === 2, 'the hidden count covers every dropped agent');
 }
 
 {

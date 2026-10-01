@@ -9,6 +9,7 @@ import {
   discoverAgents,
   type DiscoveredAgent,
   resolveModelOrigin,
+  selectPinnableAgents,
   withOverrideOnlyAgents,
 } from './agents.ts';
 import {
@@ -36,7 +37,7 @@ function agentItems(
 ): SelectItem[] {
   return agents.map((agent) => ({
     value: agent.name,
-    label: agent.disabled ? `${agent.name} (disabled)` : agent.name,
+    label: agent.name,
     description: describe(agent),
   }));
 }
@@ -46,12 +47,17 @@ function createPickerData(
   agents: readonly DiscoveredAgent[],
   scopes: readonly SettingsScope[],
   describe: (agent: DiscoveredAgent) => string,
+  hiddenCount: number,
 ): PickerData {
   const hasLocal = scopes.some((scope) => scope.kind === 'project');
 
   return {
     agentItems: agentItems(agents, describe),
     scopes,
+    agentListNote:
+      hiddenCount > 0
+        ? `${hiddenCount} hidden · disabled in agentOverrides`
+        : undefined,
     localMissingNote: hasLocal
       ? undefined
       : 'local: no project settings for this project',
@@ -123,10 +129,11 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
       const parentModel = ctx.model
         ? `${ctx.model.provider}/${ctx.model.id}`
         : 'parent session model';
-      const agents = withOverrideOnlyAgents(discoverAgents(ctx.cwd), views);
+      const discovered = withOverrideOnlyAgents(discoverAgents(ctx.cwd), views);
+      const { pinnable, hiddenCount } = selectPinnableAgents(discovered);
 
-      if (agents.length === 0) {
-        ctx.ui.notify('No subagents found', 'warning');
+      if (pinnable.length === 0) {
+        ctx.ui.notify('No pinnable subagents found', 'warning');
         return;
       }
 
@@ -141,7 +148,7 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
             tui,
             theme,
             keybindings,
-            createPickerData(ctx, agents, scopes, describe),
+            createPickerData(ctx, pinnable, scopes, describe, hiddenCount),
             done,
           ),
         { overlay: true },

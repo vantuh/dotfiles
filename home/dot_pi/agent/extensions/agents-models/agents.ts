@@ -138,15 +138,38 @@ export function withOverrideOnlyAgents(
   >,
 ): DiscoveredAgent[] {
   const known = new Set(agents.map((agent) => agent.name));
+  const disabled = new Set<string>();
   const extra: DiscoveredAgent[] = [];
   for (const kind of ['user', 'project'] as const) {
     for (const [name, override] of views[kind]?.overrides ?? []) {
+      if (override.disabled) disabled.add(name);
       if (known.has(name)) continue;
       known.add(name);
-      extra.push({ name, origin: kind, disabled: override.disabled });
+      extra.push({
+        name,
+        origin: kind,
+        disabled: override.disabled,
+      });
     }
   }
-  return [...agents, ...extra].sort((a, b) => a.name.localeCompare(b.name));
+  const merged = agents.map((agent) =>
+    disabled.has(agent.name) && !agent.disabled
+      ? { ...agent, disabled: true }
+      : agent,
+  );
+  return [...merged, ...extra].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Agents the popup may pin: everything pi-subagents would still launch, so
+ * `disabled: true` in an agent override hides the agent here too.
+ */
+export function selectPinnableAgents(agents: readonly DiscoveredAgent[]): {
+  readonly pinnable: DiscoveredAgent[];
+  readonly hiddenCount: number;
+} {
+  const pinnable = agents.filter((agent) => !agent.disabled);
+  return { pinnable, hiddenCount: agents.length - pinnable.length };
 }
 
 /** Mirrors pi-subagents precedence: project override, user override, frontmatter, default, parent. */
