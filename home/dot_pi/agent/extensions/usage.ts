@@ -43,11 +43,12 @@ type Auth = Record<
   { type?: string; key?: string; access?: string } | undefined
 >;
 
+function agentDir(): string {
+  return process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent');
+}
+
 function authFile(): string {
-  return join(
-    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent'),
-    'auth.json',
-  );
+  return join(agentDir(), 'auth.json');
 }
 
 async function getAuth(providerId: string): Promise<Auth[string]> {
@@ -88,22 +89,26 @@ async function request(
   return payload;
 }
 
-const getJson = (url: string, headers: Record<string, string>) =>
-  request(url, headers);
-const postJson = (
-  url: string,
-  headers: Record<string, string>,
-  body: unknown,
-) => request(url, headers, { method: 'POST', body });
+/**
+ * A 2xx with an empty or non-JSON body, and the request timeouts the 25s
+ * AbortSignal applies to the POST, are both cases where the credit may or may
+ * not have been spent. Neither may be reported as a plain failure.
+ */
+const UNKNOWN_OUTCOME =
+  'Outcome unknown — the provider may already have spent the reset. Check the refreshed count before retrying.';
 
 // Reset times come back as ISO strings from the usage endpoints but as epoch
 // seconds or milliseconds in rate-limit headers.
 function toMs(value: string | number | undefined): number | null {
   if (value === undefined) return null;
-  const parsed = Date.parse(String(value));
-  if (!Number.isNaN(parsed)) return parsed;
-  const numeric = Number(value);
-  return numeric > 0 ? (numeric < 1e12 ? numeric * 1000 : numeric) : null;
+  // V8's fallback date parser reads a bare number as a year-2000 date
+  // (Date.parse("0") succeeds), so epochs have to be handled first.
+  if (typeof value === 'number' || /^\d+$/.test(value)) {
+    const numeric = Number(value);
+    return numeric > 0 ? (numeric < 1e12 ? numeric * 1000 : numeric) : null;
+  }
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 function stamp(ms: number | null): string {
@@ -119,7 +124,7 @@ const ANTHROPIC_WINDOWS = [
   'seven_day',
   'seven_day_opus',
   'seven_day_sonnet',
-];
+] as const;
 
 interface ClaudeGrant {
   id?: string;
@@ -156,7 +161,7 @@ const claudeHeaders = (token: string) => ({
 async function anthropic(): Promise<Provider | undefined> {
   const token = (await getAuth('anthropic'))?.access;
   if (!token) return undefined;
-  const payload = (await getJson(
+  const payload = (await request(
     'https://api.anthropic.com/api/oauth/usage?cedar_ember=1&skip_spend=1',
     claudeHeaders(token),
   )) as ClaudeUsage;
@@ -182,8 +187,10 @@ async function anthropic(): Promise<Provider | undefined> {
       (!grant.ends_at || Date.parse(grant.ends_at) > Date.now()),
   );
   // A grant can hold several resets; show one row per reset so each entry in
-  // the picker maps to exactly one credit.
-  const resets: ResetItem[] = grants.flatMap((grant) =>
+  // the picker maps to exactly one credit. Rows are numbered across the whole
+  // list because the picker matches by label and two grants can otherwise
+  // render identically.
+  const rows = grants.flatMap((grant) =>
     Array.from({ length: grant.resets_left ?? 0 }, (_, index) => ({
       id: grant.id,
       label: `${stamp(toMs(grant.ends_at))}  ${grant.label ?? 'Claude limit reset'}${
@@ -202,6 +209,10 @@ async function anthropic(): Promise<Provider | undefined> {
         .join('\n'),
     })),
   );
+  const resets: ResetItem[] = rows.map((row, index) => ({
+    ...row,
+    label: `${index + 1}. ${row.label}`,
+  }));
 
   return {
     name: 'Anthropic',
@@ -213,10 +224,9 @@ async function anthropic(): Promise<Provider | undefined> {
 
 async function redeemClaudeReset(
   token: string,
-  grantId: string | undefined,
+  grantId: string,
 ): Promise<string> {
-  if (!grantId) return 'No matching reset credit — usage may have changed.';
-  const profile = (await getJson(
+  const profile = (await request(
     'https://api.anthropic.com/api/oauth/profile',
     claudeHeaders(token),
   )) as { organization?: { uuid?: string }; organization_uuid?: string };
@@ -224,15 +234,25 @@ async function redeemClaudeReset(
   if (!orgId)
     return 'Could not resolve the Claude organization for this account.';
 
-  const payload = (await postJson(
+  const payload = ((await request(
     `https://api.anthropic.com/api/organizations/${encodeURIComponent(orgId)}/reset_rate_limits`,
     claudeHeaders(token),
-    { program: 'cedar_ember', grant_id: grantId, request_id: randomUUID() },
-  )) as { result?: string; reason?: string; cleared?: string[] };
+    {
+      method: 'POST',
+      body: {
+        program: 'cedar_ember',
+        grant_id: grantId,
+        request_id: randomUUID(),
+      },
+    },
+  )) ?? {}) as { result?: string; reason?: string; cleared?: string[] };
 
   if (payload.result === 'reset') {
     const cleared = payload.cleared?.map((id) => id.replace(/_/g, ' '));
     return `Reset applied — cleared: ${cleared?.length ? cleared.join(', ') : 'rate-limit windows'}.`;
+  }
+  if (payload.result === undefined && payload.reason === undefined) {
+    return UNKNOWN_OUTCOME;
   }
   return `Not applied: ${payload.reason ?? payload.result ?? 'unknown response'}.`;
 }
@@ -240,7 +260,7 @@ async function redeemClaudeReset(
 async function opencodeGo(): Promise<Provider | undefined> {
   const key = (await getAuth('opencode-go'))?.key;
   if (!key) return undefined;
-  const payload = (await getJson('https://opencode.ai/zen/go/v1/usage', {
+  const payload = (await request('https://opencode.ai/zen/go/v1/usage', {
     authorization: `Bearer ${key}`,
   })) as {
     usage?: Record<string, { percent?: number; resetsAt?: string } | undefined>;
@@ -306,7 +326,7 @@ async function codexFromCli(): Promise<Provider | undefined> {
     authorization: `Bearer ${tokens.access_token}`,
     'chatgpt-account-id': tokens.account_id,
   };
-  const payload = (await getJson(
+  const payload = (await request(
     'https://chatgpt.com/backend-api/wham/usage',
     headers,
   )) as CodexUsage;
@@ -330,7 +350,7 @@ async function codexFromCli(): Promise<Provider | undefined> {
   try {
     credits =
       (
-        (await getJson(
+        (await request(
           'https://chatgpt.com/backend-api/wham/rate-limit-reset-credits',
           headers,
         )) as { credits?: CodexCredit[] }
@@ -342,18 +362,21 @@ async function codexFromCli(): Promise<Provider | undefined> {
     (credit): credit is CodexCredit & { id: string } =>
       typeof credit.id === 'string' && credit.status === 'available',
   );
-  const resets: ResetItem[] = available.map((credit) => ({
+  // Numbered because the picker matches by label; the credit route can return
+  // several credits with the same title and expiry.
+  const resets: ResetItem[] = available.map((credit, index) => ({
     id: credit.id,
-    label: `${stamp(toMs(credit.expires_at))}  ${credit.title ?? 'Codex rate limit reset'}`,
+    label: `${index + 1}. ${stamp(toMs(credit.expires_at))}  ${credit.title ?? 'Codex rate limit reset'}`,
     detail: `${credit.title ?? 'Codex rate limit reset'}\nexpires ${stamp(toMs(credit.expires_at))}`,
   }));
   const count = payload.rate_limit_reset_credits?.available_count ?? 0;
   if (resets.length < count) {
-    // The credit list was unavailable or partial; keep the count honest.
+    // The credit list was unavailable or partial; keep the count honest. The
+    // id stays empty so the picker refuses to spend a placeholder.
     for (let i = resets.length; i < count; i++) {
       resets.push({
         id: '',
-        label: 'expiry unknown  Codex rate limit reset',
+        label: `${i + 1}. expiry unknown  Codex rate limit reset`,
         detail: 'Expiry could not be loaded from the Codex credits route.',
       });
     }
@@ -370,26 +393,29 @@ async function codexFromCli(): Promise<Provider | undefined> {
 
 async function redeemCodexReset(
   headers: Record<string, string>,
-  creditId: string | undefined,
+  creditId: string,
 ): Promise<string> {
-  if (!creditId) return 'No matching Codex credit — usage may have changed.';
-  const payload = (await postJson(
+  const payload = ((await request(
     'https://chatgpt.com/backend-api/wham/rate-limit-reset-credits/consume',
     headers,
     {
-      credit_id: creditId,
-      redeem_request_id: randomUUID(),
+      method: 'POST',
+      body: { credit_id: creditId, redeem_request_id: randomUUID() },
     },
-  )) as { code?: string; message?: string };
-  return payload.code === 'reset'
-    ? 'Reset applied — your Codex rate-limit windows were refreshed.'
-    : `Not applied: ${payload.code ?? 'unknown'}${payload.message ? ` (${payload.message})` : ''}.`;
+  )) ?? {}) as { code?: string; message?: string };
+  if (payload.code === 'reset') {
+    return 'Reset applied — your Codex rate-limit windows were refreshed.';
+  }
+  if (payload.code === undefined) return UNKNOWN_OUTCOME;
+  return `Not applied: ${payload.code}${payload.message ? ` (${payload.message})` : ''}.`;
 }
 
 async function openrouter(): Promise<Provider | undefined> {
-  const token = (await getAuth('openrouter'))?.access;
+  const credentials = await getAuth('openrouter');
+  // An api_key-shaped credential carries the token in `key`, not `access`.
+  const token = credentials?.access ?? credentials?.key;
   if (!token) return undefined;
-  const payload = (await getJson('https://openrouter.ai/api/v1/auth/key', {
+  const payload = (await request('https://openrouter.ai/api/v1/auth/key', {
     authorization: `Bearer ${token}`,
   })) as { data?: { usage?: number; limit?: number | null } };
 
@@ -408,9 +434,8 @@ async function openrouter(): Promise<Provider | undefined> {
 
 /**
  * Kiro usage means spawning `kiro-cli chat --usage`, which takes ~3s against
- * ~0.5s for every HTTP provider combined. Cache it on disk so the wait happens
- * once ever, and never block the panel on a cold cache for more than
- * KIRO_WAIT_MS.
+ * ~0.5s for every HTTP provider combined. Cache it on disk for KIRO_TTL_MS, and
+ * never block the panel on a cold cache for more than KIRO_WAIT_MS.
  */
 const KIRO_TTL_MS = 10 * 60_000;
 const KIRO_WAIT_MS = 1_200;
@@ -421,77 +446,98 @@ interface KiroCache {
 }
 
 function kiroCacheFile(): string {
-  return join(
-    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent'),
-    'cache',
-    'kiro-usage.json',
-  );
+  return join(agentDir(), 'cache', 'kiro-usage.json');
 }
 
 let kiroCache: KiroCache | undefined;
-let kiroPending: Promise<KiroUsage> | undefined;
 
 async function loadKiroCache(): Promise<KiroCache | undefined> {
   if (kiroCache) return kiroCache;
   try {
-    kiroCache = JSON.parse(await readFile(kiroCacheFile(), 'utf8')) as KiroCache;
+    kiroCache = JSON.parse(
+      await readFile(kiroCacheFile(), 'utf8'),
+    ) as KiroCache;
   } catch {
     return undefined;
   }
   return kiroCache;
 }
 
+/** getKiroUsage() already dedupes concurrent callers. */
 function refreshKiro(): Promise<KiroUsage> {
-  kiroPending ??= getKiroUsage()
-    .then((usage) => {
-      kiroCache = { at: Date.now(), usage };
-      void mkdir(dirname(kiroCacheFile()), { recursive: true })
-        .then(() => writeFile(kiroCacheFile(), JSON.stringify(kiroCache)))
-        .catch(() => undefined);
-      return usage;
-    })
-    .finally(() => {
-      kiroPending = undefined;
-    });
-  return kiroPending;
+  return getKiroUsage().then((usage) => {
+    const next: KiroCache = { at: Date.now(), usage };
+    kiroCache = next;
+    void mkdir(dirname(kiroCacheFile()), { recursive: true })
+      .then(() => writeFile(kiroCacheFile(), JSON.stringify(next)))
+      .catch(() => undefined);
+    return usage;
+  });
 }
 
 const kiroProvider = (usage: KiroUsage): Provider => ({
   name: `Kiro (${usage.plan})`,
   buckets: [
-    { label: 'plan credits', pct: usage.percent, resetsAt: toMs(usage.resetDate) },
+    {
+      label: 'plan credits',
+      pct: usage.percent,
+      resetsAt: toMs(usage.resetDate),
+    },
   ],
   note: usage.credits || undefined,
 });
 
-/** Shown when nothing has ever been fetched; the row keeps Kiro visible. */
+/** Shown while the first fetch is still running; the row keeps Kiro visible. */
 const KIRO_LOADING: Provider = {
   name: 'Kiro',
   buckets: [{ label: 'plan credits', pct: null, resetsAt: null }],
   note: 'reading kiro-cli in the background — run /usage again in a moment',
 };
 
+type KiroRace =
+  | { kind: 'usage'; usage: KiroUsage }
+  /** kiro-cli is missing or erroring — no row, and no second doomed spawn. */
+  | { kind: 'unavailable' }
+  | { kind: 'pending' };
+
 async function kiro(): Promise<Provider | undefined> {
   const cached = await loadKiroCache();
   if (cached && Date.now() - cached.at < KIRO_TTL_MS) {
-    // Warm the cache for the next run without making this one wait.
+    return kiroProvider(cached.usage);
+  }
+  if (cached) {
+    // Stale: show it now, refresh for the next run without blocking this one.
     void refreshKiro().catch(() => undefined);
     return kiroProvider(cached.usage);
   }
-  const timeout = new Promise<undefined>((resolve) =>
-    setTimeout(() => resolve(undefined), KIRO_WAIT_MS).unref?.(),
-  );
-  const usage = await Promise.race([refreshKiro().catch(() => undefined), timeout]);
-  const resolved = usage ?? cached?.usage;
-  if (resolved) return kiroProvider(resolved);
-  void refreshKiro().catch(() => undefined);
+  const race: KiroRace = await Promise.race([
+    refreshKiro()
+      .then((usage): KiroRace => ({ kind: 'usage', usage }))
+      .catch((): KiroRace => ({ kind: 'unavailable' })),
+    new Promise<KiroRace>((resolve) =>
+      setTimeout(() => resolve({ kind: 'pending' }), KIRO_WAIT_MS).unref?.(),
+    ),
+  ]);
+  if (race.kind === 'usage') return kiroProvider(race.usage);
+  if (race.kind === 'unavailable') return undefined;
   return KIRO_LOADING;
 }
 
 /** Codex only sends rate-limit headers on some responses, so keep the last ones seen. */
 let codexHeaders: Record<string, string> = {};
 
-const SPINNER = ['\u280b', '\u2819', '\u2839', '\u2838', '\u283c', '\u2834', '\u2826', '\u2827', '\u2807', '\u280f'];
+const SPINNER = [
+  '\u280b',
+  '\u2819',
+  '\u2839',
+  '\u2838',
+  '\u283c',
+  '\u2834',
+  '\u2826',
+  '\u2827',
+  '\u2807',
+  '\u280f',
+];
 
 const BAR_WIDTH = 16;
 
@@ -566,6 +612,16 @@ async function pickReset(
     const item = items.find((candidate) => candidate.label === picked);
     const redeem = provider.redeem;
     if (!item || !redeem) continue;
+    if (!item.id) {
+      // Placeholder row: the count is known but the credit list never loaded,
+      // so there is nothing to spend. Never confirm an irreversible action
+      // that is guaranteed to fail.
+      ctx.ui.notify(
+        'The Codex credit list did not load, so there is no credit to spend. Run /usage again to retry.',
+        'warning',
+      );
+      return false;
+    }
 
     const confirmed = await ctx.ui.confirm(
       'Use this reset?',
@@ -576,9 +632,9 @@ async function pickReset(
 
     const result = await redeem(item.id).catch(
       (error: unknown) =>
-        `Request failed: ${error instanceof Error ? error.message : String(error)}`,
+        `${UNKNOWN_OUTCOME} (${error instanceof Error ? error.message : String(error)})`,
     );
-    await ctx.ui.confirm('Reset result', result);
+    ctx.ui.notify(result, 'info');
     return true;
   }
 }
@@ -626,12 +682,6 @@ export default function usage(pi: ExtensionAPI) {
         const resetRows = new Map<string, Provider>();
         for (const provider of providers) {
           lines.push(provider.name);
-          if (
-            provider.buckets.length === 0 &&
-            provider.resets === undefined &&
-            provider.note === undefined
-          )
-            continue;
           for (const bucket of provider.buckets) {
             const value =
               bucket.pct === null
@@ -642,7 +692,9 @@ export default function usage(pi: ExtensionAPI) {
             );
           }
           if (provider.resets && provider.resets.length > 0) {
-            const row = `  ↩ resets       ${provider.resets.length} available`;
+            // The provider name keeps the row unique: the row text is the
+            // picker key, so two providers with equal counts must not collide.
+            const row = `  ↩ resets  ${provider.name}  ${provider.resets.length} available`;
             lines.push(row);
             resetRows.set(row, provider);
           }
