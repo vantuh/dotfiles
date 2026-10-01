@@ -120,69 +120,72 @@ export default function agentsModelsExtension(pi: ExtensionAPI): void {
       const userScope = userSettingsScope();
       const projectScope = projectSettingsScope(ctx.cwd);
       const scopes = projectScope ? [userScope, projectScope] : [userScope];
-      const views = {
-        user: readSubagentSettingsForScope(userScope),
-        project: projectScope
-          ? readSubagentSettingsForScope(projectScope)
-          : undefined,
-      };
       const parentModel = ctx.model
         ? `${ctx.model.provider}/${ctx.model.id}`
         : 'parent session model';
-      const discovered = withOverrideOnlyAgents(discoverAgents(ctx.cwd), views);
-      const { pinnable, hiddenCount } = selectPinnableAgents(discovered);
 
-      if (pinnable.length === 0) {
+      // Rebuilt per step so the agent list shows models pinned earlier in the
+      // same pass.
+      const buildData = (): PickerData => {
+        const views = {
+          user: readSubagentSettingsForScope(userScope),
+          project: projectScope
+            ? readSubagentSettingsForScope(projectScope)
+            : undefined,
+        };
+        const describe = (agent: DiscoveredAgent): string => {
+          const origin = resolveModelOrigin(agent, views, parentModel);
+          return `${origin.source}: ${origin.model}`;
+        };
+        const discovered = withOverrideOnlyAgents(
+          discoverAgents(ctx.cwd),
+          views,
+        );
+        const { pinnable, hiddenCount } = selectPinnableAgents(discovered);
+        return createPickerData(ctx, pinnable, scopes, describe, hiddenCount);
+      };
+
+      if (buildData().agentItems.length === 0) {
         ctx.ui.notify('No pinnable subagents found', 'warning');
         return;
       }
 
-      const describe = (agent: DiscoveredAgent): string => {
-        const origin = resolveModelOrigin(agent, views, parentModel);
-        return `${origin.source}: ${origin.model}`;
-      };
-
-      const result = await ctx.ui.custom<PickerResult | null>(
+      const changed = await ctx.ui.custom<boolean>(
         (tui, theme, keybindings, done) =>
           new AgentModelPicker(
             tui,
             theme,
             keybindings,
-            createPickerData(ctx, pinnable, scopes, describe, hiddenCount),
+            buildData,
+            async (result) => writeResult(result, scopes),
             done,
           ),
         { overlay: true },
       );
 
-      if (!result) return;
-      applyResult(result, scopes, ctx);
+      if (!changed) return;
+      ctx.ui.notify('Reloading so the new agent models take effect', 'info');
+      void ctx.reload().catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error);
+        ctx.ui.notify(`Reload failed: ${message}`, 'error');
+      });
     },
   });
 }
 
-function applyResult(
+/** Applies one pin; returns an error message for the modal, or undefined. */
+function writeResult(
   result: PickerResult,
   scopes: readonly SettingsScope[],
-  ctx: ExtensionCommandContext,
-): void {
+): string | undefined {
   const scope = scopes.find((entry) => entry.kind === result.scopeKind);
-  if (!scope) return;
+  if (!scope) return 'No settings scope for that target';
 
   try {
     writeAgentModelOverride(scope, result.agent, result.model);
+    return undefined;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    ctx.ui.notify(`Failed to write ${scope.path}: ${message}`, 'error');
-    return;
+    return `Failed to write ${scope.path}: ${message}`;
   }
-
-  const change =
-    result.model === null
-      ? `cleared model override for ${result.agent}`
-      : `${result.agent} → ${result.model}`;
-  ctx.ui.notify(`${change} (${scope.path}) — reloading`, 'info');
-  void ctx.reload().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-    ctx.ui.notify(`Reload failed: ${message}`, 'error');
-  });
 }

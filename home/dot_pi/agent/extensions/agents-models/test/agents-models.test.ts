@@ -15,7 +15,11 @@ import type { Theme } from '@earendil-works/pi-coding-agent';
 import type { KeybindingsManager, TUI } from '@earendil-works/pi-tui';
 
 import { type DiscoveredAgent, selectPinnableAgents } from '../agents.ts';
-import { AgentModelPicker, type PickerData } from '../picker.ts';
+import {
+  AgentModelPicker,
+  type PickerData,
+  type PickerResult,
+} from '../picker.ts';
 import { type SettingsScope, writeAgentModelOverride } from '../settings.ts';
 
 function assert(condition: unknown, label: string): void {
@@ -34,8 +38,21 @@ const KEYS: Record<string, string> = {
   '\x1b[B': 'tui.select.down',
 };
 
-function createPicker(data: PickerData) {
-  const results: unknown[] = [];
+interface Harness {
+  readonly picker: AgentModelPicker;
+  readonly results: PickerResult[];
+  readonly closed: boolean[];
+  readonly applied: PickerResult[];
+  settle: () => Promise<void>;
+}
+
+function createPicker(
+  data: () => PickerData,
+  apply?: (result: PickerResult) => Promise<string | undefined>,
+): Harness {
+  const results: PickerResult[] = [];
+  const closed: boolean[] = [];
+  const applied: PickerResult[] = [];
   const theme = {
     fg: (_color: string, text: string) => text,
     bold: (text: string) => text,
@@ -44,10 +61,25 @@ function createPicker(data: PickerData) {
   const keybindings = {
     matches: (data: string, id: string) => KEYS[data] === id,
   } as unknown as KeybindingsManager;
-  const picker = new AgentModelPicker(tui, theme, keybindings, data, (result) =>
-    results.push(result),
+  const picker = new AgentModelPicker(
+    tui,
+    theme,
+    keybindings,
+    data,
+    async (result) => {
+      applied.push(result);
+      return apply ? await apply(result) : undefined;
+    },
+    (changed) => closed.push(changed),
   );
-  return { picker, results };
+  return {
+    picker,
+    results,
+    closed,
+    applied,
+    // Lets a test await the picker's save-then-return-to-agents cycle.
+    settle: () => new Promise((resolve) => setTimeout(resolve, 0)),
+  };
 }
 
 const USER_SCOPE: SettingsScope = {
@@ -88,7 +120,7 @@ const data: PickerData = {
 };
 
 {
-  const { picker, results } = createPicker(data);
+  const { picker, applied, closed, settle } = createPicker(() => data);
   assert(
     picker.render(80).join('\n').includes('Subagent model \u00b7 agent'),
     'starts on the agent step',
@@ -110,8 +142,8 @@ const data: PickerData = {
 
   picker.handleInput('\x1b');
   assert(
-    results.length === 1 && results[0] === null,
-    'escape on step 1 cancels',
+    JSON.stringify(closed) === '[false]',
+    'escape on step 1 closes with nothing changed',
   );
 
   assert(
@@ -142,30 +174,53 @@ const data: PickerData = {
   picker.handleInput('\t'); // pick the local target
   picker.handleInput('\r'); // first model
   assert(
-    JSON.stringify(results.at(-1)) ===
-      JSON.stringify({
-        agent: 'oracle',
-        model: 'openai-codex/gpt-6.1-sol',
-        scopeKind: 'project',
-      }),
-    'confirming returns the tab-selected scope',
+    JSON.stringify(applied) ===
+      JSON.stringify([
+        {
+          agent: 'oracle',
+          model: 'openai-codex/gpt-6.1-sol',
+          scopeKind: 'project',
+        },
+      ]),
+    'saving applies the tab-selected scope',
+  );
+
+  await settle();
+  const afterSave = picker.render(80).join('\n');
+  assert(
+    afterSave.includes('Subagent model \u00b7 agent'),
+    'saving returns to the agent step instead of closing',
+  );
+  assert(
+    afterSave.includes('saved oracle \u2192 openai-codex/gpt-6.1-sol'),
+    'the saved pin is reported in the modal',
+  );
+
+  picker.handleInput('\x1b');
+  assert(
+    JSON.stringify(closed) === '[false,true]',
+    'closing after a save reports the change',
   );
 }
 
 {
-  const { picker, results } = createPicker(data);
+  const { picker, applied, settle } = createPicker(() => data);
   picker.handleInput('\r');
   picker.handleInput('\x1b[B'); // clear override
   picker.handleInput('\r');
+  await settle();
   assert(
-    JSON.stringify(results.at(-1)) ===
-      JSON.stringify({ agent: 'oracle', model: null, scopeKind: 'user' }),
-    'the clear-override entry reports a null model',
+    JSON.stringify(applied) ===
+      JSON.stringify([{ agent: 'oracle', model: null, scopeKind: 'user' }]),
+    'the clear-override entry applies a null model',
   );
 }
 
 {
-  const { picker, results } = createPicker({ ...data, scopes: [USER_SCOPE] });
+  const { picker, applied } = createPicker(() => ({
+    ...data,
+    scopes: [USER_SCOPE],
+  }));
   assert(
     !picker.render(80).join('\n').includes('[tab]'),
     'a single scope hides the tab hint',
@@ -174,22 +229,24 @@ const data: PickerData = {
   picker.handleInput('\r');
   picker.handleInput('\r');
   assert(
-    JSON.stringify(results.at(-1)) ===
-      JSON.stringify({
-        agent: 'oracle',
-        model: 'openai-codex/gpt-6.1-sol',
-        scopeKind: 'user',
-      }),
+    JSON.stringify(applied) ===
+      JSON.stringify([
+        {
+          agent: 'oracle',
+          model: 'openai-codex/gpt-6.1-sol',
+          scopeKind: 'user',
+        },
+      ]),
     'tab is inert without a local scope',
   );
 }
 
 {
-  const { picker } = createPicker({
+  const { picker } = createPicker(() => ({
     ...data,
     scopes: [USER_SCOPE],
     localMissingNote: 'local: no project settings for this project',
-  });
+  }));
   assert(
     picker
       .render(80)
@@ -200,53 +257,26 @@ const data: PickerData = {
 }
 
 {
-  const dir = mkdtempSync(path.join(tmpdir(), 'agents-models-'));
-  const file = path.join(dir, 'settings.json');
-  writeFileSync(
-    file,
-    `${JSON.stringify(
-      {
-        theme: 'dark',
-        subagents: {
-          agentOverrides: {
-            scout: { model: 'a/b', thinking: 'minimal' },
-            oracle: { model: 'c/d' },
-          },
-        },
-      },
-      null,
-      2,
-    )}\n`,
+  const { picker, closed, settle } = createPicker(
+    () => data,
+    async () => 'Failed to write /repo/.pi/settings.json: nope',
   );
-  const scope: SettingsScope = { kind: 'user', path: file };
-
-  writeAgentModelOverride(scope, 'oracle', 'e/f');
-  writeAgentModelOverride(scope, 'new-agent', 'inherit');
-  writeAgentModelOverride(scope, 'scout', null);
-
-  const written = JSON.parse(readFileSync(file, 'utf8')) as {
-    theme: string;
-    subagents: {
-      agentOverrides: Record<string, Record<string, unknown>>;
-    };
-  };
-  assert(written.theme === 'dark', 'unrelated settings keys survive');
+  picker.handleInput('\r');
+  picker.handleInput('\r');
+  await settle();
+  const afterError = picker.render(80).join('\n');
   assert(
-    written.subagents.agentOverrides.oracle.model === 'e/f',
-    'an existing override is updated',
+    afterError.includes('Failed to write /repo/.pi/settings.json: nope'),
+    'a failed write is reported in the modal',
   );
   assert(
-    written.subagents.agentOverrides['new-agent'].model === 'inherit',
-    'a new agent is added',
+    afterError.includes('Subagent model \u00b7 agent'),
+    'a failed write still returns to the agent step',
   );
+  picker.handleInput('\x1b');
   assert(
-    written.subagents.agentOverrides.scout.thinking === 'minimal' &&
-      written.subagents.agentOverrides.scout.model === undefined,
-    'clearing a model keeps the other override fields',
-  );
-  assert(
-    readFileSync(file, 'utf8').endsWith('}\n'),
-    'the file keeps its trailing newline',
+    JSON.stringify(closed) === '[false]',
+    'a failed write does not count as a change',
   );
 }
 
