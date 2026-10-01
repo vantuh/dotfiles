@@ -7,7 +7,7 @@ if git diff --staged --quiet; then
   exit 1
 fi
 git diff --staged > /tmp/pi-diff-input.txt
-pi --print --no-session --no-tools --no-extensions -e ~/.pi/agent/extensions/kiro-acp/index.ts --model kiro-acp/claude-haiku-4.5 \
+pi --print --no-session --no-tools --no-extensions --model openai/gpt-6-luna \
   --system-prompt "Write commit messages terse and exact. Conventional Commits format. No fluff. Why over what.
 
 Rules:
