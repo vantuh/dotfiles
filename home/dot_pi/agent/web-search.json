@@ -4,5 +4,5 @@
     "fallbackOn": ["transient", "quota", "network", "invalid-response"]
   },
   "workflow": "none",
-  "summaryModel": "openai-codex/gpt-5.6-luna"
+  "summaryModel": "openai/gpt-5.6-luna"
 }
