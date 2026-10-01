@@ -53,12 +53,13 @@ the live mapping.
 
 ## chezmoi
 
-`~/.pi/agent/settings.json` is a dest-symlink into
-`dotfiles/home/dot_pi/agent/.settings.json`, so a write from this popup edits the
-tracked source directly — no `chezmoi add` needed. The write resolves the
-symlink before its atomic rename, because renaming onto the link path would
-replace the link with a regular file. Pi's own settings writer rewrites the file
-in place, so the popup and `/settings` agree on the same file.
+`~/.pi/agent/settings.json`, `~/.pi/agent/pi-autoname.json` and the saved
+profiles under `~/.pi/agent/profiles/pi-subagents/` are dest-symlinks into
+`dotfiles/home/dot_pi/agent/…`, so a write from this popup edits the tracked
+source directly — no `chezmoi add` needed. The write resolves the symlink
+before its atomic rename, because renaming onto the link path would replace
+the link with a regular file. Pi's own writers rewrite these files in place, so
+the popup and `/settings` agree on the same file.
 
 ## Tests
 
