@@ -2,20 +2,20 @@
   "subagents": {
     "agentOverrides": {
       "scout": {
-        "model": "openai-codex/gpt-5.6-luna",
+        "model": "openai/gpt-6-luna",
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "anthropic/claude-sonnet-5-5"
       },
       "researcher": {
-        "model": "openai-codex/gpt-5.6-terra",
+        "model": "anthropic/claude-sonnet-5-5",
         "extensions": [
           "~/.pi/agent/npm/node_modules/pi-web-access"
         ]
       },
       "reviewer": {
-        "model": "openai-codex/gpt-5.6-sol",
+        "model": "anthropic/claude-opus-5-5",
         "skills": [
           "hunk"
         ]
@@ -33,7 +33,28 @@
         ]
       },
       "oracle": {
-        "model": "openai-codex/gpt-5.6-sol"
+        "model": "anthropic/claude-opus-5-5"
+      },
+      "claude-code": {
+        "disabled": true
+      },
+      "claude-code-writer": {
+        "disabled": true
+      },
+      "codex-exec": {
+        "disabled": true
+      },
+      "codex-exec-writer": {
+        "disabled": true
+      },
+      "cursor-agent": {
+        "disabled": true
+      },
+      "cursor-agent-writer": {
+        "disabled": true
+      },
+      "evidence-auditor": {
+        "model": "openai/gpt-6.1-sol"
       }
     }
   }

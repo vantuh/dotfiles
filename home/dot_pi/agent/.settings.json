@@ -22,8 +22,8 @@
     "opencode-go/glm-5.3-flash",
     "simplex/qwen3.8-27b-exl3-3.0bpw",
     "openrouter/stealth/space-bunny-alpha",
-    "openai-codex/gpt-6.1-sol",
-    "openai-codex/gpt-6-luna",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-luna",
     "opencode-go/deepseek-v4.1-flash",
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5"
@@ -38,11 +38,11 @@
   "subagents": {
     "agentOverrides": {
       "scout": {
-        "model": "openai-codex/gpt-6-luna",
+        "model": "openai/gpt-6-luna",
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openai-codex/gpt-6.1-sol"
+        "model": "anthropic/claude-sonnet-5-5"
       },
       "researcher": {
         "model": "anthropic/claude-sonnet-5-5",
@@ -90,7 +90,10 @@
         "disabled": true
       },
       "evidence-auditor": {
-        "model": "anthropic/claude-opus-4-5"
+        "model": "openai/gpt-6.1-sol"
+      },
+      "council-codex": {
+        "model": "openai/gpt-6.1-sol"
       }
     }
   },
