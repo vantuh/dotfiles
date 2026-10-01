@@ -25,6 +25,8 @@ interface Provider {
 /** Anthropic only reports limit resets to the Claude Code CLI surface. */
 const CLAUDE_CLI_UA = 'claude-cli/2.19.1 (external, cli)';
 
+const CLOSE_ROW = '  Esc: back · here to close';
+
 type Auth = Record<
   string,
   { type?: string; key?: string; access?: string } | undefined
@@ -90,7 +92,10 @@ interface ClaudeUsage {
   seven_day?: { utilization?: number; resets_at?: string } | null;
   seven_day_opus?: { utilization?: number; resets_at?: string } | null;
   seven_day_sonnet?: { utilization?: number; resets_at?: string } | null;
-  cedar_ember?: { grants?: ClaudeGrant[]; next_grant_id?: string | null } | null;
+  cedar_ember?: {
+    grants?: ClaudeGrant[];
+    next_grant_id?: string | null;
+  } | null;
 }
 
 /**
@@ -122,7 +127,11 @@ async function anthropic(): Promise<Provider | undefined> {
     });
   }
   if (buckets.length === 0) return undefined;
-  return { name: 'Anthropic', buckets, resets: claudeResets(payload.cedar_ember) };
+  return {
+    name: 'Anthropic',
+    buckets,
+    resets: claudeResets(payload.cedar_ember),
+  };
 }
 
 function claudeResets(block: ClaudeUsage['cedar_ember']): Provider['resets'] {
@@ -242,9 +251,50 @@ async function codexFromCli(): Promise<Provider | undefined> {
   return {
     name: 'OpenAI Codex',
     buckets,
-    resets: resets > 0 ? { count: resets } : undefined,
+    resets:
+      resets > 0
+        ? {
+            count: resets,
+            detail: await codexResetDetail(
+              tokens.access_token,
+              tokens.account_id,
+            ),
+          }
+        : undefined,
     note: payload.plan_type,
   };
+}
+
+/** Codex lists the redeemable credits (with expiry) on a separate route. */
+async function codexResetDetail(
+  accessToken: string,
+  accountId: string,
+): Promise<string> {
+  try {
+    const payload = (await getJson(
+      'https://chatgpt.com/backend-api/wham/rate-limit-reset-credits',
+      {
+        authorization: `Bearer ${accessToken}`,
+        'chatgpt-account-id': accountId,
+      },
+    )) as {
+      credits?: {
+        title?: string;
+        description?: string;
+        expires_at?: string;
+        status?: string;
+      }[];
+    };
+    const lines = (payload.credits ?? [])
+      .filter((credit) => credit.status === 'available')
+      .map((credit) => {
+        const expiresAt = toMs(credit.expires_at);
+        return `${credit.title ?? 'Rate limit reset'}\n  expires ${expiresAt ? `${new Date(expiresAt).toISOString().replace('T', ' ').slice(0, 16)} UTC (${until(expiresAt)})` : 'unknown'}`;
+      });
+    return lines.length > 0 ? lines.join('\n') : 'no expiry reported';
+  } catch (error) {
+    return `could not load credit details: ${error instanceof Error ? error.message : String(error)}`;
+  }
 }
 
 async function openrouter(): Promise<Provider | undefined> {
@@ -377,15 +427,30 @@ export default function usage(pi: ExtensionAPI) {
           );
         }
         if (provider.resets) {
-          const line = `  ↩ resets       ${provider.resets.count} available  (Enter for details)`;
+          const line = `  ↩ resets       ${provider.resets.count} available`;
           lines.push(line);
-          if (provider.resets.detail) details.set(line, provider.resets.detail);
+          details.set(line, provider.resets.detail ?? 'no details reported');
         }
         if (provider.note) lines.push(`  ${provider.note}`);
       }
-      const selected = await ctx.ui.select('Provider usage', lines);
-      const detail = selected ? details.get(selected) : undefined;
-      if (detail) await ctx.ui.confirm('Reset credits', detail);
+      lines.push('', CLOSE_ROW);
+
+      // Headless modes resolve select() to undefined immediately, which would
+      // spin the Esc loop forever.
+      if (!ctx.hasUI) {
+        ctx.ui.notify(lines.join('\n'), 'info');
+        return;
+      }
+
+      // Esc returns to the list instead of dismissing it; the explicit close
+      // row is the only way out.
+      for (;;) {
+        const selected = await ctx.ui.select('Provider usage', lines);
+        if (selected === undefined) continue;
+        const detail = details.get(selected);
+        if (!detail || selected === CLOSE_ROW) return;
+        await ctx.ui.confirm('Reset credits', detail);
+      }
     },
   });
 }
