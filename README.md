@@ -36,6 +36,7 @@ Repository-only content stays outside `home/`:
 | --- | --- |
 | `fan_control` | Fan Control config and research notes |
 | `openspec` | OpenSpec design documents |
+| `.githooks` | Git hooks for this repository, enabled per clone (see [Commit message hook](#commit-message-hook)) |
 | `archive` | Retired tmux and Alacritty configs, the Herdr `my-usage` and `nvim-cheatsheet` plugins with the `my-usage` CLIs, and the nvim `COMMANDS.md` cheatsheet; never applied |
 
 ## Prerequisites
@@ -60,6 +61,15 @@ Terminal settings.
 
 Restart the terminal after the first apply. Zinit installs shell plugins on the
 first interactive launch.
+
+## Commit message hook
+
+`.githooks/commit-msg` rejects commit subjects that are not Conventional
+Commits. Enable it once per clone — git does not run any hook setup on clone:
+
+```bash
+git config core.hooksPath .githooks
+```
 
 ## Daily workflow
 
