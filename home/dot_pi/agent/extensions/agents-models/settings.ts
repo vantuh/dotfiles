@@ -1,5 +1,6 @@
 import {
   existsSync,
+  readdirSync,
   readFileSync,
   realpathSync,
   renameSync,
@@ -9,12 +10,14 @@ import * as path from 'node:path';
 
 import { CONFIG_DIR_NAME, getAgentDir } from '@earendil-works/pi-coding-agent';
 
-export type SettingsScopeKind = 'user' | 'project';
+export type SettingsScopeKind = 'user' | 'project' | 'profile';
 
 export interface SettingsScope {
   readonly kind: SettingsScopeKind;
   /** Absolute path of the settings.json that will be written. */
   readonly path: string;
+  /** Tab label: `global`, `local`, or `profile: <name>`. */
+  readonly label: string;
 }
 
 export interface AgentOverrideView {
@@ -82,17 +85,43 @@ export function findProjectRoot(cwd: string): string | undefined {
 }
 
 export function userSettingsScope(): SettingsScope {
-  return { kind: 'user', path: path.join(getAgentDir(), 'settings.json') };
+  return {
+    kind: 'user',
+    path: path.join(getAgentDir(), 'settings.json'),
+    label: 'global',
+  };
 }
 
 export function projectSettingsScope(cwd: string): SettingsScope | undefined {
   const root = findProjectRoot(cwd);
-  return root
-    ? {
-        kind: 'project',
-        path: path.join(root, CONFIG_DIR_NAME, 'settings.json'),
-      }
-    : undefined;
+  if (!root) return undefined;
+  return {
+    kind: 'project',
+    path: path.join(root, CONFIG_DIR_NAME, 'settings.json'),
+    label: 'local',
+  };
+}
+
+/**
+ * Saved pi-subagents profiles. Each one is a settings-shaped JSON file, so the
+ * popup writes the same `subagents.agentOverrides` block into them.
+ */
+export function profileSettingsScopes(): SettingsScope[] {
+  const dir = path.join(getAgentDir(), 'profiles', 'pi-subagents');
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((entry) => entry.endsWith('.json'))
+    .sort()
+    .map((entry) => ({
+      kind: 'profile' as const,
+      path: path.join(dir, entry),
+      label: `profile: ${entry.slice(0, -5)}`,
+    }));
 }
 
 export function readSubagentSettingsForScope(
