@@ -204,8 +204,8 @@ function writeResult(
   result: PickerResult,
   scopes: readonly SettingsScope[],
 ): string | undefined {
-  const scope = scopes.find((entry) => entry.kind === result.scopeKind);
-  if (!scope) return 'No settings scope for that target';
+  const scope = scopes.find((entry) => entry.path === result.scope.path);
+  if (!scope) return `Unknown target: ${result.scope.label}`;
 
   try {
     writeAgentModelOverride(scope, result.agent, result.model);

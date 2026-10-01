@@ -68,13 +68,20 @@ function readSubagentSettings(filePath: string): SubagentSettingsView {
   };
 }
 
-/** Walks up from `cwd` to the nearest directory that looks like a pi project root. */
+/**
+ * Walks up from `cwd` to the nearest directory that looks like a pi project
+ * root. `$HOME/.pi` is pi's own config root, not a project: treating it as one
+ * would make "local" resolve to the global settings file.
+ */
 export function findProjectRoot(cwd: string): string | undefined {
+  const configRoot = path.resolve(path.dirname(getAgentDir()));
   let current = path.resolve(cwd);
   for (;;) {
+    const isConfigRoot = path.resolve(current, CONFIG_DIR_NAME) === configRoot;
     if (
-      existsSync(path.join(current, CONFIG_DIR_NAME)) ||
-      existsSync(path.join(current, '.agents'))
+      !isConfigRoot &&
+      (existsSync(path.join(current, CONFIG_DIR_NAME)) ||
+        existsSync(path.join(current, '.agents')))
     ) {
       return current;
     }

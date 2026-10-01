@@ -18,7 +18,8 @@ export interface PickerResult {
   readonly agent: string;
   /** `null` clears the existing override. */
   readonly model: string | null;
-  readonly scopeKind: SettingsScopeKind;
+  /** The exact target the user tabbed to; profiles share one `kind`. */
+  readonly scope: SettingsScope;
 }
 
 export interface PickerData {
@@ -224,7 +225,7 @@ export class AgentModelPicker extends Container {
     const agent = this.agent;
     if (!agent || this.busy) return;
     const model = item.value === CLEAR_VALUE ? null : item.value;
-    void this.commit({ agent, model, scopeKind: this.scopeKind });
+    void this.commit({ agent, model, scope: this.scope });
   }
 
   private async commit(result: PickerResult): Promise<void> {
