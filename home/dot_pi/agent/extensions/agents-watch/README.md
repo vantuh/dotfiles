@@ -18,9 +18,25 @@ Run id accepts a full uuid, a unique prefix, or the first 8 characters.
 
 | File | Role |
 | --- | --- |
-| `index.ts` | The `/agents-watch` command and the Herdr split |
+| `index.ts` | The `/agents-watch` command, the picker rows, and the Herdr split |
+| `session-runs.ts` | Client for pi-subagents' in-process RPC, which scopes runs to this session |
 | `watch.ts` | The viewer. Standalone: `bun watch.ts <runId> [--tail] [--expanded] [--step N]` |
-| `runs.ts` | Shared run-root discovery and `status.json` reads |
+| `runs.ts` | Run-root discovery shared with the viewer |
+
+### Why an RPC client
+
+The picker must only list runs belonging to the calling Pi session.
+`status.json` records the launching session as a file path, which a session
+resume invalidates. pi-subagents' `status` reply carries `data.asyncSnapshot`,
+built in-memory from `state.currentSessionId`, so it stays correct across resume.
+
+The package documents that RPC but ships no client, hence `session-runs.ts`
+speaking the event-bus protocol directly. Filtering by session id here would
+silently show other sessions' agents, so a missing owner is reported as an error
+rather than falling back to every run on disk.
+
+`openProjectPane` from `pi-subagents/project-panes` is not used: it spawns Pi,
+not an arbitrary command, so the pane split stays hand-rolled.
 
 `watch.ts` can also be tailed by hand:
 

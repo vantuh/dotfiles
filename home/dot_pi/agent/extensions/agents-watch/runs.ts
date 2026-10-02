@@ -2,34 +2,6 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-export interface RunStep {
-  agent?: string;
-  state?: string | null;
-}
-
-export interface RunStatus {
-  runId?: string;
-  state?: string;
-  activityState?: string;
-  currentTool?: string | null;
-  currentToolStartedAt?: number | null;
-  lastActivityAt?: number;
-  turnCount?: number;
-  toolCount?: number;
-  startedAt?: number;
-  /** Absolute path of the parent Pi session file that launched this run. */
-  sessionId?: string;
-  cwd?: string;
-  steps?: RunStep[];
-  totalTokens?: { input?: number; output?: number; window?: number };
-}
-
-export interface Run {
-  runId: string;
-  dir: string;
-  status: RunStatus;
-}
-
 /** Root of pi-subagents async run artifacts for this user. */
 export function asyncRoot(): string {
   const direct = path.join(
@@ -47,51 +19,23 @@ export function asyncRoot(): string {
   throw new Error(`no pi-subagents run root under ${os.tmpdir()}`);
 }
 
-function readStatus(dir: string): RunStatus | undefined {
-  try {
-    return JSON.parse(
-      fs.readFileSync(path.join(dir, 'status.json'), 'utf8'),
-    ) as RunStatus;
-  } catch {
-    return undefined;
-  }
-}
-
-/** Newest first. Directories without a readable status.json are skipped. */
-export function listRuns(): Run[] {
+/** Newest first. Directories without events.jsonl are skipped. */
+export function listRuns(): { runId: string; dir: string }[] {
   const root = asyncRoot();
   return fs
     .readdirSync(root)
-    .map((name) => {
-      const dir = path.join(root, name);
-      const status = readStatus(dir);
-      if (!status || !fs.existsSync(path.join(dir, 'events.jsonl')))
-        return undefined;
-      return { runId: status.runId ?? name, dir, status };
-    })
-    .filter((run): run is Run => run !== undefined)
-    .sort((a, b) => (b.status.startedAt ?? 0) - (a.status.startedAt ?? 0));
-}
-
-export function listActiveRuns(): Run[] {
-  return listRuns().filter((run) => run.status.state === 'running');
-}
-
-/**
- * Active runs launched by one Pi session. Falls back to every active run when
- * the session has no file on disk, so an in-memory session still lists something.
- */
-export function listRunsForSession(sessionFile: string | undefined): {
-  runs: Run[];
-  scoped: boolean;
-} {
-  const active = listActiveRuns();
-  if (!sessionFile) return { runs: active, scoped: false };
-  const scoped = active.filter((run) => run.status.sessionId === sessionFile);
-  return {
-    runs: scoped.length > 0 ? scoped : active,
-    scoped: scoped.length > 0,
-  };
+    .filter((name) => fs.existsSync(path.join(root, name, 'events.jsonl')))
+    .map((name) => ({ runId: name, dir: path.join(root, name) }))
+    .sort((a, b) => {
+      const at = (dir: string): number => {
+        try {
+          return fs.statSync(path.join(dir, 'status.json')).mtimeMs;
+        } catch {
+          return 0;
+        }
+      };
+      return at(b.dir) - at(a.dir);
+    });
 }
 
 export function compactTokens(n: number | undefined): string {
