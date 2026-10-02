@@ -69,6 +69,68 @@ const C = {
 
 let expanded = args.includes('--expanded');
 
+const ANSI_SPLIT = /\x1b\[[0-9;]*m/;
+const ANSI_HEAD = /^\x1b\[[0-9;]*m/;
+
+function visibleWidth(text: string): number {
+  return text.replace(ANSI_SPLIT, '').length;
+}
+
+/**
+ * Wrap on visible width, carrying SGR state across the break so colour survives
+ * the fold. Terminal soft-wrap cannot do this: it would drop the frame prefix
+ * on every continuation line.
+ */
+function wrapAnsi(text: string, width: number): string[] {
+  const limit = Math.max(20, width);
+  const lines: string[] = [];
+  let current = '';
+  let active = '';
+  let visible = 0;
+  const break_ = (): void => {
+    lines.push(current.endsWith('\x1b[0m') ? current : `${current}\x1b[0m`);
+    current = active;
+    visible = 0;
+  };
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '\n') {
+      lines.push(current.endsWith('\x1b[0m') ? current : `${current}\x1b[0m`);
+      current = active;
+      visible = 0;
+      i += 1;
+      continue;
+    }
+    const esc = ANSI_HEAD.exec(text.slice(i));
+    if (esc) {
+      current += esc[0];
+      active = esc[0] === '\x1b[0m' ? '' : esc[0];
+      i += esc[0].length;
+      continue;
+    }
+    if (visible >= limit) {
+      break_();
+      continue;
+    }
+    current += text[i];
+    visible += 1;
+    i += 1;
+  }
+  lines.push(current.endsWith('\x1b[0m') ? current : `${current}\x1b[0m`);
+  return lines;
+}
+
+/** Every physical line carries the frame bar, so folds never break the edge. */
+function emit(text: string): void {
+  const prefix = framePrefix();
+  const width = (process.stdout.columns ?? 80) - visibleWidth(prefix) - 1;
+  for (const line of wrapAnsi(text, width)) console.log(`${prefix}${line}`);
+}
+
+function framePrefix(): string {
+  return turn ? `${C.dim('│')} ` : '';
+}
+
 function firstLine(text: string, max = 160): string {
   const line = text.replace(/\s+/g, ' ').trim();
   return line.length > max ? `${line.slice(0, max)}…` : line;
@@ -76,7 +138,6 @@ function firstLine(text: string, max = 160): string {
 
 /** Collapsed: one clipped line. Expanded: every line, indented under the label. */
 function detail(
-  tag: string,
   label: string,
   text: string,
   color: (s: string) => string,
@@ -85,12 +146,11 @@ function detail(
   const trimmed = text.trim();
   if (!trimmed) return;
   if (!expanded) {
-    console.log(`${tag}${label} ${color(firstLine(trimmed, max))}`);
+    emit(`${label} ${color(firstLine(trimmed, max))}`);
     return;
   }
-  console.log(`${tag}${label}`);
-  for (const line of trimmed.split(/\r?\n/))
-    console.log(`${tag}  ${color(line)}`);
+  emit(label);
+  for (const line of trimmed.split(/\r?\n/)) emit(`  ${color(line)}`);
 }
 
 function argText(args: unknown): string {
@@ -152,12 +212,11 @@ function render(record: Record<string, unknown>): void {
   const step =
     typeof record.subagentStepIndex === 'number' ? record.subagentStepIndex : 0;
   if (stepIndex !== undefined && step !== stepIndex) return;
-  const bar = turn ? `${C.dim('│')} ` : '';
-  const tag = bar + (step > 0 ? C.dim(`[${step}] `) : '');
+  const tag = step > 0 ? C.dim(`[${step}] `) : '';
 
   switch (type) {
     case 'agent_start':
-      console.log(`${tag}${C.bold('agent started')}`);
+      emit(`${tag}${C.bold('agent started')}`);
       return;
     case 'turn_start':
       turnNumber += 1;
@@ -201,14 +260,14 @@ function render(record: Record<string, unknown>): void {
           typeof part.thinking === 'string' &&
           part.thinking.trim()
         ) {
-          detail(tag, C.magenta('◆ think'), part.thinking, C.dim, 220);
+          detail(C.magenta('◆ think'), part.thinking, C.dim, 220);
         } else if (
           part.type === 'text' &&
           typeof part.text === 'string' &&
           part.text.trim()
         ) {
           for (const line of part.text.trim().split('\n'))
-            console.log(`${tag}${line}`);
+            emit(`${tag}${line}`);
         }
       }
       return;
@@ -217,8 +276,7 @@ function render(record: Record<string, unknown>): void {
       const id = String(record.toolCallId ?? record.toolName ?? '');
       startedAt.set(id, observedAt(record) ?? Date.now());
       detail(
-        tag,
-        `${C.cyan('▶')} ${C.bold(String(record.toolName ?? 'tool'))}`,
+        `${tag}${C.cyan('▶')} ${C.bold(String(record.toolName ?? 'tool'))}`,
         argText(record.args),
         C.dim,
         160,
@@ -238,10 +296,10 @@ function render(record: Record<string, unknown>): void {
         ? text.slice(previous.length)
         : text;
       if (expanded) {
-        detail(tag, `  ${C.dim('…')}`, delta, C.dim, 180);
+        detail(`  ${C.dim('…')}`, delta, C.dim, 180);
         return;
       }
-      console.log(
+      emit(
         `${tag}  ${C.dim('…')} ${C.dim(firstLine(text.slice(-200), 180))} ${C.dim(`(${text.length}b)`)}`,
       );
       return;
@@ -273,13 +331,13 @@ function render(record: Record<string, unknown>): void {
     case 'auto_retry_start': {
       const delay =
         typeof record.delayMs === 'number' ? record.delayMs / 1000 : 0;
-      console.log(
+      emit(
         `${tag}${C.yellow('↻ retry')} ${record.attempt}/${record.maxAttempts} in ${delay}s ${C.dim(firstLine(String(record.errorMessage ?? ''), 140))}`,
       );
       return;
     }
     case 'auto_retry_end':
-      console.log(
+      emit(
         record.success === true
           ? `${tag}${C.green('↻ retry ok')} ${C.dim(`attempt ${record.attempt}`)}`
           : `${tag}${C.red(`↻ retry gave up after ${record.attempt}`)} ${C.dim(firstLine(String(record.finalError ?? ''), 140))}`,
@@ -294,7 +352,7 @@ function render(record: Record<string, unknown>): void {
         typeof event.tokens === 'number' ? `${event.tokens} tok` : '',
         duration(event.elapsedMs),
       ].filter(Boolean);
-      console.log(
+      emit(
         `${tag}${C.yellow('⚑ control')} ${String(event.message ?? event.type ?? '')} ${C.dim(`[${facts.join(' · ')}]`)}`,
       );
       return;
@@ -312,29 +370,29 @@ function render(record: Record<string, unknown>): void {
         String(record.message ?? record.error ?? ''),
         140,
       );
-      console.log(
+      emit(
         `${tag}${tone(`⇢ steer ${phase}`)} ${detail}${C.dim(` ${String(record.requestId ?? '').slice(0, 8)}`)}`,
       );
       return;
     }
     case 'subagent.step.started':
-      console.log(
+      emit(
         `${tag}${C.bold(`── step ${record.stepIndex ?? 0}: ${record.agent ?? '?'} ──`)}`,
       );
       return;
     case 'subagent.step.completed':
-      console.log(
+      emit(
         `${tag}${C.green(`── step ${record.stepIndex ?? 0} ok`)} ${C.dim(duration(record.durationMs))}`,
       );
       return;
     case 'subagent.step.failed':
-      console.log(
+      emit(
         `${tag}${C.red(`── step ${record.stepIndex ?? 0} failed`)} ${C.dim(`exit=${record.exitCode ?? '?'} ${duration(record.durationMs)}`)}`,
       );
       return;
     case 'subagent.step.paused':
     case 'subagent.step.stopped':
-      console.log(
+      emit(
         `${tag}${C.yellow(`── step ${record.stepIndex ?? 0} ${record.type.slice(16)} ──`)}`,
       );
       return;
@@ -344,11 +402,11 @@ function render(record: Record<string, unknown>): void {
       console.log(C.bold(`── ${record.type.slice('subagent.'.length)} ──`));
       return;
     case 'agent_settled':
-      console.log(`${tag}${C.green('agent settled')}`);
+      emit(`${tag}${C.green('agent settled')}`);
       return;
     default:
       if (type.startsWith('subagent.') && type.includes('failed'))
-        console.log(`${tag}${C.red(type)}`);
+        emit(`${tag}${C.red(type)}`);
   }
 }
 
