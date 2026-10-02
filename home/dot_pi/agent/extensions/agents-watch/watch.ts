@@ -484,12 +484,31 @@ function paintBar(): void {
 }
 
 function enableBar(): void {
-  const rows = process.stdout.rows;
-  if (!process.stdout.isTTY || !rows || rows < 8) return;
-  barRows = rows;
-  process.stdout.write(`\x1b[1;${rows - 1}r`);
+  if (!process.stdout.isTTY || !process.stdout.rows || process.stdout.rows < 8)
+    return;
+
+  // Re-apply the pinned region on resize. A pane that grew or shrank moves the
+  // bar row, and without this the absolute writes below land inside the log and
+  // leave bar fragments in the transcript.
+  const applyBar = (): void => {
+    const rows = process.stdout.rows;
+    if (!rows || rows < 8) {
+      // Too short to pin a bar: release the region, stop intercepting output, and
+      // wipe the row so the last painted bar cannot linger as a log fragment.
+      if (barRows) {
+        process.stdout.write(`\x1b[r\x1b[${barRows};1H\x1b[2K`);
+      }
+      barRows = 0;
+      return;
+    }
+    barRows = rows;
+    process.stdout.write(`\x1b[1;${rows - 1}r`);
+    process.stdout.write(`\x1b[${rows};1H\x1b[2K`);
+    paintBar();
+  };
+
   console.log = (...parts: unknown[]) => {
-    process.stdout.write(`\x1b[${rows - 1};1H`);
+    if (barRows) process.stdout.write(`\x1b[${barRows - 1};1H`);
     realLog(...parts);
   };
   const restore = (): void => {
@@ -507,7 +526,8 @@ function enableBar(): void {
     restore();
     process.exit(0);
   });
-  paintBar();
+  process.on('SIGWINCH', applyBar);
+  applyBar();
 }
 
 function drain(): void {
