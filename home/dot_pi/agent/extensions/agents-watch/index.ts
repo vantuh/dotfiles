@@ -8,12 +8,8 @@ import type {
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
 
-import {
-  compactTokens,
-  listRuns,
-  listRunsForSession,
-  type Run,
-} from './runs.ts';
+import { compactTokens } from './runs.ts';
+import { fetchSessionRuns, type ScopedRun } from './session-runs.ts';
 
 const run = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -28,8 +24,15 @@ async function herdr(args: string[]): Promise<string> {
   return stdout;
 }
 
-/** Open a Herdr pane next to the current one and start the watcher inside it. */
-async function openInHerdr(target: Run, focus: boolean): Promise<boolean> {
+/**
+ * Split a Herdr pane and start the watcher in it. pi-subagents exports
+ * `openProjectPane`, but that spawns Pi rather than an arbitrary command, so the
+ * split stays hand-rolled.
+ */
+async function openWatcher(
+  target: ScopedRun,
+  focus: boolean,
+): Promise<boolean> {
   let paneId: string | undefined;
   try {
     const split = JSON.parse(
@@ -48,7 +51,7 @@ async function openInHerdr(target: Run, focus: boolean): Promise<boolean> {
   }
   if (!paneId) return false;
   try {
-    await herdr(['pane', 'run', paneId, 'bun', watcher, target.runId]);
+    await herdr(['pane', 'run', paneId, 'bun', watcher, target.id]);
   } catch {
     await herdr(['pane', 'close', paneId]).catch(() => undefined);
     return false;
@@ -63,26 +66,37 @@ function elapsed(startedAt: number | undefined): string {
   return `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, '0')}`;
 }
 
-function activity(run_: Run): string {
-  const s = run_.status;
-  if (s.currentTool) return `▶ ${s.currentTool}`;
-  if (s.activityState === 'active_long_running') return '⚑ long-running';
-  if (s.activityState === 'waiting') return 'waiting';
-  return 'thinking';
+function activity(run_: ScopedRun): string {
+  const tool = run_.activity?.currentTool;
+  if (tool) return `▶ ${tool}`;
+  switch (run_.activity?.state) {
+    case 'active_long_running':
+      return '⚑ long-running';
+    case 'waiting':
+      return 'waiting';
+    default:
+      return 'thinking';
+  }
 }
 
-/** Row for the picker. Index-prefixed so selection survives display truncation. */
-function label(index: number, run_: Run): string {
-  const s = run_.status;
-  const agents =
-    (s.steps ?? []).map((step) => step.agent ?? '?').join(',') || '?';
-  const turns = typeof s.turnCount === 'number' ? `${s.turnCount}t` : '?t';
-  const tools = typeof s.toolCount === 'number' ? `${s.toolCount}o` : '?o';
-  const tokens = s.totalTokens;
+/** Index-prefixed so the selection survives display truncation. */
+function label(index: number, run_: ScopedRun): string {
+  const activity_ = run_.activity ?? {};
+  const turns =
+    typeof activity_.turnCount === 'number' ? `${activity_.turnCount}t` : '?t';
+  const tools =
+    typeof activity_.toolCount === 'number' ? `${activity_.toolCount}o` : '?o';
   return (
-    `${index + 1}. ${agents}  ${run_.runId.slice(0, 8)}  ${elapsed(s.startedAt)}  ` +
-    `${turns}/${tools}  ${activity(run_)}  ` +
-    `${compactTokens(tokens?.input)}/${compactTokens(tokens?.output)}`
+    `${index + 1}. ${run_.label || '?'}  ${run_.id.slice(0, 8)}  ${elapsed(run_.startedAt)}  ` +
+    `${turns}/${tools}  ${activity(run_)}`
+  );
+}
+
+function findById(runs: ScopedRun[], wanted: string): ScopedRun | undefined {
+  return runs.find(
+    (candidate) =>
+      candidate.id === wanted ||
+      (wanted.length >= 8 && candidate.id.slice(0, wanted.length) === wanted),
   );
 }
 
@@ -94,68 +108,58 @@ export default function (pi: ExtensionAPI) {
         ctx.ui.notify('agents-watch needs the interactive TUI', 'error');
         return;
       }
+
+      const runs = await fetchSessionRuns(pi);
+      if (runs === undefined) {
+        ctx.ui.notify(
+          'pi-subagents RPC is not answering, so active runs cannot be listed.',
+          'error',
+        );
+        return;
+      }
+
       const tokens = rawArgs.trim().split(/\s+/).filter(Boolean);
       const focus = !tokens.includes('--no-focus');
       const wanted = tokens.find((token) => !token.startsWith('--')) ?? '';
 
-      let target: Run | undefined;
+      let target: ScopedRun | undefined;
       if (wanted) {
-        target = listRuns().find(
-          (candidate) =>
-            candidate.runId === wanted ||
-            candidate.runId.startsWith(wanted) ||
-            candidate.runId.slice(0, 8) === wanted.slice(0, 8),
-        );
+        target = findById(runs, wanted);
         if (!target) {
-          ctx.ui.notify(`No subagent run matches "${wanted}"`, 'error');
-          return;
-        }
-      } else {
-        const { runs: active, scoped } = listRunsForSession(
-          ctx.sessionManager.getSessionFile(),
-        );
-        if (active.length === 0) {
-          const recent = listRuns()[0];
           ctx.ui.notify(
-            recent
-              ? `No active subagents. Newest: ${recent.runId.slice(0, 8)} (${recent.status.state ?? '?'})`
-              : 'No subagent runs found',
-            'info',
+            `No active run in this session matches "${wanted}"` +
+              (runs.length
+                ? `. Active: ${runs.map((run_) => run_.id.slice(0, 8)).join(', ')}`
+                : ''),
+            'error',
           );
           return;
         }
-        if (active.length === 1) {
-          target = active[0];
-        } else {
-          const options = active.map((candidate, index) =>
-            label(index, candidate),
-          );
-          const picked = await ctx.ui.select(
-            `${active.length} active subagent${active.length === 1 ? '' : 's'}${scoped ? '' : ' (any session)'}`,
-            options,
-          );
-          if (!picked) return;
-          const index = Number(picked.trim().split('.')[0]) - 1;
-          const chosen = Number.isInteger(index) ? active[index] : undefined;
-          if (!chosen) {
-            ctx.ui.notify(`Could not match selection: ${picked}`, 'error');
-            return;
-          }
-          target = chosen;
+      } else if (runs.length === 0) {
+        ctx.ui.notify('No active subagents in this session', 'info');
+        return;
+      } else if (runs.length === 1) {
+        target = runs[0];
+      } else {
+        const picked = await ctx.ui.select(
+          `${runs.length} active subagents`,
+          runs.map((candidate, index) => label(index, candidate)),
+        );
+        if (!picked) return;
+        const index = Number(picked.trim().split('.')[0]) - 1;
+        target = Number.isInteger(index) ? runs[index] : undefined;
+        if (!target) {
+          ctx.ui.notify(`Could not match selection: ${picked}`, 'error');
+          return;
         }
       }
 
-      const opened = await openInHerdr(target, focus);
-      if (opened) {
-        ctx.ui.notify(
-          `Watching ${target.status.steps?.[0]?.agent ?? 'agent'} ${target.runId.slice(0, 8)} in a Herdr pane`,
-          'info',
-        );
-        return;
-      }
+      const opened = await openWatcher(target, focus);
       ctx.ui.notify(
-        `Herdr unavailable. Run manually:\n  bun ${watcher} ${target.runId}`,
-        'warning',
+        opened
+          ? `Watching ${target.label || 'agent'} ${target.id.slice(0, 8)} in a Herdr pane`
+          : `Herdr unavailable. Run manually:\n  bun ${watcher} ${target.id}`,
+        opened ? 'info' : 'warning',
       );
     },
   });
