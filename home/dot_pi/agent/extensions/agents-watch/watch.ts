@@ -2,18 +2,19 @@
 // Read-only live view of a pi-subagents async run.
 // Tails events.jsonl only: never writes artifacts, never signals the runner.
 //
-//   subagent-watch                 # newest run, replay then follow
-//   subagent-watch --tail         # newest run, skip replay, live only
-//   subagent-watch <runId> --tail # specific run, live from now
-//   subagent-watch <runId> --step 1
-//   subagent-watch --expanded     # start expanded (also for piping to a file)
-//   subagent-watch --no-follow
+//   watch                 # newest run, replay then follow
+//   watch --tail          # newest run, skip replay, live only
+//   watch <runId> --tail  # specific run, live from now
+//   watch <runId> --step 1
+//   watch --expanded      # start expanded (also for piping to a file)
+//   watch --no-follow
 //
 // Ctrl+O toggles full output; ctrl-C stops.
 
 import * as fs from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
+
+import { asyncRoot, compactTokens, listRuns } from './runs.ts';
 
 const args = process.argv.slice(2);
 const follow = !args.includes('--no-follow');
@@ -23,37 +24,16 @@ const stepIndex = args.includes('--step')
   : undefined;
 const runArg = args.find((a) => !a.startsWith('--') && a !== String(stepIndex));
 
-function asyncRoot(): string {
-  const root = path.join(
-    os.tmpdir(),
-    `pi-subagents-uid-${process.getuid?.() ?? 0}`,
-    'async-subagent-runs',
-  );
-  if (fs.existsSync(root)) return root;
-  const parent = path.join(os.tmpdir(), 'pi-subagents-uid-501');
-  if (!fs.existsSync(parent)) {
-    throw new Error(`no pi-subagents run root under ${os.tmpdir()}`);
-  }
-  return path.join(parent, 'async-subagent-runs');
-}
-
 function resolveRunDir(): string {
-  const root = asyncRoot();
+  const runs = listRuns();
   if (runArg) {
-    const dir = path.isAbsolute(runArg) ? runArg : path.join(root, runArg);
+    const dir = path.isAbsolute(runArg) ? runArg : path.join(asyncRoot(), runArg);
     if (!fs.existsSync(path.join(dir, 'events.jsonl')))
       throw new Error(`no events.jsonl in ${dir}`);
     return dir;
   }
-  const newest = fs
-    .readdirSync(root)
-    .map((name) => ({
-      name,
-      dir: path.join(root, name),
-      mtime: fs.statSync(path.join(root, name)).mtimeMs,
-    }))
-    .sort((a, b) => b.mtime - a.mtime)[0];
-  if (!newest) throw new Error(`no runs in ${root}`);
+  const newest = runs[0];
+  if (!newest) throw new Error(`no runs under ${asyncRoot()}`);
   return newest.dir;
 }
 
@@ -438,11 +418,6 @@ const meta = JSON.parse(fs.readFileSync(status, 'utf8')) as {
   state?: string;
   totalTokens?: { input?: number; output?: number };
 };
-
-function compactTokens(n: number | undefined): string {
-  if (typeof n !== 'number' || !Number.isFinite(n)) return '-';
-  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
-}
 
 let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
