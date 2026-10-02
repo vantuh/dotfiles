@@ -6,8 +6,11 @@ Read-only live view of a running pi-subagents child.
 tails the chosen run's `events.jsonl`. Nothing is written and the runner is never
 signalled.
 
+The picker always shows, including for a single run: opening a pane is a
+deliberate action, not something the command does on its own.
+
 ```
-/agents-watch                  # pick from active runs (skipped when only one)
+/agents-watch                  # always pick from active runs
 /agents-watch <runId>          # skip the picker
 /agents-watch <runId> --no-focus
 ```
