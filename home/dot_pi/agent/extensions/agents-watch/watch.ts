@@ -480,30 +480,36 @@ function paintBar(): void {
     text.length + right.length >= width
       ? text.slice(0, width)
       : text + ' '.repeat(width - text.length - right.length) + right;
-  process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.bar(text)}`);
+  // Erase and repaint in one write so a width change never shows a blank row.
+  process.stdout.write(`\x1b[${barRows};1H\x1b[K${C.bar(text)}`);
 }
 
 function enableBar(): void {
   if (!process.stdout.isTTY || !process.stdout.rows || process.stdout.rows < 8)
     return;
 
-  // Re-apply the pinned region on resize. A pane that grew or shrank moves the
-  // bar row, and without this the absolute writes below land inside the log and
-  // leave bar fragments in the transcript.
+  // Re-apply the pinned region only when the row count changes. A width-only
+  // resize keeps the region, so the terminal does not reflow the log and the
+  // footer just repaints in place.
+  let pinnedRows = 0;
   const applyBar = (): void => {
     const rows = process.stdout.rows;
     if (!rows || rows < 8) {
       // Too short to pin a bar: release the region, stop intercepting output, and
       // wipe the row so the last painted bar cannot linger as a log fragment.
       if (barRows) {
-        process.stdout.write(`\x1b[r\x1b[${barRows};1H\x1b[2K`);
+        process.stdout.write(`\x1b[r\x1b[${barRows};1H\x1b[K`);
       }
       barRows = 0;
+      pinnedRows = 0;
       return;
     }
+    if (rows !== pinnedRows) {
+      process.stdout.write(`\x1b[1;${rows - 1}r`);
+      pinnedRows = rows;
+      process.stdout.write(`\x1b[${rows};1H`);
+    }
     barRows = rows;
-    process.stdout.write(`\x1b[1;${rows - 1}r`);
-    process.stdout.write(`\x1b[${rows};1H\x1b[2K`);
     paintBar();
   };
 
