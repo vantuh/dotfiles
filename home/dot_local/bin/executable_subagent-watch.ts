@@ -6,7 +6,10 @@
 //   subagent-watch --tail         # newest run, skip replay, live only
 //   subagent-watch <runId> --tail # specific run, live from now
 //   subagent-watch <runId> --step 1
+//   subagent-watch --expanded     # start expanded (also for piping to a file)
 //   subagent-watch --no-follow
+//
+// Ctrl+O toggles full output; ctrl-C stops.
 
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -64,17 +67,39 @@ const C = {
   magenta: (s: string) => `\x1b[35m${s}\x1b[0m`,
 };
 
+let expanded = args.includes('--expanded');
+
 function firstLine(text: string, max = 160): string {
   const line = text.replace(/\s+/g, ' ').trim();
   return line.length > max ? `${line.slice(0, max)}…` : line;
 }
 
-function argPreview(args: unknown): string {
+/** Collapsed: one clipped line. Expanded: every line, indented under the label. */
+function detail(
+  tag: string,
+  label: string,
+  text: string,
+  color: (s: string) => string,
+  max: number,
+): void {
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  if (!expanded) {
+    console.log(`${tag}${label} ${color(firstLine(trimmed, max))}`);
+    return;
+  }
+  console.log(`${tag}${label}`);
+  for (const line of trimmed.split(/\r?\n/))
+    console.log(`${tag}  ${color(line)}`);
+}
+
+function argText(args: unknown): string {
   if (!args || typeof args !== 'object') return '';
   const record = args as Record<string, unknown>;
+  if (expanded) return JSON.stringify(args, null, 2);
   for (const key of ['command', 'path', 'pattern', 'prompt', 'url', 'query']) {
     const value = record[key];
-    if (typeof value === 'string' && value.trim()) return firstLine(value);
+    if (typeof value === 'string' && value.trim()) return value;
   }
   return '';
 }
@@ -129,9 +154,7 @@ function render(record: Record<string, unknown>): void {
           typeof part.thinking === 'string' &&
           part.thinking.trim()
         ) {
-          console.log(
-            `${tag}${C.magenta('◆ think')} ${C.dim(firstLine(part.thinking, 220))}`,
-          );
+          detail(tag, C.magenta('◆ think'), part.thinking, C.dim, 220);
         } else if (
           part.type === 'text' &&
           typeof part.text === 'string' &&
@@ -146,8 +169,12 @@ function render(record: Record<string, unknown>): void {
     case 'tool_execution_start': {
       const id = String(record.toolCallId ?? record.toolName ?? '');
       startedAt.set(id, observedAt(record) ?? Date.now());
-      console.log(
-        `${tag}${C.cyan('▶')} ${C.bold(String(record.toolName ?? 'tool'))} ${C.dim(argPreview(record.args))}`,
+      detail(
+        tag,
+        `${C.cyan('▶')} ${C.bold(String(record.toolName ?? 'tool'))}`,
+        argText(record.args),
+        C.dim,
+        160,
       );
       return;
     }
@@ -157,10 +184,18 @@ function render(record: Record<string, unknown>): void {
         (record.partialResult as Record<string, unknown> | undefined)?.content,
       );
       if (!text || text === lastPartial.get(id)) return;
+      // Expanded shows only what the update added, not the whole buffer again.
+      const previous = lastPartial.get(id) ?? '';
       lastPartial.set(id, text);
-      const grew = text.length;
+      const delta = text.startsWith(previous)
+        ? text.slice(previous.length)
+        : text;
+      if (expanded) {
+        detail(tag, `  ${C.dim('…')}`, delta, C.dim, 180);
+        return;
+      }
       console.log(
-        `${tag}  ${C.dim('…')} ${C.dim(firstLine(text.slice(-200), 180))} ${C.dim(`(${grew}b)`)}`,
+        `${tag}  ${C.dim('…')} ${C.dim(firstLine(text.slice(-200), 180))} ${C.dim(`(${text.length}b)`)}`,
       );
       return;
     }
@@ -174,14 +209,14 @@ function render(record: Record<string, unknown>): void {
             )
           : '';
       const mark = record.isError === true ? C.red('✗') : C.green('✓');
-      const summary = firstLine(
+      detail(
+        tag,
+        `${mark} ${String(record.toolName ?? 'tool')}${took}`,
         contentText(
           (record.result as Record<string, unknown> | undefined)?.content,
         ),
+        C.dim,
         140,
-      );
-      console.log(
-        `${tag}${mark} ${String(record.toolName ?? 'tool')}${took} ${C.dim(summary)}`,
       );
       startedAt.delete(id);
       lastPartial.delete(id);
@@ -206,15 +241,23 @@ const meta = JSON.parse(fs.readFileSync(status, 'utf8')) as {
   steps?: { agent?: string }[];
 };
 
-console.log(
-  C.bold(`run ${path.basename(dir)}`) +
-    C.dim(`  state=${meta.state ?? '?'}  ${meta.cwd ?? ''}`),
-);
-for (const [index, step] of (meta.steps ?? []).entries()) {
-  console.log(C.dim(`  step ${index}: ${step.agent ?? '?'}`));
+function printHeader(): void {
+  console.log(
+    C.bold(`run ${path.basename(dir)}`) +
+      C.dim(`  state=${meta.state ?? '?'}  ${meta.cwd ?? ''}`),
+  );
+  for (const [index, step] of (meta.steps ?? []).entries()) {
+    console.log(C.dim(`  step ${index}: ${step.agent ?? '?'}`));
+  }
+  console.log(C.dim(`  events: ${events}`));
+  console.log(
+    C.dim('─'.repeat(60)) +
+      ' ' +
+      (expanded
+        ? C.yellow('ctrl+o: collapse')
+        : C.dim('ctrl+o: expand full output')),
+  );
 }
-console.log(C.dim(`  events: ${events}`));
-console.log(C.dim('─'.repeat(60)));
 
 let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
@@ -237,10 +280,36 @@ function drain(): void {
   }
 }
 
+function repaint(): void {
+  process.stdout.write('\x1b[2J\x1b[H');
+  startedAt.clear();
+  lastPartial.clear();
+  offset = 0;
+  buffer = '';
+  printHeader();
+  drain();
+}
+
+printHeader();
 drain();
 if (!follow) process.exit(0);
 
-console.log(C.dim('─ following (ctrl-c to stop) ─'));
+if (process.stdin.isTTY) {
+  process.stdin.setRawMode(true);
+  process.stdin.resume();
+  process.stdin.on('data', (chunk: Buffer) => {
+    const key = chunk.toString();
+    if (key === '\x0f') {
+      expanded = !expanded;
+      repaint();
+    } else if (key === '\x03' || key === 'q') {
+      process.stdin.setRawMode(false);
+      process.exit(0);
+    }
+  });
+}
+
+console.log(C.dim('─ following (ctrl-o expand · ctrl-c stop) ─'));
 setInterval(() => {
   try {
     drain();
