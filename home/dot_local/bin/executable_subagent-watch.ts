@@ -138,23 +138,61 @@ function duration(ms: unknown): string {
     : `${Math.floor(s / 60)}m${Math.round(s % 60)}s`;
 }
 
+let turnNumber = 0;
+let turn:
+  | { start: number; tools: number; out: number; cost: number }
+  | undefined;
+
+function numberValue(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
 function render(record: Record<string, unknown>): void {
   const type = String(record.type ?? '');
   const step =
     typeof record.subagentStepIndex === 'number' ? record.subagentStepIndex : 0;
   if (stepIndex !== undefined && step !== stepIndex) return;
-  const tag = step > 0 ? C.dim(`[${step}] `) : '';
+  const bar = turn ? `${C.dim('│')} ` : '';
+  const tag = bar + (step > 0 ? C.dim(`[${step}] `) : '');
 
   switch (type) {
     case 'agent_start':
       console.log(`${tag}${C.bold('agent started')}`);
       return;
     case 'turn_start':
-      console.log(`${tag}${C.dim('── turn ────────────────────────')}`);
+      turnNumber += 1;
+      turn = {
+        start: observedAt(record) ?? Date.now(),
+        tools: 0,
+        out: 0,
+        cost: 0,
+      };
+      console.log(`${C.dim('╭')} ${C.bold(`turn ${turnNumber}`)}`);
       return;
+    case 'turn_end': {
+      // The message is already rendered at message_end; only close the frame.
+      if (!turn) return;
+      const stats = [
+        duration((observedAt(record) ?? Date.now()) - turn.start),
+        `${turn.tools} ${turn.tools === 1 ? 'tool' : 'tools'}`,
+        `${compactTokens(turn.out)} out`,
+        turn.cost > 0 ? `$${turn.cost.toFixed(3)}` : '',
+      ].filter(Boolean);
+      console.log(
+        `${C.dim('╰')} ${C.green('done')} ${C.dim(stats.join(' · '))}`,
+      );
+      turn = undefined;
+      return;
+    }
     case 'message_end': {
       const message = record.message as Record<string, unknown> | undefined;
       if (message?.role !== 'assistant') return;
+      const usage = message.usage as Record<string, unknown> | undefined;
+      if (turn && usage) {
+        turn.out += numberValue(usage.output);
+        const cost = usage.cost as Record<string, unknown> | undefined;
+        turn.cost += numberValue(cost?.total);
+      }
       const content = message.content as unknown;
       if (!Array.isArray(content)) return;
       for (const part of content as Record<string, unknown>[]) {
@@ -227,6 +265,7 @@ function render(record: Record<string, unknown>): void {
         C.dim,
         140,
       );
+      if (turn) turn.tools += 1;
       startedAt.delete(id);
       lastPartial.delete(id);
       return;
@@ -364,6 +403,58 @@ let buffer = '';
 let lastEventAt = Date.now();
 let idleBucket = 0;
 
+// Pin a status bar to the bottom row with a scroll region, so hotkeys survive
+// scrolling and ctrl+o repaints. Restored on exit.
+let barRows = 0;
+const realLog = console.log;
+
+function barText(): string {
+  const idle = Math.floor((Date.now() - lastEventAt) / 1000);
+  const state = (meta.state ?? '?').slice(0, 12);
+  const t = meta.totalTokens;
+  return (
+    `ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit  │  ${state} · idle ${idle}s` +
+    (t ? ` · in ${compactTokens(t.input)} out ${compactTokens(t.output)}` : '')
+  );
+}
+
+function paintBar(): void {
+  if (!barRows) return;
+  const width = (process.stdout.columns ?? 80) - 1;
+  const plain = ` ${barText()} `;
+  // Truncate before colouring: slicing an ANSI string cuts escape sequences.
+  const text =
+    plain.length > width ? `${plain.slice(0, Math.max(0, width - 1))}…` : plain;
+  process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.dim(text)}`);
+}
+
+function enableBar(): void {
+  const rows = process.stdout.rows;
+  if (!process.stdout.isTTY || !rows || rows < 8) return;
+  barRows = rows;
+  process.stdout.write(`\x1b[1;${rows - 1}r`);
+  console.log = (...parts: unknown[]) => {
+    process.stdout.write(`\x1b[${rows - 1};1H`);
+    realLog(...parts);
+  };
+  const restore = (): void => {
+    if (!barRows) return;
+    barRows = 0;
+    console.log = realLog;
+    process.stdout.write('\x1b[r\x1b[2J\x1b[H');
+  };
+  process.on('exit', restore);
+  process.on('SIGINT', () => {
+    restore();
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    restore();
+    process.exit(0);
+  });
+  paintBar();
+}
+
 function drain(): void {
   const size = fs.statSync(events).size;
   if (size <= offset) return;
@@ -396,12 +487,15 @@ function repaint(): void {
   process.stdout.write('\x1b[2J\x1b[H');
   startedAt.clear();
   lastPartial.clear();
+  turn = undefined;
+  turnNumber = 0;
   offset = 0;
   buffer = '';
   lastEventAt = Date.now();
   idleBucket = 0;
   printHeader();
   drain();
+  paintBar();
 }
 
 printHeader();
@@ -423,7 +517,8 @@ if (process.stdin.isTTY) {
   });
 }
 
-console.log(C.dim('─ following (ctrl-o expand · ctrl-c stop) ─'));
+console.log(C.dim('─ following ─'));
+enableBar();
 setInterval(() => {
   try {
     drain();
@@ -444,4 +539,5 @@ setInterval(() => {
       ),
     );
   }
+  paintBar();
 }, 400);
