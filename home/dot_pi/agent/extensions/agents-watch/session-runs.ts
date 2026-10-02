@@ -1,4 +1,7 @@
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type {
+  ExtensionAPI,
+  ExtensionContext,
+} from '@earendil-works/pi-coding-agent';
 
 /**
  * pi-subagents publishes an in-process RPC but exports no client for it, so this
@@ -46,40 +49,47 @@ function collectAgents(run: ScopedRun): string[] {
   return [...new Set(names.filter(Boolean))];
 }
 
-function awaitReply(
-  bus: ExtensionAPI['events'],
-  requestId: string,
-): Promise<RpcReply | undefined> {
-  return new Promise((resolve) => {
-    const event = `${REPLY_PREFIX}${requestId}`;
-    const timer = setTimeout(() => {
-      bus.off(event, onReply);
-      resolve(undefined);
-    }, TIMEOUT_MS);
-    timer.unref?.();
-    const onReply = (reply: RpcReply): void => {
-      clearTimeout(timer);
-      bus.off(event, onReply);
-      resolve(reply);
-    };
-    bus.on(event, onReply);
-  });
-}
-
-
 /**
  * Active runs owned by the calling session, or undefined when the owner is
- * absent. pi-subagents announces itself at extension init, well before a
- * command can run, so a single attempt is enough.
+ * absent. pi-subagents announces itself at extension init, well before a command
+ * can run, so a single attempt is enough.
  */
-export async function fetchSessionRuns(pi: ExtensionAPI): Promise<ScopedRun[] | undefined> {
+export async function fetchSessionRuns(
+  pi: ExtensionAPI,
+  ctx: ExtensionContext,
+): Promise<ScopedRun[] | undefined> {
   const requestId = crypto.randomUUID();
-  const pending = awaitReply(pi.events, requestId);
-  pi.events.emit(REQUEST_EVENT, { version: 1, requestId, method: 'status', params: {} });
-  const reply = await pending;
+  const reply = await new Promise<RpcReply | undefined>((resolve) => {
+    const timer = setTimeout(() => finish(undefined), TIMEOUT_MS);
+    timer.unref?.();
+    // The bus has no `off`: `on` returns the unsubscribe, and the context
+    // retains it so a stale runtime cannot keep this listener alive.
+    const unsubscribe = pi.events.on(`${REPLY_PREFIX}${requestId}`, (data) => {
+      finish(data as RpcReply);
+    });
+    const untrack = ctx.trackEventBusSubscription(unsubscribe);
+
+    function finish(result: RpcReply | undefined): void {
+      clearTimeout(timer);
+      unsubscribe();
+      untrack();
+      resolve(result);
+    }
+
+    pi.events.emit(REQUEST_EVENT, {
+      version: 1,
+      requestId,
+      method: 'status',
+      params: {},
+    });
+  });
+
   if (!reply?.success) return undefined;
 
   return (reply.data?.asyncSnapshot?.runs ?? [])
     .filter((run) => run.state === 'running' || run.state === 'queued')
-    .map((run) => ({ ...run, label: collectAgents(run).join(',') || run.label }));
+    .map((run) => ({
+      ...run,
+      label: collectAgents(run).join(',') || run.label,
+    }));
 }
