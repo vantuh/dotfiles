@@ -436,45 +436,12 @@ const events = path.join(dir, 'events.jsonl');
 const status = path.join(dir, 'status.json');
 const meta = JSON.parse(fs.readFileSync(status, 'utf8')) as {
   state?: string;
-  cwd?: string;
-  steps?: { agent?: string }[];
-  totalTokens?: { input?: number; output?: number; window?: number };
-  steering?: { pending?: number; delivered?: number; failed?: number };
+  totalTokens?: { input?: number; output?: number };
 };
 
 function compactTokens(n: number | undefined): string {
   if (typeof n !== 'number' || !Number.isFinite(n)) return '-';
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
-}
-
-function printHeader(): void {
-  const t = meta.totalTokens;
-  console.log(
-    C.bold(`run ${path.basename(dir)}`) +
-      C.dim(`  state=${meta.state ?? '?'}  ${meta.cwd ?? ''}`),
-  );
-  for (const [index, step] of (meta.steps ?? []).entries()) {
-    console.log(C.dim(`  step ${index}: ${step.agent ?? '?'}`));
-  }
-  if (t) {
-    const steer = meta.steering;
-    console.log(
-      C.dim(
-        `  tokens: in ${compactTokens(t.input)} · out ${compactTokens(t.output)} · window ${compactTokens(t.window)}` +
-          (steer && (steer.pending || steer.delivered || steer.failed)
-            ? `   steer: pending ${steer.pending ?? 0} · delivered ${steer.delivered ?? 0} · failed ${steer.failed ?? 0}`
-            : ''),
-      ),
-    );
-  }
-  console.log(C.dim(`  events: ${events}`));
-  console.log(
-    C.dim('─'.repeat(60)) +
-      ' ' +
-      (expanded
-        ? C.yellow('ctrl+o: collapse')
-        : C.dim('ctrl+o: expand full output')),
-  );
 }
 
 let offset = tail ? fs.statSync(events).size : 0;
@@ -566,12 +533,10 @@ function repaint(): void {
   offset = 0;
   buffer = '';
   lastEventAt = Date.now();
-  printHeader();
   drain();
   paintBar();
 }
 
-printHeader();
 drain();
 if (!follow) process.exit(0);
 
