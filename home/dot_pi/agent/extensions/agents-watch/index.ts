@@ -90,11 +90,12 @@ export default function (pi: ExtensionAPI) {
       } else if (runs.length === 0) {
         ctx.ui.notify('No active subagents in this session', 'info');
         return;
-      } else if (runs.length === 1) {
-        target = runs[0];
       } else {
+        // Always pick, even for a single run: opening is a deliberate action.
         const picked = await ctx.ui.select(
-          `${runs.length} active subagents`,
+          runs.length === 1
+            ? '1 active subagent'
+            : `${runs.length} active subagents`,
           runs.map((candidate, index) => label(index, candidate)),
         );
         if (!picked) return;
@@ -108,7 +109,11 @@ export default function (pi: ExtensionAPI) {
 
       let result;
       try {
-        result = await openWatchPane(target.id, ctx.cwd, ['bun', watcher, target.id]);
+        result = await openWatchPane(target.id, ctx.cwd, [
+          'bun',
+          watcher,
+          target.id,
+        ]);
       } catch (error) {
         ctx.ui.notify(
           `Could not open a Herdr pane: ${error instanceof Error ? error.message : String(error)}\n` +
