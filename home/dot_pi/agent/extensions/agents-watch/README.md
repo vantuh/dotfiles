@@ -2,7 +2,7 @@
 
 Read-only live view of a running pi-subagents child.
 
-`/agents-watch` lists active async runs, and on Enter splits a Herdr pane that
+`/agents-watch` lists active async runs owned by the current Pi session, and on Enter splits a Herdr pane that
 tails the chosen run's `events.jsonl`. Nothing is written and the runner is never
 signalled.
 
