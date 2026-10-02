@@ -80,7 +80,11 @@ bun ~/.pi/agent/extensions/agents-watch/watch.ts --tail
 | Key | Action |
 | --- | --- |
 | `Ctrl+O` | Toggle full output; redraws from the start of the run |
-| `q` / `Ctrl+C` | Quit |
+| `q` / `Ctrl+C` | Quit, closing the Herdr pane the watcher runs in |
+
+`q` closes its own pane when `HERDR_ENV=1`, since a watcher pane is disposable.
+Pass `--keep-pane` to quit without touching the layout. Outside Herdr there is no
+pane to close and the process just exits.
 
 ## What it renders
 
