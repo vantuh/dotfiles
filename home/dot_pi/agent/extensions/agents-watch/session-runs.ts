@@ -1,7 +1,4 @@
-import type {
-  ExtensionAPI,
-  ExtensionContext,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 
 /**
  * pi-subagents publishes an in-process RPC but exports no client for it, so this
@@ -56,26 +53,29 @@ function collectAgents(run: ScopedRun): string[] {
  */
 export async function fetchSessionRuns(
   pi: ExtensionAPI,
-  ctx: ExtensionContext,
 ): Promise<ScopedRun[] | undefined> {
   const requestId = crypto.randomUUID();
-  const reply = await new Promise<RpcReply | undefined>((resolve) => {
-    const timer = setTimeout(() => finish(undefined), TIMEOUT_MS);
-    timer.unref?.();
-    // The bus has no `off`: `on` returns the unsubscribe, and the context
-    // retains it so a stale runtime cannot keep this listener alive.
-    const unsubscribe = pi.events.on(`${REPLY_PREFIX}${requestId}`, (data) => {
-      finish(data as RpcReply);
-    });
-    const untrack = ctx.trackEventBusSubscription(unsubscribe);
+  const channel = `${REPLY_PREFIX}${requestId}`;
 
-    function finish(result: RpcReply | undefined): void {
+  // The bus has no `off`; `on` returns the unsubscribe handle.
+  let unsubscribe = (): void => undefined;
+  let settled = false;
+
+  const reply = await new Promise<RpcReply | undefined>((resolve) => {
+    const timer = setTimeout(() => settle(undefined), TIMEOUT_MS);
+    timer.unref?.();
+
+    function settle(result: RpcReply | undefined): void {
+      // Guard so a late reply after the timeout cannot resolve twice, and so no
+      // cleanup path can touch a binding that was never assigned.
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       unsubscribe();
-      untrack();
       resolve(result);
     }
 
+    unsubscribe = pi.events.on(channel, (data) => settle(data as RpcReply));
     pi.events.emit(REQUEST_EVENT, {
       version: 1,
       requestId,
