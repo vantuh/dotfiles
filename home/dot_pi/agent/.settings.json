@@ -7,7 +7,7 @@
     "npm:pi-autoname",
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
-    "npm:pi-subagents",
+    "git:github.com/nicobailon/pi-subagents",
     "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth"
   ],
