@@ -3,7 +3,8 @@
 // Tails events.jsonl only: never writes artifacts, never signals the runner.
 //
 //   subagent-watch                 # newest run, replay then follow
-//   subagent-watch <runId>         # specific run
+//   subagent-watch --tail         # newest run, skip replay, live only
+//   subagent-watch <runId> --tail # specific run, live from now
 //   subagent-watch <runId> --step 1
 //   subagent-watch --no-follow
 
@@ -13,6 +14,7 @@ import * as path from 'node:path';
 
 const args = process.argv.slice(2);
 const follow = !args.includes('--no-follow');
+const tail = args.includes('--tail');
 const stepIndex = args.includes('--step')
   ? Number(args[args.indexOf('--step') + 1])
   : undefined;
@@ -214,7 +216,7 @@ for (const [index, step] of (meta.steps ?? []).entries()) {
 console.log(C.dim(`  events: ${events}`));
 console.log(C.dim('─'.repeat(60)));
 
-let offset = 0;
+let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
 
 function drain(): void {
