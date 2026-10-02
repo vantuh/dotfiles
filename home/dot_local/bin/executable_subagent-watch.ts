@@ -65,6 +65,7 @@ const C = {
   red: (s: string) => `\x1b[31m${s}\x1b[0m`,
   yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
   magenta: (s: string) => `\x1b[35m${s}\x1b[0m`,
+  bar: (s: string) => `\x1b[48;5;236m\x1b[38;5;252m${s}\x1b[0m`,
 };
 
 let expanded = args.includes('--expanded');
@@ -459,7 +460,6 @@ function printHeader(): void {
 let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
 let lastEventAt = Date.now();
-let idleBucket = 0;
 
 // Pin a status bar to the bottom row with a scroll region, so hotkeys survive
 // scrolling and ctrl+o repaints. Restored on exit.
@@ -478,12 +478,12 @@ function barText(): string {
 
 function paintBar(): void {
   if (!barRows) return;
-  const width = (process.stdout.columns ?? 80) - 1;
+  const width = process.stdout.columns ?? 80;
   const plain = ` ${barText()} `;
-  // Truncate before colouring: slicing an ANSI string cuts escape sequences.
+  // Pad so the background fills the row instead of ending mid-text.
   const text =
-    plain.length > width ? `${plain.slice(0, Math.max(0, width - 1))}…` : plain;
-  process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.dim(text)}`);
+    plain.length > width ? plain.slice(0, width) : plain.padEnd(width, ' ');
+  process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.bar(text)}`);
 }
 
 function enableBar(): void {
@@ -526,19 +526,10 @@ function drain(): void {
     try {
       render(JSON.parse(line) as Record<string, unknown>);
       lastEventAt = Date.now();
-      idleBucket = 0;
     } catch {
       // partial or non-JSON line: drop it
     }
   }
-}
-
-// Silence is ambiguous on its own: report it in coarse steps instead of a timer per tick.
-function idleTier(seconds: number): number {
-  if (seconds < 10) return 0;
-  if (seconds < 30) return 1;
-  if (seconds < 60) return 2;
-  return 2 + Math.floor(seconds / 60);
 }
 
 function repaint(): void {
@@ -550,7 +541,6 @@ function repaint(): void {
   offset = 0;
   buffer = '';
   lastEventAt = Date.now();
-  idleBucket = 0;
   printHeader();
   drain();
   paintBar();
@@ -584,16 +574,6 @@ setInterval(() => {
     console.error(
       C.red(
         `read failed: ${error instanceof Error ? error.message : String(error)}`,
-      ),
-    );
-  }
-  const idle = Math.floor((Date.now() - lastEventAt) / 1000);
-  const tier = idleTier(idle);
-  if (tier > idleBucket) {
-    idleBucket = tier;
-    console.log(
-      C.dim(
-        `· idle ${idle}s — no events (thinking, model latency, or waiting)`,
       ),
     );
   }
