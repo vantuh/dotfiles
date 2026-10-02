@@ -471,18 +471,23 @@ function barText(): string {
   const state = (meta.state ?? '?').slice(0, 12);
   const t = meta.totalTokens;
   return (
-    `ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit  │  ${state} · idle ${idle}s` +
-    (t ? ` · in ${compactTokens(t.input)} out ${compactTokens(t.output)}` : '')
+    ` ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit  │  ${state} · idle ${idle}s` +
+    (t
+      ? ` · in ${compactTokens(t.input)} out ${compactTokens(t.output)} `
+      : ' ')
   );
 }
 
 function paintBar(): void {
   if (!barRows) return;
   const width = process.stdout.columns ?? 80;
-  const plain = ` ${barText()} `;
+  const left = barText();
+  const right = follow ? ' following ' : ' replay ';
   // Pad so the background fills the row instead of ending mid-text.
   const text =
-    plain.length > width ? plain.slice(0, width) : plain.padEnd(width, ' ');
+    left.length + right.length >= width
+      ? left.slice(0, width)
+      : left + ' '.repeat(width - left.length - right.length) + right;
   process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.bar(text)}`);
 }
 
@@ -565,7 +570,6 @@ if (process.stdin.isTTY) {
   });
 }
 
-console.log(C.dim('─ following ─'));
 enableBar();
 setInterval(() => {
   try {
