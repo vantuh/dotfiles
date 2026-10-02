@@ -129,6 +129,15 @@ function observedAt(record: Record<string, unknown>): number | undefined {
   return undefined;
 }
 
+function duration(ms: unknown): string {
+  if (typeof ms !== 'number' || !Number.isFinite(ms)) return '';
+  if (ms < 1000) return `${ms}ms`;
+  const s = ms / 1000;
+  return s < 90
+    ? `${s.toFixed(1)}s`
+    : `${Math.floor(s / 60)}m${Math.round(s % 60)}s`;
+}
+
 function render(record: Record<string, unknown>): void {
   const type = String(record.type ?? '');
   const step =
@@ -222,9 +231,81 @@ function render(record: Record<string, unknown>): void {
       lastPartial.delete(id);
       return;
     }
+    case 'auto_retry_start': {
+      const delay =
+        typeof record.delayMs === 'number' ? record.delayMs / 1000 : 0;
+      console.log(
+        `${tag}${C.yellow('↻ retry')} ${record.attempt}/${record.maxAttempts} in ${delay}s ${C.dim(firstLine(String(record.errorMessage ?? ''), 140))}`,
+      );
+      return;
+    }
+    case 'auto_retry_end':
+      console.log(
+        record.success === true
+          ? `${tag}${C.green('↻ retry ok')} ${C.dim(`attempt ${record.attempt}`)}`
+          : `${tag}${C.red(`↻ retry gave up after ${record.attempt}`)} ${C.dim(firstLine(String(record.finalError ?? ''), 140))}`,
+      );
+      return;
+    case 'subagent.control': {
+      const event = record.event as Record<string, unknown> | undefined;
+      if (!event) return;
+      const facts = [
+        typeof event.turns === 'number' ? `${event.turns} turns` : '',
+        typeof event.toolCount === 'number' ? `${event.toolCount} tools` : '',
+        typeof event.tokens === 'number' ? `${event.tokens} tok` : '',
+        duration(event.elapsedMs),
+      ].filter(Boolean);
+      console.log(
+        `${tag}${C.yellow('⚑ control')} ${String(event.message ?? event.type ?? '')} ${C.dim(`[${facts.join(' · ')}]`)}`,
+      );
+      return;
+    }
+    case 'subagent.steer.requested':
+    case 'subagent.steer.routed':
+    case 'subagent.steer.queued':
+    case 'subagent.steer.delivered':
+    case 'subagent.steer.failed':
+    case 'subagent.steer.recovered': {
+      const phase = record.type.slice('subagent.steer.'.length);
+      const tone =
+        phase === 'failed' ? C.red : phase === 'delivered' ? C.green : C.cyan;
+      const detail = firstLine(
+        String(record.message ?? record.error ?? ''),
+        140,
+      );
+      console.log(
+        `${tag}${tone(`⇢ steer ${phase}`)} ${detail}${C.dim(` ${String(record.requestId ?? '').slice(0, 8)}`)}`,
+      );
+      return;
+    }
+    case 'subagent.step.started':
+      console.log(
+        `${tag}${C.bold(`── step ${record.stepIndex ?? 0}: ${record.agent ?? '?'} ──`)}`,
+      );
+      return;
+    case 'subagent.step.completed':
+      console.log(
+        `${tag}${C.green(`── step ${record.stepIndex ?? 0} ok`)} ${C.dim(duration(record.durationMs))}`,
+      );
+      return;
+    case 'subagent.step.failed':
+      console.log(
+        `${tag}${C.red(`── step ${record.stepIndex ?? 0} failed`)} ${C.dim(`exit=${record.exitCode ?? '?'} ${duration(record.durationMs)}`)}`,
+      );
+      return;
+    case 'subagent.step.paused':
+    case 'subagent.step.stopped':
+      console.log(
+        `${tag}${C.yellow(`── step ${record.stepIndex ?? 0} ${record.type.slice(16)} ──`)}`,
+      );
+      return;
+    case 'subagent.run.started':
     case 'subagent.run.completed':
     case 'subagent.run.stopped':
-      console.log(C.bold(`── ${type} ──`));
+      console.log(C.bold(`── ${record.type.slice('subagent.'.length)} ──`));
+      return;
+    case 'agent_settled':
+      console.log(`${tag}${C.green('agent settled')}`);
       return;
     default:
       if (type.startsWith('subagent.') && type.includes('failed'))
@@ -239,15 +320,34 @@ const meta = JSON.parse(fs.readFileSync(status, 'utf8')) as {
   state?: string;
   cwd?: string;
   steps?: { agent?: string }[];
+  totalTokens?: { input?: number; output?: number; window?: number };
+  steering?: { pending?: number; delivered?: number; failed?: number };
 };
 
+function compactTokens(n: number | undefined): string {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return '-';
+  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+}
+
 function printHeader(): void {
+  const t = meta.totalTokens;
   console.log(
     C.bold(`run ${path.basename(dir)}`) +
       C.dim(`  state=${meta.state ?? '?'}  ${meta.cwd ?? ''}`),
   );
   for (const [index, step] of (meta.steps ?? []).entries()) {
     console.log(C.dim(`  step ${index}: ${step.agent ?? '?'}`));
+  }
+  if (t) {
+    const steer = meta.steering;
+    console.log(
+      C.dim(
+        `  tokens: in ${compactTokens(t.input)} · out ${compactTokens(t.output)} · window ${compactTokens(t.window)}` +
+          (steer && (steer.pending || steer.delivered || steer.failed)
+            ? `   steer: pending ${steer.pending ?? 0} · delivered ${steer.delivered ?? 0} · failed ${steer.failed ?? 0}`
+            : ''),
+      ),
+    );
   }
   console.log(C.dim(`  events: ${events}`));
   console.log(
@@ -261,6 +361,8 @@ function printHeader(): void {
 
 let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
+let lastEventAt = Date.now();
+let idleBucket = 0;
 
 function drain(): void {
   const size = fs.statSync(events).size;
@@ -274,10 +376,20 @@ function drain(): void {
     if (!line.trim()) continue;
     try {
       render(JSON.parse(line) as Record<string, unknown>);
+      lastEventAt = Date.now();
+      idleBucket = 0;
     } catch {
       // partial or non-JSON line: drop it
     }
   }
+}
+
+// Silence is ambiguous on its own: report it in coarse steps instead of a timer per tick.
+function idleTier(seconds: number): number {
+  if (seconds < 10) return 0;
+  if (seconds < 30) return 1;
+  if (seconds < 60) return 2;
+  return 2 + Math.floor(seconds / 60);
 }
 
 function repaint(): void {
@@ -286,6 +398,8 @@ function repaint(): void {
   lastPartial.clear();
   offset = 0;
   buffer = '';
+  lastEventAt = Date.now();
+  idleBucket = 0;
   printHeader();
   drain();
 }
@@ -317,6 +431,16 @@ setInterval(() => {
     console.error(
       C.red(
         `read failed: ${error instanceof Error ? error.message : String(error)}`,
+      ),
+    );
+  }
+  const idle = Math.floor((Date.now() - lastEventAt) / 1000);
+  const tier = idleTier(idle);
+  if (tier > idleBucket) {
+    idleBucket = tier;
+    console.log(
+      C.dim(
+        `· idle ${idle}s — no events (thinking, model latency, or waiting)`,
       ),
     );
   }
