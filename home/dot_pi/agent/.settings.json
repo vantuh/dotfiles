@@ -1,7 +1,9 @@
 {
   "defaultProvider": "openrouter",
   "defaultModel": "stealth/space-bunny-alpha",
-  "defaultTools": ["+codemode"],
+  "defaultTools": [
+    "+codemode"
+  ],
   "packages": [
     "npm:pi-web-access",
     "npm:pi-autoname",
@@ -12,7 +14,7 @@
     "npm:@gotgenes/pi-anthropic-auth"
   ],
   "lastChangelogVersion": "1.0.0",
-  "hideThinkingBlock": true,
+  "hideThinkingBlock": false,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
