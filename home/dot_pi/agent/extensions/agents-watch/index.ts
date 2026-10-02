@@ -7,6 +7,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 
 import { openWatchPane } from './panes.ts';
+import { readRunStatus, workflowChildren } from './runs.ts';
 import { fetchSessionRuns, type ScopedRun } from './session-runs.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -53,6 +54,37 @@ function findById(runs: ScopedRun[], wanted: string): ScopedRun | undefined {
   );
 }
 
+/**
+ * A workflow root's own log holds only workflow-level traces, so the picker lists
+ * its children instead. Each child is a real async run with its own artifacts.
+ */
+function flatten(runs: ScopedRun[]): ScopedRun[] {
+  const rows: ScopedRun[] = [];
+  for (const run of runs) {
+    const children = workflowChildren(run.id);
+    if (children.length === 0) {
+      rows.push(run);
+      continue;
+    }
+    for (const child of children) {
+      const status = readRunStatus(child.runId);
+      rows.push({
+        id: child.runId,
+        label: [child.key, child.label].filter(Boolean).join(' · ') || run.label,
+        state: (status?.state as ScopedRun['state']) ?? 'running',
+        startedAt: status?.startedAt,
+        activity: {
+          state: status?.activityState,
+          currentTool: status?.currentTool ?? undefined,
+          turnCount: status?.turnCount,
+          toolCount: status?.toolCount,
+        },
+      });
+    }
+  }
+  return rows;
+}
+
 export default function (pi: ExtensionAPI) {
   pi.registerCommand('agents-watch', {
     description: 'Watch a running subagent in a Herdr pane',
@@ -62,8 +94,8 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      const runs = await fetchSessionRuns(pi);
-      if (runs === undefined) {
+      const fetched = await fetchSessionRuns(pi);
+      if (fetched === undefined) {
         ctx.ui.notify(
           'pi-subagents RPC is not answering, so active runs cannot be listed.',
           'error',
@@ -71,6 +103,7 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
+      const runs = flatten(fetched);
       const tokens = rawArgs.trim().split(/\s+/).filter(Boolean);
       const wanted = tokens.find((token) => !token.startsWith('--')) ?? '';
 
