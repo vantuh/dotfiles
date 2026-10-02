@@ -199,6 +199,14 @@ function duration(ms: unknown): string {
     : `${Math.floor(s / 60)}m${Math.round(s % 60)}s`;
 }
 
+/** Full-width lifecycle rule; spans the pane instead of a bare inline label. */
+function rule(label: string, color: (s: string) => string): void {
+  const width = (process.stdout.columns ?? 80) - 1;
+  const head = `── ${label} `;
+  const fill = Math.max(0, width - visibleWidth(head));
+  console.log(color(`${head}${'─'.repeat(fill)}`));
+}
+
 let turnNumber = 0;
 let turn:
   | { start: number; tools: number; out: number; cost: number }
@@ -227,7 +235,7 @@ function render(record: Record<string, unknown>): void {
         out: 0,
         cost: 0,
       };
-      console.log(`${C.dim('╭')} ${C.bold(`turn ${turnNumber}`)}`);
+      console.log(`${C.dim('╭')} ${C.bold(C.cyan(`turn ${turnNumber}`))}`);
       return;
     case 'turn_end': {
       // The message is already rendered at message_end; only close the frame.
@@ -239,7 +247,7 @@ function render(record: Record<string, unknown>): void {
         turn.cost > 0 ? `$${turn.cost.toFixed(3)}` : '',
       ].filter(Boolean);
       console.log(
-        `${C.dim('╰')} ${C.green('done')} ${C.dim(stats.join(' · '))}`,
+        `${C.dim('╰')} ${C.bold(C.green('✓ done'))} ${C.dim(stats.join(' · '))}`,
       );
       turn = undefined;
       return;
@@ -377,33 +385,45 @@ function render(record: Record<string, unknown>): void {
       return;
     }
     case 'subagent.step.started':
-      emit(
-        `${tag}${C.bold(`── step ${record.stepIndex ?? 0}: ${record.agent ?? '?'} ──`)}`,
+      rule(`step ${record.stepIndex ?? 0}: ${record.agent ?? '?'}`, (s) =>
+        C.bold(C.cyan(s)),
       );
       return;
     case 'subagent.step.completed':
-      emit(
-        `${tag}${C.green(`── step ${record.stepIndex ?? 0} ok`)} ${C.dim(duration(record.durationMs))}`,
+      rule(
+        `step ${record.stepIndex ?? 0} ok · ${duration(record.durationMs)}`,
+        C.green,
       );
       return;
     case 'subagent.step.failed':
-      emit(
-        `${tag}${C.red(`── step ${record.stepIndex ?? 0} failed`)} ${C.dim(`exit=${record.exitCode ?? '?'} ${duration(record.durationMs)}`)}`,
+      rule(
+        `step ${record.stepIndex ?? 0} failed · exit=${record.exitCode ?? '?'} · ${duration(record.durationMs)}`,
+        C.red,
       );
       return;
     case 'subagent.step.paused':
     case 'subagent.step.stopped':
-      emit(
-        `${tag}${C.yellow(`── step ${record.stepIndex ?? 0} ${record.type.slice(16)} ──`)}`,
+      rule(
+        `step ${record.stepIndex ?? 0} ${record.type.slice('subagent.step.'.length)}`,
+        C.yellow,
       );
       return;
     case 'subagent.run.started':
     case 'subagent.run.completed':
-    case 'subagent.run.stopped':
-      console.log(C.bold(`── ${record.type.slice('subagent.'.length)} ──`));
+    case 'subagent.run.stopped': {
+      const name = record.type.slice('subagent.run.'.length);
+      rule(
+        `run ${name}`,
+        name === 'completed'
+          ? C.bold(C.green)
+          : name === 'stopped'
+            ? C.bold(C.yellow)
+            : C.bold(C.cyan),
+      );
       return;
+    }
     case 'agent_settled':
-      emit(`${tag}${C.green('agent settled')}`);
+      rule('agent settled', C.green);
       return;
     default:
       if (type.startsWith('subagent.') && type.includes('failed'))
