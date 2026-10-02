@@ -109,7 +109,7 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      const runs = await fetchSessionRuns(pi);
+      const runs = await fetchSessionRuns(pi, ctx);
       if (runs === undefined) {
         ctx.ui.notify(
           'pi-subagents RPC is not answering, so active runs cannot be listed.',
