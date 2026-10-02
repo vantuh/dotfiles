@@ -42,3 +42,33 @@ export function compactTokens(n: number | undefined): string {
   if (typeof n !== 'number' || !Number.isFinite(n)) return '-';
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 }
+
+export interface RunDescription {
+  agent: string;
+  model: string;
+  thinking: string;
+}
+
+/** Static identity of a run's child, for the pane label. */
+export function describeRun(runId: string): RunDescription {
+  const fallback: RunDescription = { agent: 'agent', model: '', thinking: '' };
+  try {
+    const status = JSON.parse(
+      fs.readFileSync(path.join(asyncRoot(), runId, 'status.json'), 'utf8'),
+    ) as { steps?: { agent?: string; model?: string; thinking?: string }[] };
+    const step = status.steps?.[0];
+    if (!step) return fallback;
+    // "provider/model:thinking" -> "model"
+    const model = (step.model ?? '')
+      .replace(/^[^/]+\//, '')
+      .replace(/:[^:]*$/, '')
+      .trim();
+    return {
+      agent: step.agent ?? fallback.agent,
+      model,
+      thinking: step.thinking ?? '',
+    };
+  } catch {
+    return fallback;
+  }
+}

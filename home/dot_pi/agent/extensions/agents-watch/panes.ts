@@ -2,10 +2,35 @@ import { execFile } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { promisify } from 'node:util';
 
+import { describeRun } from './runs.ts';
+
 const run = promisify(execFile);
 
 /** Pane label prefix; the rest of the label is the run id. */
 export const LABEL_PREFIX = 'agents-watch:';
+
+/**
+ * Dedup key from a pane label: the token right after the prefix, truncated to the
+ * short id. Normalising keeps labels written before the descriptive format from
+ * opening a second pane for a run that is already watched.
+ */
+export function labelRunId(
+  label: string | null | undefined,
+): string | undefined {
+  if (!label?.startsWith(LABEL_PREFIX)) return undefined;
+  return (
+    label.slice(LABEL_PREFIX.length).split(' ')[0]?.slice(0, 8) || undefined
+  );
+}
+
+/** `agents-watch:<id8> · <agent> · <model> · <thinking>` */
+function watchLabel(runId: string): string {
+  const id = runId.slice(0, 8);
+  const { agent, model, thinking } = describeRun(runId);
+  return [LABEL_PREFIX + id, agent, model, thinking]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 export interface PaneInfo {
   pane_id: string;
@@ -158,9 +183,7 @@ export async function listWatchPanes(): Promise<Map<string, PaneInfo>> {
   const watch = new Map<string, PaneInfo>();
   for (const pane of await tabPanes(current.pane_id)) {
     if (pane.tab_id && pane.tab_id !== tabId) continue;
-    const runId = pane.label?.startsWith(LABEL_PREFIX)
-      ? pane.label.slice(LABEL_PREFIX.length)
-      : undefined;
+    const runId = labelRunId(pane.label);
     if (runId) watch.set(runId, pane);
   }
   return watch;
@@ -228,11 +251,12 @@ export async function openWatchPane(
   const existing = new Map<string, PaneInfo>();
   for (const pane of await tabPanes(current.pane_id)) {
     if (pane.tab_id && pane.tab_id !== tabId) continue;
-    if (!pane.label?.startsWith(LABEL_PREFIX)) continue;
-    existing.set(pane.label.slice(LABEL_PREFIX.length), pane);
+    const key = labelRunId(pane.label);
+    if (!key) continue;
+    existing.set(key, pane);
   }
 
-  const already = existing.get(runId);
+  const already = existing.get(runId.slice(0, 8));
   if (already) return { paneId: already.pane_id, created: false };
 
   const managed = [...existing.values()];
@@ -257,7 +281,12 @@ export async function openWatchPane(
       'Malformed pane split response: missing result.pane.pane_id.',
     );
 
-  await herdr(['pane', 'rename', pane.pane_id, `${LABEL_PREFIX}${runId}`]);
+  await herdr([
+    'pane',
+    'rename',
+    pane.pane_id,
+    ...watchLabel(runId).split(' '),
+  ]);
   await herdr(['pane', 'run', pane.pane_id, ...command]);
   await rebalance(current.pane_id, [
     ...managed.map((entry) => entry.pane_id),
