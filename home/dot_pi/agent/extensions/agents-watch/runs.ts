@@ -52,23 +52,98 @@ export interface RunDescription {
 /** Static identity of a run's child, for the pane label. */
 export function describeRun(runId: string): RunDescription {
   const fallback: RunDescription = { agent: 'agent', model: '', thinking: '' };
+  const status = readRunStatus(runId);
+  const step = status?.steps?.[0];
+  if (!status || !step) return fallback;
+  return {
+    agent: step.agent ?? fallback.agent,
+    model: shortenModel(step.model),
+    thinking: step.thinking ?? '',
+  };
+}
+
+interface RawStep {
+  agent?: string;
+  model?: string;
+  thinking?: string;
+  label?: string;
+  workflowKey?: string;
+}
+
+/** "provider/model:thinking" -> "model" */
+function shortenModel(model: string | undefined): string {
+  return (model ?? '')
+    .replace(/^[^/]+\//, '')
+    .replace(/:[^:]*$/, '')
+    .trim();
+}
+
+export function readRunStatus(runId: string):
+  | {
+      state?: string;
+      activityState?: string;
+      currentTool?: string | null;
+      turnCount?: number;
+      toolCount?: number;
+      startedAt?: number;
+      totalTokens?: { input?: number; output?: number };
+      steps?: RawStep[];
+    }
+  | undefined {
   try {
-    const status = JSON.parse(
+    return JSON.parse(
       fs.readFileSync(path.join(asyncRoot(), runId, 'status.json'), 'utf8'),
-    ) as { steps?: { agent?: string; model?: string; thinking?: string }[] };
-    const step = status.steps?.[0];
-    if (!step) return fallback;
-    // "provider/model:thinking" -> "model"
-    const model = (step.model ?? '')
-      .replace(/^[^/]+\//, '')
-      .replace(/:[^:]*$/, '')
-      .trim();
-    return {
-      agent: step.agent ?? fallback.agent,
-      model,
-      thinking: step.thinking ?? '',
-    };
+    ) as never;
   } catch {
-    return fallback;
+    return undefined;
   }
+}
+
+export interface WorkflowChild {
+  runId: string;
+  key?: string;
+  label?: string;
+}
+
+/**
+ * A workflow root's own events.jsonl only carries workflow-level traces. Each
+ * child is a real async run with its own artifacts, keyed by `workflowKey` in the
+ * parent's steps.
+ */
+export function workflowChildren(workflowRunId: string): WorkflowChild[] {
+  const labels = new Map<string, string | undefined>();
+  for (const step of readRunStatus(workflowRunId)?.steps ?? []) {
+    if (step.workflowKey) labels.set(step.workflowKey, step.label);
+  }
+
+  let lines: string;
+  try {
+    lines = fs.readFileSync(
+      path.join(asyncRoot(), workflowRunId, 'workflow-children.jsonl'),
+      'utf8',
+    );
+  } catch {
+    return [];
+  }
+
+  const children: WorkflowChild[] = [];
+  for (const line of lines.split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const record = JSON.parse(line) as {
+        type?: string;
+        key?: string;
+        runId?: string;
+      };
+      if (record.type !== 'start' || !record.runId) continue;
+      children.push({
+        runId: record.runId,
+        key: record.key,
+        label: record.key ? labels.get(record.key) : undefined,
+      });
+    } catch {
+      // Partial or malformed record: skip it.
+    }
+  }
+  return children;
 }

@@ -9,6 +9,12 @@ signalled.
 The picker always shows, including for a single run: opening a pane is a
 deliberate action, not something the command does on its own.
 
+A workflow is listed as its children, one row each, not as the workflow root. A
+workflow root's own `events.jsonl` only carries workflow-level traces, so watching
+it shows nothing useful; every child is a real async run with its own artifacts.
+Children come from `workflow-children.jsonl`, and each row is
+`<workflowKey> · <step label> · <child run id>`.
+
 ```
 /agents-watch                  # always pick from active runs
 /agents-watch <runId>          # skip the picker
