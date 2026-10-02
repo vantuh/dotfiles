@@ -8,7 +8,12 @@ import type {
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
 
-import { compactTokens, listActiveRuns, listRuns, type Run } from './runs.ts';
+import {
+  compactTokens,
+  listRuns,
+  listRunsForSession,
+  type Run,
+} from './runs.ts';
 
 const run = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -58,14 +63,26 @@ function elapsed(startedAt: number | undefined): string {
   return `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, '0')}`;
 }
 
-function label(run_: Run): string {
+function activity(run_: Run): string {
   const s = run_.status;
-  const agents = (s.steps ?? []).map((step) => step.agent ?? '?').join(',');
+  if (s.currentTool) return `▶ ${s.currentTool}`;
+  if (s.activityState === 'active_long_running') return '⚑ long-running';
+  if (s.activityState === 'waiting') return 'waiting';
+  return 'thinking';
+}
+
+/** Row for the picker. Index-prefixed so selection survives display truncation. */
+function label(index: number, run_: Run): string {
+  const s = run_.status;
+  const agents =
+    (s.steps ?? []).map((step) => step.agent ?? '?').join(',') || '?';
+  const turns = typeof s.turnCount === 'number' ? `${s.turnCount}t` : '?t';
+  const tools = typeof s.toolCount === 'number' ? `${s.toolCount}o` : '?o';
   const tokens = s.totalTokens;
-  const cwd = (s.cwd ?? '').split('/').pop() ?? '?';
   return (
-    `${agents || '?'}  ${run_.runId.slice(0, 8)}  ${elapsed(s.startedAt)}  ` +
-    `${compactTokens(tokens?.input)} in / ${compactTokens(tokens?.output)} out  ${cwd}`
+    `${index + 1}. ${agents}  ${run_.runId.slice(0, 8)}  ${elapsed(s.startedAt)}  ` +
+    `${turns}/${tools}  ${activity(run_)}  ` +
+    `${compactTokens(tokens?.input)}/${compactTokens(tokens?.output)}`
   );
 }
 
@@ -94,7 +111,9 @@ export default function (pi: ExtensionAPI) {
           return;
         }
       } else {
-        const active = listActiveRuns();
+        const { runs: active, scoped } = listRunsForSession(
+          ctx.sessionManager.getSessionFile(),
+        );
         if (active.length === 0) {
           const recent = listRuns()[0];
           ctx.ui.notify(
@@ -108,13 +127,21 @@ export default function (pi: ExtensionAPI) {
         if (active.length === 1) {
           target = active[0];
         } else {
+          const options = active.map((candidate, index) =>
+            label(index, candidate),
+          );
           const picked = await ctx.ui.select(
-            `${active.length} active subagents`,
-            active.map(label),
+            `${active.length} active subagent${active.length === 1 ? '' : 's'}${scoped ? '' : ' (any session)'}`,
+            options,
           );
           if (!picked) return;
-          target = active.find((candidate) => label(candidate) === picked);
-          if (!target) return;
+          const index = Number(picked.trim().split('.')[0]) - 1;
+          const chosen = Number.isInteger(index) ? active[index] : undefined;
+          if (!chosen) {
+            ctx.ui.notify(`Could not match selection: ${picked}`, 'error');
+            return;
+          }
+          target = chosen;
         }
       }
 

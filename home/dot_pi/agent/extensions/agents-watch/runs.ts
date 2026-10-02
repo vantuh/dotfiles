@@ -10,7 +10,15 @@ export interface RunStep {
 export interface RunStatus {
   runId?: string;
   state?: string;
+  activityState?: string;
+  currentTool?: string | null;
+  currentToolStartedAt?: number | null;
+  lastActivityAt?: number;
+  turnCount?: number;
+  toolCount?: number;
   startedAt?: number;
+  /** Absolute path of the parent Pi session file that launched this run. */
+  sessionId?: string;
   cwd?: string;
   steps?: RunStep[];
   totalTokens?: { input?: number; output?: number; window?: number };
@@ -67,6 +75,23 @@ export function listRuns(): Run[] {
 
 export function listActiveRuns(): Run[] {
   return listRuns().filter((run) => run.status.state === 'running');
+}
+
+/**
+ * Active runs launched by one Pi session. Falls back to every active run when
+ * the session has no file on disk, so an in-memory session still lists something.
+ */
+export function listRunsForSession(sessionFile: string | undefined): {
+  runs: Run[];
+  scoped: boolean;
+} {
+  const active = listActiveRuns();
+  if (!sessionFile) return { runs: active, scoped: false };
+  const scoped = active.filter((run) => run.status.sessionId === sessionFile);
+  return {
+    runs: scoped.length > 0 ? scoped : active,
+    scoped: scoped.length > 0,
+  };
 }
 
 export function compactTokens(n: number | undefined): string {
