@@ -1,6 +1,7 @@
 {
   "defaultProvider": "openrouter",
   "defaultModel": "stealth/space-bunny-alpha",
+  "defaultTools": ["+codemode"],
   "packages": [
     "npm:pi-web-access",
     "npm:pi-autoname",
@@ -10,7 +11,7 @@
     "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth"
   ],
-  "lastChangelogVersion": "0.99.2",
+  "lastChangelogVersion": "1.0.0",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -57,7 +58,7 @@
         ]
       },
       "worker": {
-        "model": "openrouter/stealth/space-bunny-alpha",
+        "model": "opencode-go/deepseek-v4.1-flash",
         "thinking": "high",
         "skills": [
           "tdd",
