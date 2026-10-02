@@ -27,7 +27,9 @@ const runArg = args.find((a) => !a.startsWith('--') && a !== String(stepIndex));
 function resolveRunDir(): string {
   const runs = listRuns();
   if (runArg) {
-    const dir = path.isAbsolute(runArg) ? runArg : path.join(asyncRoot(), runArg);
+    const dir = path.isAbsolute(runArg)
+      ? runArg
+      : path.join(asyncRoot(), runArg);
     if (!fs.existsSync(path.join(dir, 'events.jsonl')))
       throw new Error(`no events.jsonl in ${dir}`);
     return dir;
@@ -419,6 +421,20 @@ const meta = JSON.parse(fs.readFileSync(status, 'utf8')) as {
   totalTokens?: { input?: number; output?: number };
 };
 
+let metaReadAt = 0;
+
+/** status.json keeps growing while the run works, so the bar re-reads it. */
+function refreshMeta(): void {
+  const now = Date.now();
+  if (now - metaReadAt < 1_500) return;
+  metaReadAt = now;
+  try {
+    Object.assign(meta, JSON.parse(fs.readFileSync(status, 'utf8')) as object);
+  } catch {
+    // A partial write is not worth reporting; the next tick picks it up.
+  }
+}
+
 let offset = tail ? fs.statSync(events).size : 0;
 let buffer = '';
 let lastEventAt = Date.now();
@@ -428,28 +444,39 @@ let lastEventAt = Date.now();
 let barRows = 0;
 const realLog = console.log;
 
-function barText(): string {
+/**
+ * Bar parts in priority order. `paintBar` appends them while they fit and drops
+ * the rest, so a narrow stacked pane keeps hotkeys and idle over tokens.
+ */
+function barSegments(): string[] {
   const idle = Math.floor((Date.now() - lastEventAt) / 1000);
   const state = (meta.state ?? '?').slice(0, 12);
   const t = meta.totalTokens;
-  return (
-    ` ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit  │  ${state} · idle ${idle}s` +
-    (t
-      ? ` · in ${compactTokens(t.input)} out ${compactTokens(t.output)} `
-      : ' ')
-  );
+  return [
+    ` ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit`,
+    ` │ ${state}`,
+    ` · idle ${idle}s`,
+    ...(t ? [` · in ${compactTokens(t.input)} out ${compactTokens(t.output)}`] : []),
+  ];
 }
 
 function paintBar(): void {
   if (!barRows) return;
+  refreshMeta();
   const width = process.stdout.columns ?? 80;
-  const left = barText();
   const right = follow ? ' following ' : ' replay ';
+
+  let text = '';
+  for (const segment of barSegments()) {
+    const candidate = `${text}${segment}`;
+    if (candidate.length + right.length > width) break;
+    text = candidate;
+  }
   // Pad so the background fills the row instead of ending mid-text.
-  const text =
-    left.length + right.length >= width
-      ? left.slice(0, width)
-      : left + ' '.repeat(width - left.length - right.length) + right;
+  text =
+    text.length + right.length >= width
+      ? text.slice(0, width)
+      : text + ' '.repeat(width - text.length - right.length) + right;
   process.stdout.write(`\x1b[${barRows};1H\x1b[2K${C.bar(text)}`);
 }
 
