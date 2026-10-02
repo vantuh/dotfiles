@@ -11,6 +11,7 @@
 //
 // Ctrl+O toggles full output; ctrl-C stops.
 
+import { execFileSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
@@ -456,7 +457,9 @@ function barSegments(): string[] {
     ` ctrl+o ${expanded ? 'collapse' : 'expand'} · q quit`,
     ` │ ${state}`,
     ` · idle ${idle}s`,
-    ...(t ? [` · in ${compactTokens(t.input)} out ${compactTokens(t.output)}`] : []),
+    ...(t
+      ? [` · in ${compactTokens(t.input)} out ${compactTokens(t.output)}`]
+      : []),
   ];
 }
 
@@ -552,9 +555,30 @@ if (process.stdin.isTTY) {
       repaint();
     } else if (key === '\x03' || key === 'q') {
       process.stdin.setRawMode(false);
-      process.exit(0);
+      quit();
     }
   });
+}
+
+/**
+ * A watcher pane is disposable, so quitting closes the pane it runs in. Outside
+ * Herdr there is no pane to close and the process just exits. `--keep-pane`
+ * always exits without touching the layout.
+ */
+function quit(): void {
+  const paneId =
+    process.env.HERDR_ENV === '1' ? process.env.HERDR_PANE_ID : undefined;
+  if (paneId && !args.includes('--keep-pane')) {
+    try {
+      execFileSync('herdr', ['pane', 'close', paneId], {
+        stdio: 'ignore',
+        timeout: 5_000,
+      });
+    } catch {
+      // The pane may already be gone; leaving it is not worth failing over.
+    }
+  }
+  process.exit(0);
 }
 
 enableBar();
