@@ -1,63 +1,16 @@
-import { execFile } from 'node:child_process';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
 
-import { compactTokens } from './runs.ts';
+import { openWatchPane } from './panes.ts';
 import { fetchSessionRuns, type ScopedRun } from './session-runs.ts';
 
-const run = promisify(execFile);
 const here = path.dirname(fileURLToPath(import.meta.url));
 const watcher = path.join(here, 'watch.ts');
-
-interface PaneSplitResult {
-  result?: { pane?: { pane_id?: string } };
-}
-
-async function herdr(args: string[]): Promise<string> {
-  const { stdout } = await run('herdr', args, { timeout: 15_000 });
-  return stdout;
-}
-
-/**
- * Split a Herdr pane and start the watcher in it. pi-subagents exports
- * `openProjectPane`, but that spawns Pi rather than an arbitrary command, so the
- * split stays hand-rolled.
- */
-async function openWatcher(
-  target: ScopedRun,
-  focus: boolean,
-): Promise<boolean> {
-  let paneId: string | undefined;
-  try {
-    const split = JSON.parse(
-      await herdr([
-        'pane',
-        'split',
-        '--current',
-        '--direction',
-        'right',
-        focus ? '--focus' : '--no-focus',
-      ]),
-    ) as PaneSplitResult;
-    paneId = split.result?.pane?.pane_id;
-  } catch {
-    return false;
-  }
-  if (!paneId) return false;
-  try {
-    await herdr(['pane', 'run', paneId, 'bun', watcher, target.id]);
-  } catch {
-    await herdr(['pane', 'close', paneId]).catch(() => undefined);
-    return false;
-  }
-  return true;
-}
 
 function elapsed(startedAt: number | undefined): string {
   if (!startedAt) return '?';
@@ -119,7 +72,6 @@ export default function (pi: ExtensionAPI) {
       }
 
       const tokens = rawArgs.trim().split(/\s+/).filter(Boolean);
-      const focus = !tokens.includes('--no-focus');
       const wanted = tokens.find((token) => !token.startsWith('--')) ?? '';
 
       let target: ScopedRun | undefined;
@@ -154,12 +106,22 @@ export default function (pi: ExtensionAPI) {
         }
       }
 
-      const opened = await openWatcher(target, focus);
+      let result;
+      try {
+        result = await openWatchPane(target.id, ctx.cwd, ['bun', watcher, target.id]);
+      } catch (error) {
+        ctx.ui.notify(
+          `Could not open a Herdr pane: ${error instanceof Error ? error.message : String(error)}\n` +
+            `Run manually:  bun ${watcher} ${target.id}`,
+          'error',
+        );
+        return;
+      }
       ctx.ui.notify(
-        opened
-          ? `Watching ${target.label || 'agent'} ${target.id.slice(0, 8)} in a Herdr pane`
-          : `Herdr unavailable. Run manually:\n  bun ${watcher} ${target.id}`,
-        opened ? 'info' : 'warning',
+        result.created
+          ? `Watching ${target.label || 'agent'} ${target.id.slice(0, 8)} in pane ${result.paneId}`
+          : `${target.label || 'agent'} ${target.id.slice(0, 8)} is already open in pane ${result.paneId}`,
+        result.created ? 'info' : 'warning',
       );
     },
   });

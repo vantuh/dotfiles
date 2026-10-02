@@ -20,6 +20,7 @@ Run id accepts a full uuid, a unique prefix, or the first 8 characters.
 | --- | --- |
 | `index.ts` | The `/agents-watch` command, the picker rows, and the Herdr split |
 | `session-runs.ts` | Client for pi-subagents' in-process RPC, which scopes runs to this session |
+| `panes.ts` | Herdr pane column: stacking, equal-height rebalancing, duplicate detection |
 | `watch.ts` | The viewer. Standalone: `bun watch.ts <runId> [--tail] [--expanded] [--step N]` |
 | `runs.ts` | Run-root discovery shared with the viewer |
 
@@ -37,6 +38,25 @@ rather than falling back to every run on disk.
 
 `openProjectPane` from `pi-subagents/project-panes` is not used: it spawns Pi,
 not an arbitrary command, so the pane split stays hand-rolled.
+
+### Pane stacking
+
+Watcher panes form one column to the right of Pi:
+
+- first watcher: `split --direction right --ratio 0.6`
+- every later one: `split --direction down --ratio 0.5` inside the largest
+  existing watcher pane
+- then every `down` split holding watchers on both sides is rebalanced by count,
+  so heights stay even. `right` splits are left alone, keeping the Pi column's
+  width.
+
+Panes are tagged `agents-watch:<runId>` via `pane rename`, and the tag is read
+back from `pane list` on every invocation. Opening an already-open run is a no-op
+that reports the existing pane. No state file: a pane closed by hand simply
+disappears from the set.
+
+The rebalance uses `layout.export` and `layout.set_split_ratio` over the Herdr
+socket, which the CLI does not expose for layout.
 
 `watch.ts` can also be tailed by hand:
 
