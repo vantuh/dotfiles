@@ -53,10 +53,18 @@ Watcher panes form one column to the right of Pi:
   so heights stay even. `right` splits are left alone, keeping the Pi column's
   width.
 
-Panes are tagged `agents-watch:<runId>` via `pane rename`, and the tag is read
-back from `pane list` on every invocation. Opening an already-open run is a no-op
-that reports the existing pane. No state file: a pane closed by hand simply
-disappears from the set.
+Panes are tagged via `pane rename`:
+
+```
+agents-watch:<id8> · <agent> · <model> · <thinking>
+agents-watch:0f708073 · worker · deepseek-v4.1-flash · high
+```
+
+Agent, model and thinking come from `status.json` `steps[0]`, with the provider
+prefix and `:thinking` suffix stripped from the model string. The tag is read
+back from `pane list` on every invocation, and the short id after the prefix is
+the dedup key. Opening an already-open run is a no-op that reports the existing
+pane. No state file: a pane closed by hand simply disappears from the set.
 
 The rebalance uses `layout.export` and `layout.set_split_ratio` over the Herdr
 socket, which the CLI does not expose for layout.
