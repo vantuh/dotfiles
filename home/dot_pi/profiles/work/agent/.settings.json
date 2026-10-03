@@ -12,7 +12,8 @@
     "npm:pi-subagents",
     "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth",
-    "npm:@plannotator/pi-extension"
+    "npm:@plannotator/pi-extension",
+    "npm:@juicesharp/rpiv-ask-user-question"
   ],
   "lastChangelogVersion": "1.0.0",
   "hideThinkingBlock": true,
