@@ -31,7 +31,10 @@ window-padding-y = 0
 maximize = true
 confirm-close-surface = false
 macos-option-as-alt = true
-command = {{ .chezmoi.homeDir }}/.local/bin/herdr
+# Ghostty launches a command with arguments through /bin/sh -c, and zsh sources
+# .zshenv first: launching herdr directly would hand it launchd's minimal PATH,
+# which Herdr plugin commands inherit (they need bun and node on PATH).
+command = /bin/zsh -c "exec {{ .chezmoi.homeDir }}/.local/bin/herdr"
 
 # Permit terminal clipboard protocols and explicit copy/paste actions.
 clipboard-read = allow
