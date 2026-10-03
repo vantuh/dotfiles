@@ -14,7 +14,7 @@
     "npm:@gotgenes/pi-anthropic-auth"
   ],
   "lastChangelogVersion": "1.0.0",
-  "hideThinkingBlock": false,
+  "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
