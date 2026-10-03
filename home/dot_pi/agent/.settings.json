@@ -48,19 +48,19 @@
         "model": "anthropic/claude-sonnet-5-5"
       },
       "researcher": {
-        "model": "anthropic/claude-sonnet-5-5",
+        "model": "openai/gpt-6.1-sol",
         "extensions": [
           "~/.pi/agent/npm/node_modules/pi-web-access"
         ]
       },
       "reviewer": {
-        "model": "anthropic/claude-opus-5-5",
+        "model": "openai/gpt-6.1-sol",
         "skills": [
           "hunk"
         ]
       },
       "worker": {
-        "model": "opencode-go/deepseek-v4.1-flash",
+        "model": "openrouter/stealth/space-bunny-alpha",
         "thinking": "high",
         "skills": [
           "tdd",
