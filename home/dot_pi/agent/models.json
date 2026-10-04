@@ -10,18 +10,18 @@
                 "fp8"
               ],
               "only": [
-                "z-ai",
-                "nextbit",
                 "streamlake",
-                "siliconflow",
-                "baseten"
+                "novita",
+                "gmicloud",
+                "z-ai",
+                "nextbit"
               ],
               "order": [
-                "z-ai",
-                "nextbit",
                 "streamlake",
-                "siliconflow",
-                "baseten"
+                "novita",
+                "gmicloud",
+                "z-ai",
+                "nextbit"
               ],
               "allow_fallbacks": true
             }
@@ -36,17 +36,17 @@
               ],
               "only": [
                 "deepinfra",
-                "nextbit",
                 "streamlake",
-                "atlas-cloud",
-                "coreweave"
+                "gmicloud",
+                "nextbit",
+                "novita"
               ],
               "order": [
                 "deepinfra",
-                "nextbit",
                 "streamlake",
-                "atlas-cloud",
-                "coreweave"
+                "gmicloud",
+                "nextbit",
+                "novita"
               ],
               "allow_fallbacks": true
             }
