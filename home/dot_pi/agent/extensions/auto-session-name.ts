@@ -210,7 +210,7 @@ export function parseGeneratedSessionTitle(raw: string): string {
 
   value = value.split(/\r?\n/, 1)[0] ?? '';
   value = value.replace(
-    /^(?:session\s+title|title|назва|заголовок)\s*[:：-]\s*/i,
+    /^(?:session\s+title|title|标题|назва|заголовок)\s*[:：-]\s*/i,
     '',
   );
   value = stripWrappingQuotes(value).replace(/\s+/g, ' ').trim();
