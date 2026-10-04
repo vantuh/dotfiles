@@ -81,6 +81,10 @@ socket, which the CLI does not expose for layout.
 bun ~/.pi/agent/extensions/agents-watch/watch.ts --tail
 ```
 
+Without a terminal on stdout there is no key to quit with, so a run that reaches
+a settled state ends the process instead of following a finished log forever. An
+interactive pane is unaffected: there `q` closes it.
+
 ## Keys
 
 | Key | Action |
