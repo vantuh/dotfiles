@@ -5,12 +5,11 @@
  * The server itself lives in ~/.local/share/pi-dictation (see its README notes
  * in src/server.ts); this only owns the process: it starts the daemon detached
  * with the model loading in the background, keeps its pid and log under
- * ~/.local/state/pi-dictation, and publishes the port to the tailnet so a phone
- * can open it over HTTPS (required for the microphone and for installing the
- * page on the home screen).
+ * ~/.local/state/pi-dictation. The daemon answers the pi-web mic shim over
+ * loopback and is published nowhere.
  *
- *   pi-dictation up      start if needed and print the phone address
- *   pi-dictation status  one line of state, plus the address once it is ready
+ *   pi-dictation up      start if needed and wait for the model to be ready
+ *   pi-dictation status  one line of state
  *   pi-dictation down    stop the daemon
  *   pi-dictation log     follow the daemon log
  *
@@ -28,7 +27,6 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 const PORT = Number(process.env.PI_DICTATION_PORT ?? 8791);
-const HTTPS_PORT = Number(process.env.PI_DICTATION_HTTPS_PORT ?? 9443);
 const HOME = homedir();
 const APP_DIR = join(HOME, '.local', 'share', 'pi-dictation');
 const ENTRY = join(APP_DIR, 'src', 'server.ts');
@@ -67,41 +65,9 @@ function run(command: string[]): { ok: boolean; out: string } {
   };
 }
 
-/** This machine's MagicDNS name; the HTTPS certificate is issued for that name. */
-function tailnetHost(): string | null {
-  const status = run(['tailscale', 'status', '--json']);
-  if (!status.ok) return null;
-  try {
-    const name = (JSON.parse(status.out) as { Self?: { DNSName?: string } })
-      .Self?.DNSName;
-    return name ? name.replace(/\.$/, '') : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Publish the loopback port to the tailnet, once. `tailscale serve` keeps its config. */
-function publish(): string | null {
-  const host = tailnetHost();
-  if (!host) return null;
-  const status = run(['tailscale', 'serve', 'status']);
-  if (!status.out.includes(`http://127.0.0.1:${PORT}`)) {
-    const result = run([
-      'tailscale',
-      'serve',
-      '--bg',
-      `--https=${HTTPS_PORT}`,
-      `http://127.0.0.1:${PORT}`,
-    ]);
-    if (!result.ok) return null;
-  }
-  return `https://${host}:${HTTPS_PORT}`;
-}
-
 function installed(): boolean {
   return existsSync(join(APP_DIR, 'node_modules', 'transcribe-cpp'));
 }
-
 function start(): Promise<number> {
   if (!existsSync(ENTRY)) {
     console.error(`pi-dictation: missing ${ENTRY} (run chezmoi apply)`);
@@ -143,13 +109,8 @@ async function report(pid: number): Promise<number> {
   while (Date.now() < deadline) {
     const state = await health();
     if (state?.ready) {
-      const url = publish();
       console.log(`pi-dictation: ready (pid ${pid}, ${state.model})`);
-      console.log(
-        url
-          ? `pi-dictation: ${url}`
-          : `pi-dictation: local only — http://127.0.0.1:${PORT} (is Tailscale up?)`,
-      );
+      console.log(`pi-dictation: listening on http://127.0.0.1:${PORT} for the pi-web mic shim`);
       return 0;
     }
     if (state?.error) {
@@ -178,8 +139,6 @@ async function status(): Promise<number> {
   console.log(
     `pi-dictation: ${state.ready ? 'ready' : state.warming ? 'warming up' : 'unhealthy'} (${state.model ?? '?'})`,
   );
-  const url = publish();
-  if (url) console.log(`pi-dictation: ${url}`);
   return state.ready ? 0 : 1;
 }
 
