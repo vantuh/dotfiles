@@ -6,14 +6,51 @@
           "contextWindow": 262144,
           "compat": {
             "openRouterRouting": {
+              "quantizations": [
+                "fp8"
+              ],
               "only": [
-                "z-ai"
-              ]
+                "z-ai",
+                "nextbit",
+                "streamlake",
+                "siliconflow",
+                "baseten"
+              ],
+              "order": [
+                "z-ai",
+                "nextbit",
+                "streamlake",
+                "siliconflow",
+                "baseten"
+              ],
+              "allow_fallbacks": true
             }
           }
         },
         "deepseek/deepseek-v4.1-flash": {
-          "contextWindow": 262144
+          "contextWindow": 262144,
+          "compat": {
+            "openRouterRouting": {
+              "quantizations": [
+                "fp8"
+              ],
+              "only": [
+                "deepinfra",
+                "nextbit",
+                "streamlake",
+                "atlas-cloud",
+                "coreweave"
+              ],
+              "order": [
+                "deepinfra",
+                "nextbit",
+                "streamlake",
+                "atlas-cloud",
+                "coreweave"
+              ],
+              "allow_fallbacks": true
+            }
+          }
         }
       }
     },
