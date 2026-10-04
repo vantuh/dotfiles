@@ -1,8 +1,0 @@
-{
-  "enabled": true,
-  "model": "openai-codex/gpt-6-luna",
-  "fallbackModels": [],
-  "cooldownMinutes": 10,
-  "debug": false,
-  "respectManualName": true
-}
