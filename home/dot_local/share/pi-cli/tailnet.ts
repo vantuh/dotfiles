@@ -21,16 +21,46 @@ export function host(): string | null {
 }
 
 /**
+ * The loopback upstream each served HTTPS port points at, read from
+ * `tailscale serve status`:
+ *
+ *   https://host:8443 (tailnet only)
+ *   |-- / proxy http://127.0.0.1:30141
+ */
+function servedTargets(statusOutput: string): Map<number, string> {
+  const targets = new Map<number, string>();
+  let httpsPort: number | null = null;
+  for (const line of statusOutput.split('\n')) {
+    const header = /^https:\/\/([^\s]+)/.exec(line.trim());
+    if (header) {
+      const authority = header[1];
+      httpsPort = authority.includes(':')
+        ? Number(authority.split(':').pop())
+        : 443;
+      continue;
+    }
+    const target = /proxy\s+(\S+)/.exec(line);
+    if (target && httpsPort !== null) targets.set(httpsPort, target[1]);
+  }
+  return targets;
+}
+
+/**
  * Makes sure `http://127.0.0.1:<port>` is published on `<httpsPort>` and returns
- * its address. `tailscale serve` keeps its configuration across restarts, so an
- * existing mapping is left alone and this stays safe to call on every start.
+ * its address. `tailscale serve` keeps its configuration across restarts, so a
+ * mapping that already points there is left alone and this stays safe to call on
+ * every start. A different upstream on that HTTPS port is replaced, since one
+ * port serves one address.
  */
 export function publish(port: number, httpsPort: number): string | null {
   const name = host();
   if (!name) return null;
-  const status = run(['tailscale', 'serve', 'status']);
   const upstream = `http://127.0.0.1:${port}`;
-  if (!status.out.includes(upstream)) {
+  const targets = servedTargets(run(['tailscale', 'serve', 'status']).out);
+  if (targets.get(httpsPort) !== upstream) {
+    if (targets.has(httpsPort)) {
+      run(['tailscale', 'serve', `--https=${httpsPort}`, 'off']);
+    }
     const served = run([
       'tailscale',
       'serve',

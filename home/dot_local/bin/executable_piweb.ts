@@ -1,10 +1,16 @@
 #!/usr/bin/env bun
 /**
- * piweb — start, stop and address the pi-web server.
+ * piweb — this machine's phone experience in one command.
  *
- *   piweb [up]      start it when needed, publish it to the tailnet, print the address
- *   piweb status    report only, never start anything
- *   piweb down      stop it
+ *   piweb [up]      start the dictation daemon, pi-web and the mic shim, publish
+ *                   the address a phone opens, print it
+ *   piweb status    report all three; the publish step is idempotent, so the
+ *                   address it prints is one that works
+ *   piweb down      stop the shim, pi-web and the dictation daemon
+ *
+ * The published address is the mic shim — pi-web itself plus a microphone button
+ * in the composer that records on the phone and transcribes here. pi-web's own
+ * code is untouched; see ~/.local/share/pi-web-mic.
  *
  * Configuration lives in ~/.config/pi-web/env (mode 0600): PORT, PI_WEB_PASSWORD,
  * PI_WEB_ALLOWED_HOSTS and PI_SUBAGENTS_PI_CODING_AGENT_PACKAGE_ROOT, which is
@@ -33,10 +39,14 @@ import {
 import { publish } from '../share/pi-cli/tailnet.ts';
 
 const HOME = homedir();
+const BIN_DIR = join(HOME, '.local', 'bin');
 const ENV_FILE = join(HOME, '.config', 'pi-web', 'env');
 const LOG_FILE = join(HOME, '.config', 'pi-web', 'pi-web.log');
 const PID_FILE = join(HOME, '.local', 'state', 'pi-web', 'server.pid');
 const HTTPS_PORT = Number(process.env.PI_WEB_HTTPS_PORT ?? 8443);
+const MIC_PORT = Number(process.env.PI_WEB_MIC_PORT ?? 8788);
+const DICTATION_URL =
+  process.env.PI_WEB_MIC_DICTATION ?? 'http://127.0.0.1:8791';
 
 /** KEY=VALUE lines, comments and blanks ignored; values are not shell-expanded. */
 function readEnvFile(): Record<string, string> {
@@ -55,14 +65,40 @@ function readEnvFile(): Record<string, string> {
 const env = readEnvFile();
 const PORT = Number(env.PORT || process.env.PI_WEB_PORT || 30141);
 const ADDRESS = `http://127.0.0.1:${PORT}/`;
+const MIC_ADDRESS = `http://127.0.0.1:${MIC_PORT}/`;
+
+/** Runs one of the other CLIs of this repository with its output attached. */
+function cli(name: string, command: string): boolean {
+  const bun = which('bun');
+  if (!bun) return false;
+  const result = Bun.spawnSync({
+    cmd: [bun, join(BIN_DIR, name), command],
+    stdin: 'inherit',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  });
+  return result.exitCode === 0;
+}
 
 async function status(): Promise<number> {
-  if (!(await answers(ADDRESS))) {
-    console.log('piweb: not running');
-    return 1;
+  const web = await answers(ADDRESS);
+  const dictation = await answers(`${DICTATION_URL}/health`);
+  const mic = await answers(MIC_ADDRESS);
+
+  console.log(
+    `piweb: pi-web ${web ? 'running' : 'stopped'} on 127.0.0.1:${PORT}`,
+  );
+  console.log(
+    `piweb: dictation daemon ${dictation ? 'ready' : 'stopped'} (${DICTATION_URL})`,
+  );
+  console.log(
+    `piweb: mic shim ${mic ? 'running' : 'stopped'} on 127.0.0.1:${MIC_PORT}`,
+  );
+  if (!mic) {
+    console.log('piweb: run `piweb up` to start everything');
+    return web ? 0 : 1;
   }
-  console.log(`piweb: running on 127.0.0.1:${PORT}`);
-  const url = publish(PORT, HTTPS_PORT);
+  const url = publish(MIC_PORT, HTTPS_PORT);
   console.log(
     url ? `piweb: ${url}` : `piweb: not published (is Tailscale up?)`,
   );
@@ -70,21 +106,19 @@ async function status(): Promise<number> {
   return 0;
 }
 
-async function up(): Promise<number> {
+async function startWeb(): Promise<boolean> {
   if (await answers(ADDRESS)) {
-    console.log(`piweb: already answering on 127.0.0.1:${PORT}`);
-    return status();
+    console.log(`piweb: pi-web already answering on 127.0.0.1:${PORT}`);
+    return true;
   }
-
   const binary = which('pi-web');
   const node = which('node');
   if (!binary || !node) {
     console.error(
       'piweb: pi-web and node must be on PATH (npm install -g @agegr/pi-web)',
     );
-    return 1;
+    return false;
   }
-
   mkdirSync(dirname(PID_FILE), { recursive: true });
   const pid = spawnDetached({
     command: [node, binary],
@@ -93,33 +127,55 @@ async function up(): Promise<number> {
     logFile: LOG_FILE,
   });
   writeFileSync(PID_FILE, `${pid}\n`);
-  console.log(`piweb: starting (pid ${pid})`);
-
+  console.log(`piweb: pi-web starting (pid ${pid})`);
   if (!(await waitFor(() => answers(ADDRESS), 60_000))) {
-    console.error(`piweb: did not come up; last lines of ${LOG_FILE}:`);
+    console.error(`piweb: pi-web did not come up; last lines of ${LOG_FILE}:`);
     const tail = run(['tail', '-n', '10', LOG_FILE]);
     if (tail.out) console.error(tail.out);
-    return 1;
+    return false;
   }
-  console.log(`piweb: started (log: ${LOG_FILE})`);
+  console.log('piweb: pi-web started');
+  return true;
+}
+
+async function up(): Promise<number> {
+  // The daemon first: the shim's button is useless without it, and it warms in
+  // the background while pi-web starts.
+  if (!(await answers(`${DICTATION_URL}/health`))) {
+    console.log('piweb: starting the dictation daemon');
+    if (!cli('pi-dictation.ts', 'up')) {
+      console.error(
+        'piweb: the dictation daemon did not start; the mic button will report it',
+      );
+    }
+  }
+  if (!(await startWeb())) return 1;
+  if (!(await answers(MIC_ADDRESS)) && !cli('pi-web-mic.ts', 'up')) {
+    console.error(
+      'piweb: the mic shim did not start; pi-web itself still works',
+    );
+  }
   return status();
 }
 
 function down(): number {
-  // The pid file is only a hint: whoever holds the port is the server, and a pid
-  // from a stale file may already belong to something else.
+  cli('pi-web-mic.ts', 'down');
+
+  // Whoever holds the port is the server; a pid from a stale file may be someone else.
   const pids = listenersOn(PORT);
   rmSync(PID_FILE, { force: true });
   if (pids.length === 0) {
-    console.log('piweb: not running');
-    return 0;
+    console.log('piweb: pi-web not running');
+  } else {
+    for (const pid of pids) {
+      try {
+        process.kill(pid, 'SIGTERM');
+      } catch {}
+    }
+    console.log(`piweb: pi-web stopped (pids: ${pids.join(', ')})`);
   }
-  for (const pid of pids) {
-    try {
-      process.kill(pid, 'SIGTERM');
-    } catch {}
-  }
-  console.log(`piweb: stopped (pids: ${pids.join(', ')})`);
+
+  cli('pi-dictation.ts', 'down');
   return 0;
 }
 
