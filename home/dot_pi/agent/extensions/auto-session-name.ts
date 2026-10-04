@@ -6,8 +6,10 @@
  * which is how pi-autoname produced names like "так" or "Дякую".
  *
  * Auto-naming runs after a settled run and only while the session is unnamed,
- * so `/name`, `--name`, and a Pi Web rename are never overwritten.
- * `/autoname` regenerates the name explicitly.
+ * so `/name`, `--name`, and a rename this process can see are left alone. A
+ * rename made by another process is invisible here: the SDK reads session
+ * names from its own in-memory entries and never re-reads the session file for
+ * them. `/autoname` regenerates the name explicitly.
  */
 import { randomUUID } from 'node:crypto';
 
@@ -328,8 +330,8 @@ export default function (pi: ExtensionAPI): void {
     const naming = (async () => {
       try {
         const title = await generateTitle(ctx);
-        // A session switch, `/name`, or a Pi Web rename may have won the race
-        // while the title request was in flight.
+        // `/name` is not awaited by the editor, so a manual name may have
+        // landed while the title was generated.
         if (ctx.sessionManager.getSessionId() !== sessionId) return;
         if (pi.getSessionName()) return;
         pi.setSessionName(title);
@@ -350,8 +352,20 @@ export default function (pi: ExtensionAPI): void {
   pi.registerCommand('autoname', {
     description: 'Generate the session name from the current conversation',
     handler: async (_args, ctx) => {
+      const sessionId = ctx.sessionManager.getSessionId();
+      const nameBefore = pi.getSessionName();
       try {
         const title = await generateTitle(ctx);
+        // The explicit command overrides the name it started from, never one
+        // that landed while it was generating.
+        if (ctx.sessionManager.getSessionId() !== sessionId) return;
+        if (pi.getSessionName() !== nameBefore) {
+          ctx.ui.notify(
+            'Session name changed while the title was generated; keeping the newer name',
+            'warning',
+          );
+          return;
+        }
         pi.setSessionName(title);
         ctx.ui.notify(`Session renamed: ${title}`, 'info');
       } catch (error) {
