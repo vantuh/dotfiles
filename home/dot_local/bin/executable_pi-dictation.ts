@@ -9,10 +9,12 @@
  * can open it over HTTPS (required for the microphone and for installing the
  * page on the home screen).
  *
- *   pi-dictation [start]   start if needed and print the phone address
- *   pi-dictation status    one line of state, plus the address once it is ready
- *   pi-dictation stop      stop the daemon
- *   pi-dictation log       follow the daemon log
+ *   pi-dictation up      start if needed and print the phone address
+ *   pi-dictation status  one line of state, plus the address once it is ready
+ *   pi-dictation down    stop the daemon
+ *   pi-dictation log     follow the daemon log
+ *
+ * Commands match piweb (up/down); `start` and `stop` still work.
  */
 import {
   existsSync,
@@ -211,10 +213,10 @@ function stop(): number {
   return 0;
 }
 
-const command = process.argv[2] ?? 'start';
+const command = process.argv[2] ?? 'up';
 switch (command) {
-  case 'start':
-  case 'up': {
+  case 'up':
+  case 'start': {
     // A server that is already answering only needs its address printing;
     // anything else is a fresh start, which waits for the model to load.
     const state = await health();
@@ -223,8 +225,8 @@ switch (command) {
   }
   case 'status':
     process.exit(await status());
-  case 'stop':
   case 'down':
+  case 'stop':
     process.exit(stop());
   case 'log':
     process.exit(
@@ -235,6 +237,6 @@ switch (command) {
       }).exitCode ?? 0,
     );
   default:
-    console.error('usage: pi-dictation [start|status|stop|log]');
+    console.error('usage: pi-dictation [up|down|status|log]');
     process.exit(2);
 }

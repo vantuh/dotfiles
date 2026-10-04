@@ -40,7 +40,8 @@ function tailnet-serve-url() {
 }
 
 # Start pi-web when it is needed and publish it to the tailnet.
-# `piweb down` stops it, `piweb up` (default) starts and prints the address.
+# `piweb` (or `piweb up`) starts and prints the address, `piweb status` only
+# reports, `piweb down` stops it.
 # Configuration lives in ~/.config/pi-web/env: PORT, PI_WEB_HOSTNAME,
 # PI_WEB_ALLOWED_HOSTS, PI_WEB_PASSWORD, PI_WEB_IDLE_TIMEOUT_MS and
 # PI_SUBAGENTS_PI_CODING_AGENT_PACKAGE_ROOT (subagents cannot spawn children
@@ -57,16 +58,33 @@ function piweb() {
   configured="$(command grep -E '^PORT=' "$env_file" | tail -1 | cut -d= -f2)"
   [[ -n "$configured" ]] && port="$configured"
 
-  if [[ "$1" == down ]]; then
-    local pids
-    pids="$(lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null)"
-    if [[ -n "$pids" ]]; then
-      kill ${=pids} && print "piweb: stopped (pids: ${=pids})"
-    else
+  case "${1:-up}" in
+    down)
+      local pids
+      pids="$(lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null)"
+      if [[ -n "$pids" ]]; then
+        kill ${=pids} && print "piweb: stopped (pids: ${=pids})"
+      else
+        print "piweb: not running"
+      fi
+      return 0
+      ;;
+    up) ;;
+    status)
+      if curl -sf -o /dev/null -m 3 "http://127.0.0.1:$port/"; then
+        print "piweb: running on 127.0.0.1:$port"
+        local url
+        url="$(tailnet-serve-url "$port" "$https_port")" && print "piweb: $url"
+        return 0
+      fi
       print "piweb: not running"
-    fi
-    return 0
-  fi
+      return 1
+      ;;
+    *)
+      print -u2 "usage: piweb [up|down|status]"
+      return 2
+      ;;
+  esac
 
   if curl -sf -o /dev/null -m 3 "http://127.0.0.1:$port/"; then
     print "piweb: already answering on 127.0.0.1:$port"
@@ -109,8 +127,8 @@ function piweb() {
 
 # Herdr's web ui bridge. Herdr's own startup hook cannot run it: its plugin
 # commands inherit a PATH without bun, so the bridge is started from a shell.
-# `hwui` starts and publishes it with a QR code, `hwui stop|status` pass through
-# to the plugin's own subcommands.
+# `hwui` starts and publishes it with a QR code, `hwui down` stops it, and
+# `hwui status|phone` map to the plugin's own subcommands.
 function hwui() {
   local dir=( "$HOME"/.config/herdr/plugins/github/devswha.herdr-web-ui-*(N/) )
   if [[ -z "$dir[1]" ]]; then
@@ -118,7 +136,8 @@ function hwui() {
     return 1
   fi
   case "${1:-up}" in
-    up) ( builtin cd "$dir[1]" && bun scripts/plugin.ts start && bun scripts/plugin.ts phone ) ;;
-    *)  ( builtin cd "$dir[1]" && bun scripts/plugin.ts "$1" ) ;;
+    up)   ( builtin cd "$dir[1]" && bun scripts/plugin.ts start && bun scripts/plugin.ts phone ) ;;
+    down) ( builtin cd "$dir[1]" && bun scripts/plugin.ts stop ) ;;
+    *)    ( builtin cd "$dir[1]" && bun scripts/plugin.ts "$1" ) ;;
   esac
 }
