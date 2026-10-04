@@ -1,18 +1,15 @@
 /**
- * pi-dictation — local dictation server for the phone.
+ * pi-dictation — this machine's speech-to-text endpoint.
  *
- * Serves a push-to-talk page over the tailnet and transcribes the recording on
- * this machine with transcribe.cpp, using the GGUF model Handy already
- * downloaded (`~/.cache/huggingface/hub/models--handy-computer--*`). Audio never
- * leaves the Mac: there is no cloud endpoint, no API key and nothing to pay for.
+ * It transcribes 16 kHz mono WAV with transcribe.cpp on the GGUF model Handy
+ * already downloaded, and does nothing else. The phone-facing recorder lives in
+ * the pi-web mic shim, which is its only client, so there is no page here and it
+ * listens on loopback alone. Audio never leaves this machine.
  *
- * The page records at 16 kHz mono and posts a WAV, which is exactly what
- * transcribe.cpp expects, so nothing is converted anywhere.
- *
- * Stage 2 (not wired yet): a pi extension registers its session id here and the
- * transcript is pushed into the pi-web composer with ctx.ui.setEditorText().
+ *   GET  /health      model name, whether it is warm, and any load error
+ *   POST /transcribe  16 kHz mono WAV bytes in, { text, ms, audioSeconds } out
  */
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
@@ -24,10 +21,6 @@ const LANGUAGE = process.env.PI_DICTATION_LANGUAGE ?? 'uk';
 /** One dictation posting more than this is a bug or an attack, not speech. */
 const MAX_BYTES = 32 * 1024 * 1024;
 const TARGET_RATE = 16000;
-
-const DIR = import.meta.dir;
-const PAGE = join(DIR, 'page.html');
-const WORKLET = join(DIR, 'worklet.js');
 
 /** The whisper.cpp family model Handy keeps, newest Q8_0 turbo preferred. */
 function findModel(): string {
@@ -70,9 +63,9 @@ let warmError: string | null = null;
 
 /**
  * Loads the model once and keeps it resident: a cold load takes ~16 s on an
- * M4 Pro (Metal + ~900 MB of weights), a warm transcription is ~20x faster than
- * real time, so paying that once at startup is what makes dictation feel
- * instant on the phone.
+ * M4 Pro (Metal + ~900 MB of weights), a warm transcription runs ~20x faster
+ * than real time, so paying that once at startup is what makes the button in
+ * pi-web feel instant.
  */
 function warm(): Promise<void> {
   warming ??= (async () => {
@@ -141,12 +134,6 @@ function failure(message: string, status: number): Response {
   return Response.json({ error: message }, { status });
 }
 
-function file(path: string, type: string): Response {
-  return new Response(Bun.file(path), {
-    headers: { 'content-type': type, 'cache-control': 'no-store' },
-  });
-}
-
 const server = Bun.serve({
   hostname: HOST,
   port: PORT,
@@ -165,22 +152,6 @@ const server = Bun.serve({
         warming: warming !== null && model === null && warmError === null,
         error: warmError,
       });
-    }
-    if (pathname === '/') return file(PAGE, 'text/html; charset=utf-8');
-    if (pathname === '/worklet.js')
-      return file(WORKLET, 'text/javascript; charset=utf-8');
-    if (pathname === '/manifest.webmanifest') {
-      return Response.json(
-        {
-          name: 'pi dictation',
-          short_name: 'dictation',
-          start_url: '/',
-          display: 'standalone',
-          background_color: '#11111b',
-          theme_color: '#11111b',
-        },
-        { headers: { 'content-type': 'application/manifest+json' } },
-      );
     }
 
     if (pathname === '/transcribe' && request.method === 'POST') {
