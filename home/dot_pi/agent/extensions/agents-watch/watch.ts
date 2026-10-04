@@ -607,10 +607,34 @@ function quit(): void {
   process.exit(0);
 }
 
+/**
+ * A settled run cannot produce further events, so there is nothing left to
+ * follow. Without a terminal on stdout no key can quit and no pane is kept
+ * open, which would leave a detached watcher polling a finished log forever:
+ * end it instead. An interactive pane is left alone so `q` still decides when
+ * the last frame goes away. `paused` is not settled: a paused run can resume.
+ */
+const SETTLED_STATES = new Set([
+  'complete',
+  'failed',
+  'partial',
+  'stopped',
+  'rejected',
+]);
+
+function exitWhenSettled(): void {
+  if (process.stdout.isTTY) return;
+  refreshMeta();
+  if (!meta.state || !SETTLED_STATES.has(meta.state)) return;
+  drain();
+  process.exit(0);
+}
+
 enableBar();
 setInterval(() => {
   try {
     drain();
+    exitWhenSettled();
   } catch (error) {
     console.error(
       C.red(
