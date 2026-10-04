@@ -114,12 +114,10 @@ function down(): number {
 
 switch (process.argv[2] ?? 'up') {
   case 'up':
-  case 'start':
     process.exit(await up());
   case 'status':
     process.exit(await report());
   case 'down':
-  case 'stop':
     process.exit(down());
   default:
     console.error('usage: pi-web-mic [up|down|status]');
