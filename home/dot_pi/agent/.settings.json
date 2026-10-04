@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4.1-flash",
+  "defaultProvider": "openrouter",
+  "defaultModel": "deepseek/deepseek-v4.1-flash",
   "defaultTools": [
     "+codemode"
   ],
@@ -23,14 +23,15 @@
   },
   "theme": "dark",
   "enabledModels": [
-    "opencode-go/glm-5.3-flash",
     "simplex/qwen3.8-27b-exl3-3.0bpw",
     "openai/gpt-6.1-sol",
     "openai/gpt-6-luna",
-    "opencode-go/deepseek-v4.1-flash",
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
-    "opencode-go/space-bunny-free"
+    "opencode-go/space-bunny-free",
+    "openrouter/deepseek/deepseek-v4.1-flash",
+    "openrouter/z-ai/glm-5.3-flash",
+    "openrouter/z-ai/glm-5.3"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
