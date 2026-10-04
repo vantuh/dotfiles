@@ -13,7 +13,6 @@
  *   pi-dictation down    stop the daemon
  *   pi-dictation log     follow the daemon log
  *
- * Commands match piweb (up/down); `start` and `stop` still work.
  */
 import {
   existsSync,
@@ -110,7 +109,9 @@ async function report(pid: number): Promise<number> {
     const state = await health();
     if (state?.ready) {
       console.log(`pi-dictation: ready (pid ${pid}, ${state.model})`);
-      console.log(`pi-dictation: listening on http://127.0.0.1:${PORT} for the pi-web mic shim`);
+      console.log(
+        `pi-dictation: listening on http://127.0.0.1:${PORT} for the pi-web mic shim`,
+      );
       return 0;
     }
     if (state?.error) {
@@ -174,9 +175,8 @@ function stop(): number {
 
 const command = process.argv[2] ?? 'up';
 switch (command) {
-  case 'up':
-  case 'start': {
-    // A server that is already answering only needs its address printing;
+  case 'up': {
+    // A server that is already answering only needs its state printing;
     // anything else is a fresh start, which waits for the model to load.
     const state = await health();
     if (state?.ready) process.exit(await status());
@@ -185,7 +185,6 @@ switch (command) {
   case 'status':
     process.exit(await status());
   case 'down':
-  case 'stop':
     process.exit(stop());
   case 'log':
     process.exit(
