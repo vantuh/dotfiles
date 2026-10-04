@@ -1,0 +1,12 @@
+{
+  "name": "pi-dictation",
+  "private": true,
+  "type": "module",
+  "description": "Local, offline dictation server: records from the phone and transcribes with transcribe.cpp on the GGUF model Handy already downloaded.",
+  "scripts": {
+    "start": "bun run src/server.ts"
+  },
+  "dependencies": {
+    "transcribe-cpp": "0.3.1"
+  }
+}
