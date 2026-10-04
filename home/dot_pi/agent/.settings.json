@@ -14,7 +14,7 @@
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
-  "lastChangelogVersion": "1.0.0",
+  "lastChangelogVersion": "1.0.2",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -40,6 +40,18 @@
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
   "subagents": {
+    "modelScope": {
+      "enforce": true,
+      "strict": true,
+      "agents": {
+        "reviewer": {
+          "allow": [
+            "anthropic/claude-opus-5-5",
+            "openai/gpt-6.1-sol"
+          ]
+        }
+      }
+    },
     "agentOverrides": {
       "scout": {
         "model": "openai/gpt-6-luna",
