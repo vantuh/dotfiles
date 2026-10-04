@@ -22,20 +22,3 @@ llama-swap-start() {
 dotfix() {
   chezmoi update
 }
-
-# Herdr's web ui bridge. Herdr's own startup hook cannot run it: its plugin
-# commands inherit a PATH without bun, so the bridge is started from a shell.
-# `hwui` starts and publishes it with a QR code, `hwui down` stops it, and
-# `hwui status|phone` map to the plugin's own subcommands.
-function hwui() {
-  local dir=( "$HOME"/.config/herdr/plugins/github/devswha.herdr-web-ui-*(N/) )
-  if [[ -z "$dir[1]" ]]; then
-    print -u2 "hwui: plugin not installed (herdr plugin install devswha/herdr-web-ui)"
-    return 1
-  fi
-  case "${1:-up}" in
-    up)   ( builtin cd "$dir[1]" && bun scripts/plugin.ts start && bun scripts/plugin.ts phone ) ;;
-    down) ( builtin cd "$dir[1]" && bun scripts/plugin.ts stop ) ;;
-    *)    ( builtin cd "$dir[1]" && bun scripts/plugin.ts "$1" ) ;;
-  esac
-}
