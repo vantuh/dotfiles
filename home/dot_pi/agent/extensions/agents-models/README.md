@@ -56,8 +56,8 @@ the live mapping.
 
 ## chezmoi
 
-`~/.pi/agent/settings.json`, `~/.pi/agent/pi-autoname.json`, and the work
-profile's `~/.pi/profiles/work/agent/settings.json` are dest-symlinks into
+`~/.pi/agent/settings.json` and the work profile's
+`~/.pi/profiles/work/agent/settings.json` are dest-symlinks into
 `dotfiles/home/…`, so a write from this popup edits the tracked source
 directly — no `chezmoi add` needed. The popup follows `PI_CODING_AGENT_DIR`, so
 running under `piw` writes the work profile's settings. The write resolves the

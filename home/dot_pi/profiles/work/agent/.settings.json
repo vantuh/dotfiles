@@ -6,7 +6,6 @@
   ],
   "packages": [
     "npm:pi-web-access",
-    "npm:pi-autoname",
     "npm:pi-intercom",
     "npm:pi-prompt-template-model",
     "npm:pi-subagents",
