@@ -7,19 +7,26 @@ tails the chosen run's `events.jsonl`. Nothing is written and the runner is neve
 signalled.
 
 The picker always shows, including for a single run: opening a pane is a
-deliberate action, not something the command does on its own.
+deliberate action, not something the command does on its own. With two or more
+runs the last row is `all`, which opens one pane per run in list order instead of
+one pick per run. Panes open sequentially, so dedup and rebalancing see the
+layout left by the previous split.
+
+```
+/agents-watch                  # always pick from active runs (last row: all)
+/agents-watch all              # skip the picker, open every active run
+/agents-watch <runId>          # skip the picker
+/agents-watch <runId> --no-focus
+```
+
+`all` reports a single summary line, `<n> opened, <n> already open, <n> failed`;
+a run that fails to open is named and the remaining runs still open.
 
 A workflow is listed as its children, one row each, not as the workflow root. A
 workflow root's own `events.jsonl` only carries workflow-level traces, so watching
 it shows nothing useful; every child is a real async run with its own artifacts.
 Children come from `workflow-children.jsonl`, and each row is
 `<workflowKey> · <step label> · <child run id>`.
-
-```
-/agents-watch                  # always pick from active runs
-/agents-watch <runId>          # skip the picker
-/agents-watch <runId> --no-focus
-```
 
 Run id accepts a full uuid, a unique prefix, or the first 8 characters.
 
