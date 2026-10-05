@@ -14,7 +14,7 @@
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
-  "lastChangelogVersion": "1.0.2",
+  "lastChangelogVersion": "1.0.3",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
