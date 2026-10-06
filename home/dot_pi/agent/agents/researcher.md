@@ -4,7 +4,7 @@ description: Autonomous web researcher — searches, evaluates, and synthesizes 
 tools: read, write, web_search, fetch_content, get_search_content, source_check
 thinking: medium
 systemPromptMode: replace
-inheritProjectContext: true
+inheritProjectContext: false
 inheritSkills: false
 output: research.md
 defaultProgress: true
