@@ -12,9 +12,10 @@
     "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "git:github.com/obra/superpowers"
   ],
-  "lastChangelogVersion": "1.0.3",
+  "lastChangelogVersion": "1.0.4",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
