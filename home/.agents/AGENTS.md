@@ -36,7 +36,8 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 ## Git
 
-- Work on the current branch. No new branches or worktrees unless asked.
+- Small tasks: stay on the current branch.
+- Large or multi-step work: propose a branch or worktree and wait for approval before creating it.
 - Commit each completed, verified concern locally as you go; no need to ask. Never push.
 - When a skill defines commit points, follow it.
 - Write commit messages with the caveman-commit skill (Conventional Commits). Subject line only by default.
