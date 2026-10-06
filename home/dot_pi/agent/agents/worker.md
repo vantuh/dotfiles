@@ -6,6 +6,7 @@ acceptanceRole: writer
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
+inheritGlobalContext: true
 inheritSkills: false
 tools: read, grep, find, ls, bash, edit, write, contact_supervisor
 defaultContext: fresh
