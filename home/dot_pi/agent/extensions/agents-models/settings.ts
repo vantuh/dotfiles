@@ -117,6 +117,12 @@ export function readSubagentSettingsForScope(
 /**
  * Sets or removes `subagents.agentOverrides.<agent>.model` in the scope's settings.json.
  * `null` removes the override; an override object left empty is removed as well.
+ *
+ * `subagents.modelScope` is kept in sync so the pin cannot be overridden per run:
+ * every agent gets a one-model allow list, and the shared `allow` is the union of
+ * those lists plus `inherit` (the fallback a cleared override locks the agent to).
+ * Clearing an override therefore pins the agent to the parent session model
+ * instead of unlocking it.
  */
 export function writeAgentModelOverride(
   scope: SettingsScope,
@@ -148,9 +154,41 @@ export function writeAgentModelOverride(
   }
 
   subagents.agentOverrides = agentOverrides;
+  subagents.modelScope = withAgentScope(subagents.modelScope, agent, model);
   root.subagents = subagents;
 
   writeJsonAtomically(filePath, `${JSON.stringify(root, null, 2)}\n`);
+}
+
+const INHERIT = 'inherit';
+
+/**
+ * Replaces `subagents.modelScope` with the pin for `agent` plus the shared allow
+ * list derived from every pin. `enforce`/`strict` default to true but keep an
+ * explicit `false`, so a settings file can still opt out.
+ */
+function withAgentScope(
+  value: unknown,
+  agent: string,
+  model: string | null,
+): Record<string, unknown> {
+  const modelScope = isRecord(value) ? { ...value } : {};
+  if (modelScope.enforce !== false) modelScope.enforce = true;
+  if (modelScope.strict !== false) modelScope.strict = true;
+
+  const agents = isRecord(modelScope.agents) ? { ...modelScope.agents } : {};
+  agents[agent] = { allow: [model ?? INHERIT] };
+  modelScope.agents = agents;
+
+  const allow = new Set<string>([INHERIT]);
+  for (const entry of Object.values(agents)) {
+    if (!isRecord(entry) || !Array.isArray(entry.allow)) continue;
+    for (const pattern of entry.allow) {
+      if (typeof pattern === 'string') allow.add(pattern);
+    }
+  }
+  modelScope.allow = [...allow].sort();
+  return modelScope;
 }
 
 function parseOrThrow(text: string, filePath: string): unknown {

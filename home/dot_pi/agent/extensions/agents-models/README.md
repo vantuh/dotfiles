@@ -44,6 +44,27 @@ something changed. The write is atomic and preserves every other setting,
 including the other fields of an existing override (for example
 `scout.thinking` survives clearing only its model).
 
+## Model scope
+
+Every pin also writes `subagents.modelScope`, so the orchestrator cannot
+talk pi-subagents into running an agent on another model:
+
+- `modelScope.agents.<agent>.allow` becomes the single pinned model. A per-run
+  `model` on the `subagent` tool, `--model`, a clarify pick, or a workflow
+  script then fails the launch with a scope error instead of taking effect.
+- `modelScope.allow` is recomputed as the union of every agent rule plus
+  `inherit`. The shared list has to admit each pin, and it fails closed for an
+  agent with no rule yet.
+- `modelScope.enforce` and `modelScope.strict` default to `true` when absent.
+  An explicit `false` is preserved, which leaves the rules inert.
+- Clearing an override writes `allow: ["inherit"]` rather than deleting the
+  rule, so the agent is locked to the parent session model instead of being
+  unlocked. Its stale model drops out of the shared list.
+
+Because pi-subagents replaces the user `modelScope` with the project one, the
+`local` target gets the same treatment: pinning into a project settings file
+keeps its own consistent scope instead of silently dropping the global one.
+
 ## Agent discovery
 
 pi-subagents does not export its agent discovery, so this extension
@@ -73,5 +94,6 @@ bun test/agents-models.test.ts
 
 Covers the picker's step machine (filter, back, close, confirm, clear, tab
 target switching across global/local), the save-then-return-to-agents cycle
-including a failed write, the disabled-agent filter, the settings write, and
-writing through a symlinked target.
+including a failed write, the disabled-agent filter, the settings write,
+writing through a symlinked target, and the `subagents.modelScope` sync
+(per-agent rule, shared allow union, clear-to-inherit, explicit opt-out).

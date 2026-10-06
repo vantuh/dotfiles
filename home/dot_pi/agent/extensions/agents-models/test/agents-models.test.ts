@@ -340,3 +340,94 @@ const data: PickerData = {
     'the write lands in the symlink target',
   );
 }
+
+{
+  const dir = mkdtempSync(path.join(tmpdir(), 'agents-models-scope-'));
+  const file = path.join(dir, 'settings.json');
+  const scope: SettingsScope = { kind: 'user', path: file, label: 'global' };
+  const read = () => JSON.parse(readFileSync(file, 'utf8'));
+  writeFileSync(
+    file,
+    `${JSON.stringify(
+      {
+        theme: 'dark',
+        subagents: {
+          modelScope: { enforce: true, strict: true },
+          agentOverrides: { worker: { thinking: 'high' } },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  writeAgentModelOverride(scope, 'worker', 'a/b');
+  assert(
+    JSON.stringify(read().subagents.modelScope) ===
+      JSON.stringify({
+        enforce: true,
+        strict: true,
+        agents: { worker: { allow: ['a/b'] } },
+        allow: ['a/b', 'inherit'],
+      }),
+    'pinning writes the matching modelScope rule',
+  );
+  assert(
+    read().subagents.agentOverrides.worker.thinking === 'high' &&
+      read().theme === 'dark',
+    'other settings keys survive the write',
+  );
+
+  writeAgentModelOverride(scope, 'scout', 'c/d');
+  assert(
+    JSON.stringify(read().subagents.modelScope) ===
+      JSON.stringify({
+        enforce: true,
+        strict: true,
+        agents: { worker: { allow: ['a/b'] }, scout: { allow: ['c/d'] } },
+        allow: ['a/b', 'c/d', 'inherit'],
+      }),
+    'a second pin unions the shared allow list',
+  );
+
+  writeAgentModelOverride(scope, 'worker', null);
+  const afterClear = read();
+  assert(
+    afterClear.subagents.agentOverrides.worker.model === undefined &&
+      afterClear.subagents.agentOverrides.worker.thinking === 'high',
+    'clearing drops only the model',
+  );
+  assert(
+    JSON.stringify(afterClear.subagents.modelScope) ===
+      JSON.stringify({
+        enforce: true,
+        strict: true,
+        agents: {
+          worker: { allow: ['inherit'] },
+          scout: { allow: ['c/d'] },
+        },
+        allow: ['c/d', 'inherit'],
+      }),
+    'clearing locks the agent to the parent model and drops the stale allow entry',
+  );
+}
+
+{
+  const dir = mkdtempSync(path.join(tmpdir(), 'agents-models-optout-'));
+  const file = path.join(dir, 'settings.json');
+  writeFileSync(
+    file,
+    `${JSON.stringify({ subagents: { modelScope: { enforce: false } } })}\n`,
+  );
+
+  writeAgentModelOverride(
+    { kind: 'user', path: file, label: 'global' },
+    'worker',
+    'a/b',
+  );
+  const written = JSON.parse(readFileSync(file, 'utf8')).subagents.modelScope;
+  assert(
+    written.enforce === false && written.strict === true,
+    'an explicit enforce:false is preserved while strict defaults to true',
+  );
+}
