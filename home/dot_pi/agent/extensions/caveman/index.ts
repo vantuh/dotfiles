@@ -119,10 +119,7 @@ export default function cavemanExtension(pi: ExtensionAPI): void {
   let mode: Mode = 'on';
 
   const setStatus = (ctx: ExtensionContext | undefined): void =>
-    ctx?.ui?.setStatus?.(
-      CAVEMAN_SECTION,
-      mode === 'on' ? 'caveman: ON' : 'caveman: OFF',
-    );
+    ctx?.ui?.setStatus?.(CAVEMAN_SECTION, `🗿 caveman: ${mode.toUpperCase()}`);
 
   const restore = (ctx: ExtensionContext): void => {
     mode = resolveMode(ctx.sessionManager.getBranch() as readonly Entry[]);

@@ -210,14 +210,14 @@ assert.deepEqual(skillCandidates('/agent', '/agent/extensions/caveman'), [
   // Fresh ON default, command surface, busy notification, OFF prompt.
   const h = harness();
   await h.sessionStart();
-  assert.equal(h.status(), 'caveman: ON');
+  assert.equal(h.status(), '🗿 caveman: ON');
   const on = await h.prompt();
   assert.match(on.caveman, /CAVEMAN MODE ON/);
   assert.match(on.caveman, /SENTINEL-CAVEMAN-RULE/);
   assert.doesNotMatch(on.caveman, /name: caveman/);
 
   await h.command('off');
-  assert.equal(h.status(), 'caveman: OFF');
+  assert.equal(h.status(), '🗿 caveman: OFF');
   assert.deepEqual(h.entries, [
     { customType: 'caveman-mode', data: { mode: 'off' } },
   ]);
@@ -238,7 +238,7 @@ assert.deepEqual(skillCandidates('/agent', '/agent/extensions/caveman'), [
   await h.command('off');
   assert.equal(h.entries.length, 1, 'a repeated /caveman off appends nothing');
   await h.command('on');
-  assert.equal(h.status(), 'caveman: ON');
+  assert.equal(h.status(), '🗿 caveman: ON');
   assert.equal(h.entries.length, 2);
   await h.command('status');
   assert.equal(h.message(), 'caveman: ON');
@@ -246,26 +246,26 @@ assert.deepEqual(skillCandidates('/agent', '/agent/extensions/caveman'), [
   await h.command('ultra');
   assert.match(h.message()!, /Unknown \/caveman argument: ultra/);
   assert.equal(h.entries.length, 2, 'an unknown argument changes no state');
-  assert.equal(h.status(), 'caveman: ON');
+  assert.equal(h.status(), '🗿 caveman: ON');
 
   h.setIdle(false);
   await h.command('off');
   assert.equal(
     h.status(),
-    'caveman: OFF',
+    '🗿 caveman: OFF',
     'the footer shows the selected mode',
   );
   assert.match(h.message()!, /applies to the next agent run/);
   h.setIdle(true);
   await h.command('');
-  assert.equal(h.status(), 'caveman: ON', 'a bare /caveman toggles');
+  assert.equal(h.status(), '🗿 caveman: ON', 'a bare /caveman toggles');
   assert.equal(h.message(), 'caveman: ON', 'an idle command has no suffix');
 }
 
 {
   const h = harness();
   await h.sessionStart('reload', [modeEntry('off')]);
-  assert.equal(h.status(), 'caveman: OFF', 'reload keeps the saved OFF');
+  assert.equal(h.status(), '🗿 caveman: OFF', 'reload keeps the saved OFF');
   const off = await h.prompt();
   assert.match(off.caveman, /CAVEMAN MODE OFF/);
   assert.doesNotMatch(off.caveman, /SENTINEL-CAVEMAN-RULE/);
@@ -275,9 +275,13 @@ assert.deepEqual(skillCandidates('/agent', '/agent/extensions/caveman'), [
   const h = harness();
   await h.sessionStart('startup', [modeEntry('on')]);
   await h.treeSwitch([modeEntry('off')]);
-  assert.equal(h.status(), 'caveman: OFF', 'a tree switch restores the branch');
+  assert.equal(
+    h.status(),
+    '🗿 caveman: OFF',
+    'a tree switch restores the branch',
+  );
   await h.treeSwitch([modeEntry('on')]);
-  assert.equal(h.status(), 'caveman: ON');
+  assert.equal(h.status(), '🗿 caveman: ON');
 }
 
 {

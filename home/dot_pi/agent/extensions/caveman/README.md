@@ -8,7 +8,7 @@ A persistent caveman voice for Pi, controlled by one command.
 - **`/caveman`** toggles. **`/caveman on`** and **`/caveman off`** set the mode
   and are idempotent. **`/caveman status`** reports the mode and changes
   nothing. Any other argument is rejected without changing state.
-- **Footer** shows `caveman: ON` or `caveman: OFF` under its own `setStatus`
+- **Footer** shows `🗿 caveman: ON` or `🗿 caveman: OFF` under its own `setStatus`
   key, so it never replaces the footer.
 - **Persistence** uses a `caveman-mode` session entry. `session_start` and
   `session_tree` restore the active branch's value, so a saved OFF survives
