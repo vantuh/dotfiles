@@ -65,7 +65,6 @@
         "thinking": "medium",
         "skills": [
           "tdd",
-          "vercel-react-best-practices",
           "fix-sonar"
         ],
         "extensions": [
