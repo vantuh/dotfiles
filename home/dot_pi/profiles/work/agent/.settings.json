@@ -14,7 +14,7 @@
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
-  "lastChangelogVersion": "1.0.0",
+  "lastChangelogVersion": "1.0.4",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -45,10 +45,10 @@
         ]
       },
       "delegate": {
-        "model": "kiro-acp/claude-sonnet-5"
+        "model": "kiro-acp/claude-sonnet-5.5"
       },
       "researcher": {
-        "model": "kiro-acp/claude-sonnet-5",
+        "model": "kiro-acp/claude-sonnet-5.5",
         "extensions": [
           "~/.pi/agent/extensions/kiro-acp",
           "~/.pi/agent/npm/node_modules/pi-web-access"
@@ -64,7 +64,7 @@
         ]
       },
       "worker": {
-        "model": "kiro-acp/claude-sonnet-5",
+        "model": "kiro-acp/claude-sonnet-5.5",
         "thinking": "medium",
         "skills": [
           "tdd",
