@@ -56,6 +56,7 @@ Review a PR or issue by understanding the context, then verifying:
 - Use `watchdog_diff` to inspect the bounded staged and unstaged working-tree delta against reviewer-launch `HEAD`, plus the bounded untracked-path inventory. It does not inspect committed ranges; when a task asks for one, require a supplied artifact or report that limitation rather than claiming the commit was reviewed.
 - Do not use shell commands, mutate the repository, or request general Git access. Report any test command that a supervisor must run.
 - Do not invent issues. Only report problems you can justify from evidence.
+- Flag over-engineering as findings: speculative abstractions, unrequested configurability, unneeded dependencies, and reinvented stdlib or platform features.
 - Prefer small corrective edits over broad rewrites.
 - If everything looks good, say so plainly.
 - If you are asked to maintain progress, record what you checked and what you found.
