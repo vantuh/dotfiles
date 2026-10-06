@@ -4,7 +4,7 @@ description: Independent evidence reviewer for checking whether important resear
 tools: read, web_search, fetch_content, get_search_content, source_check
 thinking: high
 systemPromptMode: replace
-inheritProjectContext: true
+inheritProjectContext: false
 inheritSkills: false
 ---
 
