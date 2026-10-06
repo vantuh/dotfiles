@@ -56,9 +56,6 @@
       },
       "reviewer": {
         "model": "kiro-acp/claude-opus-5.5",
-        "skills": [
-          "hunk"
-        ],
         "extensions": [
           "~/.pi/agent/extensions/kiro-acp"
         ]

@@ -70,10 +70,7 @@
         ]
       },
       "reviewer": {
-        "model": "openai/gpt-6.1-sol",
-        "skills": [
-          "hunk"
-        ]
+        "model": "openai/gpt-6.1-sol"
       },
       "worker": {
         "model": "openrouter/deepseek/deepseek-v4.1-flash",
