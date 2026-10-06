@@ -61,7 +61,8 @@
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openrouter/deepseek/deepseek-v4.1-flash"
+        "model": "openrouter/deepseek/deepseek-v4.1-flash",
+        "inheritGlobalContext": true
       },
       "researcher": {
         "model": "anthropic/claude-sonnet-5-5",
@@ -79,6 +80,7 @@
           "tdd",
           "fix-sonar"
         ],
+        "inheritGlobalContext": true,
         "extensions": [
           "~/.pi/agent/extensions/oxc-auto"
         ]
