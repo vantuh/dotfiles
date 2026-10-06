@@ -1,5 +1,7 @@
 # AGENTS.md
 
+These are global defaults. Explicit user requests and more specific project instructions take precedence.
+
 ## Language
 
 Reply in the user's language (Ukrainian or English). Everything written to a repository is English: code, identifiers, comments, commit messages, MR descriptions, docs, plans.
@@ -36,11 +38,10 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 ## Git
 
-- Small tasks: stay on the current branch.
-- Large or multi-step work: propose a branch or worktree and wait for approval before creating it.
+- Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval before creating it.
 - Commit each completed, verified concern locally as you go; no need to ask. Never push.
 - When a skill defines commit points, follow it.
-- Write commit messages with the caveman-commit skill (Conventional Commits). Subject line only by default.
+- Follow the repository's commit conventions; otherwise use caveman-commit with Conventional Commits. Subject line only by default.
 - Add a body only for what the diff cannot show: a breaking change, a migration, a reverted decision. Never restate the diff.
 - Stage only your own paths or hunks. Let hooks run; no `--no-verify`.
 - Amend only your own unpushed commits from the current task. Never rewrite other history.
