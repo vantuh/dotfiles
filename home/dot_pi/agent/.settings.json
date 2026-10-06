@@ -80,7 +80,8 @@
           "fix-sonar"
         ],
         "extensions": [
-          "~/.pi/agent/extensions/oxc-auto"
+          "~/.pi/agent/extensions/oxc-auto",
+          "~/.pi/agent/subagent-extensions/ponytail-full.ts"
         ]
       },
       "oracle": {
