@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "openrouter",
-  "defaultModel": "deepseek/deepseek-v4.1-flash",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-sonnet-5-5",
   "defaultTools": [
     "+codemode"
   ],
@@ -57,20 +57,20 @@
     },
     "agentOverrides": {
       "scout": {
-        "model": "openai/gpt-6-luna",
+        "model": "anthropic/claude-haiku-4-5",
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "anthropic/claude-sonnet-5-5"
+        "model": "openrouter/deepseek/deepseek-v4.1-flash"
       },
       "researcher": {
-        "model": "openai/gpt-6.1-sol",
+        "model": "anthropic/claude-sonnet-5-5",
         "extensions": [
           "~/.pi/agent/npm/node_modules/pi-web-access"
         ]
       },
       "reviewer": {
-        "model": "openai/gpt-6.1-sol"
+        "model": "anthropic/claude-opus-5-5"
       },
       "worker": {
         "model": "openrouter/deepseek/deepseek-v4.1-flash",
@@ -105,7 +105,7 @@
         "disabled": true
       },
       "evidence-auditor": {
-        "model": "openai/gpt-6.1-sol"
+        "model": "anthropic/claude-opus-5-5"
       },
       "council-codex": {
         "model": "openai/gpt-6.1-sol"
