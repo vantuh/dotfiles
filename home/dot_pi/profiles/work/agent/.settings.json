@@ -36,6 +36,71 @@
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
   "subagents": {
+    "modelScope": {
+      "enforce": true,
+      "strict": true,
+      "allow": [
+        "inherit",
+        "kiro-acp/claude-haiku-4.5",
+        "kiro-acp/claude-sonnet-5.5",
+        "kiro-acp/claude-opus-5.5",
+        "openai/gpt-6.1-sol",
+        "anthropic/claude-opus-5-5",
+        "opencode-go/glm-5.3-flash"
+      ],
+      "agents": {
+        "scout": {
+          "allow": [
+            "kiro-acp/claude-haiku-4.5"
+          ]
+        },
+        "delegate": {
+          "allow": [
+            "kiro-acp/claude-sonnet-5.5"
+          ]
+        },
+        "researcher": {
+          "allow": [
+            "kiro-acp/claude-sonnet-5.5"
+          ]
+        },
+        "worker": {
+          "allow": [
+            "kiro-acp/claude-sonnet-5.5"
+          ]
+        },
+        "reviewer": {
+          "allow": [
+            "kiro-acp/claude-opus-5.5"
+          ]
+        },
+        "oracle": {
+          "allow": [
+            "kiro-acp/claude-opus-5.5"
+          ]
+        },
+        "evidence-auditor": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "council-codex": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "council-opus": {
+          "allow": [
+            "anthropic/claude-opus-5-5"
+          ]
+        },
+        "council-glm": {
+          "allow": [
+            "opencode-go/glm-5.3-flash"
+          ]
+        }
+      }
+    },
     "agentOverrides": {
       "scout": {
         "model": "kiro-acp/claude-haiku-4.5",

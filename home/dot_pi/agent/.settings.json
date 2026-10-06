@@ -45,12 +45,63 @@
     "modelScope": {
       "enforce": true,
       "strict": true,
+      "allow": [
+        "inherit",
+        "openai/gpt-6-luna",
+        "openai/gpt-6.1-sol",
+        "openrouter/deepseek/deepseek-v4.1-flash",
+        "anthropic/claude-opus-5-5",
+        "opencode-go/glm-5.3-flash"
+      ],
       "agents": {
+        "scout": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "delegate": {
+          "allow": [
+            "openrouter/deepseek/deepseek-v4.1-flash"
+          ]
+        },
+        "researcher": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "worker": {
+          "allow": [
+            "openrouter/deepseek/deepseek-v4.1-flash"
+          ]
+        },
         "reviewer": {
           "allow": [
-            "inherit",
-            "anthropic/claude-opus-5-5",
             "openai/gpt-6.1-sol"
+          ]
+        },
+        "oracle": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "evidence-auditor": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "council-codex": {
+          "allow": [
+            "openai/gpt-6.1-sol"
+          ]
+        },
+        "council-opus": {
+          "allow": [
+            "anthropic/claude-opus-5-5"
+          ]
+        },
+        "council-glm": {
+          "allow": [
+            "opencode-go/glm-5.3-flash"
           ]
         }
       }
