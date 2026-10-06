@@ -77,7 +77,6 @@
         "thinking": "high",
         "skills": [
           "tdd",
-          "vercel-react-best-practices",
           "fix-sonar"
         ],
         "extensions": [
