@@ -10,9 +10,9 @@ home/               Source state mapped one-to-one to $HOME
   dot_config/       XDG application configs
     herdr/plugins/  Herdr plugin sources; linked after apply
   dot_local/bin/    Executable commands
-  dot_pi/agent/     Pi configuration and extensions
+  dot_pi/private_agent/     Pi configuration and extensions
     .settings.json  source-only; dest-symlinked from ~/.pi/agent/
-  dot_pi/profiles/work/agent/  Pi work profile (`piw`): own .settings.json
+  dot_pi/profiles/work/private_agent/  Pi work profile (`piw`): own .settings.json
                      (source-only, dest-symlinked) plus symlinks into
                      ~/.pi/agent for everything else it shares
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
@@ -34,7 +34,7 @@ archive/            Retired configs kept for reference; never applied
   add a precise ignore when source-only material must live beside config.
 - `kiro-acp` exists twice on purpose:
   `home/dot_omp/private_agent/extensions/kiro-acp` is Oh My Pi and
-  `home/dot_pi/agent/extensions/kiro-acp` is Pi. Read the copy's `README.md`;
+  `home/dot_pi/private_agent/extensions/kiro-acp` is Pi. Read the copy's `README.md`;
   do not port changes across hosts unless asked.
 
 ## Rules
@@ -49,11 +49,11 @@ archive/            Retired configs kept for reference; never applied
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
 - Add shared skills under `home/.agents/skills/<name>/SKILL.md`.
 - pi-subagents package agents that are not disabled in
-  `home/dot_pi/agent/.settings.json` are mirrored into
-  `home/dot_pi/agent/agents/` by `subagents-agents-sync`
+  `home/dot_pi/private_agent/.settings.json` are mirrored into
+  `home/dot_pi/private_agent/agents/` by `subagents-agents-sync`
   (`home/dot_local/bin/executable_subagents-agents-sync.ts`). Edit those copies
   freely; the pristine package version lives next to them in
-  `home/dot_pi/agent/subagents-agents-base/` and is the merge base the script
+  `home/dot_pi/private_agent/subagents-agents-base/` and is the merge base the script
   uses on upgrades. Never edit files under `subagents-agents-base/`.
 - Refresh upstream skills with `skills-update` (`home/dot_local/bin/executable_skills-update`).
   It drives `npx skills` from `~/.agents`, which writes to `<cwd>/.agents/skills`,
