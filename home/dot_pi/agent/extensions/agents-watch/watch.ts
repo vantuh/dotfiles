@@ -163,6 +163,46 @@ function contentText(content: unknown): string {
 const startedAt = new Map<string, number>();
 const lastPartial = new Map<string, string>();
 
+type StreamBlock = {
+  kind: 'text' | 'thinking' | 'tool';
+  pending: string;
+  shown: boolean;
+  toolName?: string;
+  toolId?: string;
+};
+
+const blocks = new Map<number, StreamBlock>();
+const announced = new Set<string>();
+
+function resetStream(): void {
+  blocks.clear();
+  announced.clear();
+  startedAt.clear();
+  lastPartial.clear();
+}
+
+function streamBlock(
+  index: number,
+  kind: StreamBlock['kind'],
+): StreamBlock {
+  const existing = blocks.get(index);
+  if (existing?.kind === kind) return existing;
+  const created: StreamBlock = { kind, pending: '', shown: false };
+  blocks.set(index, created);
+  return created;
+}
+
+function toolArgs(value: unknown, pending: string): unknown {
+  if (value && typeof value === 'object') return value;
+  const raw = typeof value === 'string' && value.trim() ? value : pending;
+  if (!raw.trim()) return undefined;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
 function observedAt(record: Record<string, unknown>): number | undefined {
   const value = record.observedAt;
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -212,6 +252,8 @@ function render(record: Record<string, unknown>): void {
       return;
     case 'turn_start':
       turnNumber += 1;
+      blocks.clear();
+      announced.clear();
       turn = {
         start: observedAt(record) ?? Date.now(),
         tools: 0,
@@ -223,9 +265,10 @@ function render(record: Record<string, unknown>): void {
     case 'turn_end': {
       // The message is already rendered at message_end; only close the frame.
       if (!turn) return;
+      const tools = Math.max(turn.tools, announced.size);
       const stats = [
         duration((observedAt(record) ?? Date.now()) - turn.start),
-        `${turn.tools} ${turn.tools === 1 ? 'tool' : 'tools'}`,
+        `${tools} ${tools === 1 ? 'tool' : 'tools'}`,
         `${compactTokens(turn.out)} out`,
         turn.cost > 0 ? `$${turn.cost.toFixed(3)}` : '',
       ].filter(Boolean);
@@ -233,6 +276,84 @@ function render(record: Record<string, unknown>): void {
         `${C.dim('╰')} ${C.bold(C.green('✓ done'))} ${C.dim(stats.join(' · '))}`,
       );
       turn = undefined;
+      blocks.clear();
+      announced.clear();
+      return;
+    }
+    case 'message_start':
+      blocks.clear();
+      return;
+    case 'message_update': {
+      const event = record.assistantMessageEvent;
+      if (!event || typeof event !== 'object') return;
+      const update = event as Record<string, unknown>;
+      const index =
+        typeof update.contentIndex === 'number' ? update.contentIndex : 0;
+      const kind = String(update.type ?? '');
+      if (kind === 'text_delta' || kind === 'text_end') {
+        const block = streamBlock(index, 'text');
+        const delta =
+          kind === 'text_end'
+            ? block.shown || block.pending
+              ? ''
+              : typeof update.content === 'string'
+                ? update.content
+                : ''
+            : typeof update.delta === 'string'
+              ? update.delta
+              : '';
+        const flush = kind === 'text_end';
+        block.pending += delta;
+        const lines = block.pending.split('\n');
+        block.pending = flush ? '' : (lines.pop() ?? '');
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          emit(`${tag}${line}`);
+          block.shown = true;
+        }
+        return;
+      }
+      if (kind === 'thinking_delta' || kind === 'thinking_end') {
+        const block = streamBlock(index, 'thinking');
+        if (typeof update.delta === 'string') block.pending += update.delta;
+        const text =
+          kind === 'thinking_end' && typeof update.content === 'string'
+            ? update.content
+            : block.pending;
+        if (block.shown || !text.trim()) return;
+        if (kind !== 'thinking_end' && (expanded || !text.includes('\n')))
+          return;
+        const line = expanded ? text : (text.split(/\r?\n/, 1)[0] ?? text);
+        detail(C.magenta('◆ think'), line, C.dim, 220);
+        block.shown = true;
+        return;
+      }
+      if (kind === 'toolcall_start') {
+        const block = streamBlock(index, 'tool');
+        if (typeof update.toolName === 'string') block.toolName = update.toolName;
+        if (typeof update.id === 'string') block.toolId = update.id;
+        return;
+      }
+      if (kind === 'toolcall_delta') {
+        const block = streamBlock(index, 'tool');
+        if (typeof update.delta === 'string') block.pending += update.delta;
+        return;
+      }
+      if (kind === 'toolcall_end') {
+        const block = streamBlock(index, 'tool');
+        const call = update.toolCall as Record<string, unknown> | undefined;
+        const id = String(call?.id ?? block.toolId ?? `tool:${index}`);
+        const name = String(call?.name ?? block.toolName ?? 'tool');
+        if (announced.has(id)) return;
+        announced.add(id);
+        detail(
+          `${tag}${C.cyan('▶')} ${C.bold(name)}`,
+          argText(toolArgs(call?.arguments, block.pending)),
+          C.dim,
+          160,
+        );
+        return;
+      }
       return;
     }
     case 'message_end': {
@@ -246,18 +367,30 @@ function render(record: Record<string, unknown>): void {
       }
       const content = message.content as unknown;
       if (!Array.isArray(content)) return;
-      for (const part of content as Record<string, unknown>[]) {
+      for (const [index, part] of (content as Record<string, unknown>[]).entries()) {
         if (
           part.type === 'thinking' &&
           typeof part.thinking === 'string' &&
           part.thinking.trim()
         ) {
-          detail(C.magenta('◆ think'), part.thinking, C.dim, 220);
+          // ponytail: a streamed thinking block is final. message_end does not reprint it.
+          if (blocks.get(index)?.shown) continue;
+          const line = expanded
+            ? part.thinking
+            : (part.thinking.split(/\r?\n/, 1)[0] ?? part.thinking);
+          detail(C.magenta('◆ think'), line, C.dim, 220);
         } else if (
           part.type === 'text' &&
           typeof part.text === 'string' &&
           part.text.trim()
         ) {
+          const block = blocks.get(index);
+          if (block?.kind === 'text' && (block.shown || block.pending)) {
+            if (block.pending.trim()) emit(`${tag}${block.pending.trim()}`);
+            block.pending = '';
+            block.shown = true;
+            continue;
+          }
           for (const line of part.text.trim().split('\n'))
             emit(`${tag}${line}`);
         }
@@ -265,8 +398,11 @@ function render(record: Record<string, unknown>): void {
       return;
     }
     case 'tool_execution_start': {
-      const id = String(record.toolCallId ?? record.toolName ?? '');
-      startedAt.set(id, observedAt(record) ?? Date.now());
+      const id = String(record.toolCallId ?? '');
+      const key = id || String(record.toolName ?? 'tool');
+      startedAt.set(key, observedAt(record) ?? Date.now());
+      if (id && announced.has(id)) return;
+      announced.add(key);
       detail(
         `${tag}${C.cyan('▶')} ${C.bold(String(record.toolName ?? 'tool'))}`,
         argText(record.args),
@@ -306,12 +442,14 @@ function render(record: Record<string, unknown>): void {
             )
           : '';
       const mark = record.isError === true ? C.red('✗') : C.green('✓');
+      const body = contentText(
+        (record.result as Record<string, unknown> | undefined)?.content,
+      );
       detail(
         tag,
-        `${mark} ${String(record.toolName ?? 'tool')}${took}`,
-        contentText(
-          (record.result as Record<string, unknown> | undefined)?.content,
-        ),
+        body
+          ? `${mark} ${String(record.toolName ?? 'tool')}${took}\n${body}`
+          : `${mark} ${String(record.toolName ?? 'tool')}${took}`,
         C.dim,
         140,
       );
@@ -557,8 +695,7 @@ function drain(): void {
 
 function repaint(): void {
   process.stdout.write('\x1b[2J\x1b[H');
-  startedAt.clear();
-  lastPartial.clear();
+  resetStream();
   turn = undefined;
   turnNumber = 0;
   offset = 0;
