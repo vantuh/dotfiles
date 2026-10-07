@@ -8,6 +8,7 @@ systemPromptMode: replace
 inheritProjectContext: true
 inheritGlobalContext: true
 inheritSkills: false
+subagentOnlyExtensions: ~/.pi/agent/npm/node_modules/pi-cursor-sdk
 tools: read, grep, find, ls, bash, edit, write, contact_supervisor
 defaultContext: fresh
 defaultReads: context.md, plan.md
