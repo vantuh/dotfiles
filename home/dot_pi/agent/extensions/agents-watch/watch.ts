@@ -167,6 +167,7 @@ type StreamBlock = {
   kind: 'text' | 'thinking' | 'tool';
   pending: string;
   shown: boolean;
+  gap: boolean;
   toolName?: string;
   toolId?: string;
 };
@@ -187,9 +188,13 @@ function streamBlock(
 ): StreamBlock {
   const existing = blocks.get(index);
   if (existing?.kind === kind) return existing;
-  const created: StreamBlock = { kind, pending: '', shown: false };
+  const created: StreamBlock = { kind, pending: '', shown: false, gap: false };
   blocks.set(index, created);
   return created;
+}
+
+function firstContentLine(text: string): string {
+  return text.trimStart().split(/\r?\n/, 1)[0] ?? '';
 }
 
 function toolArgs(value: unknown, pending: string): unknown {
@@ -307,7 +312,14 @@ function render(record: Record<string, unknown>): void {
         const lines = block.pending.split('\n');
         block.pending = flush ? '' : (lines.pop() ?? '');
         for (const line of lines) {
-          if (!line.trim()) continue;
+          if (!line.trim()) {
+            if (block.shown) block.gap = true;
+            continue;
+          }
+          if (block.gap) {
+            emit('');
+            block.gap = false;
+          }
           emit(`${tag}${line}`);
           block.shown = true;
         }
@@ -323,7 +335,8 @@ function render(record: Record<string, unknown>): void {
         if (block.shown || !text.trim()) return;
         if (kind !== 'thinking_end' && (expanded || !text.includes('\n')))
           return;
-        const line = expanded ? text : (text.split(/\r?\n/, 1)[0] ?? text);
+        const line = expanded ? text.trim() : firstContentLine(text);
+        if (!line) return;
         detail(C.magenta('◆ think'), line, C.dim, 220);
         block.shown = true;
         return;
@@ -375,9 +388,7 @@ function render(record: Record<string, unknown>): void {
         ) {
           // ponytail: a streamed thinking block is final. message_end does not reprint it.
           if (blocks.get(index)?.shown) continue;
-          const line = expanded
-            ? part.thinking
-            : (part.thinking.split(/\r?\n/, 1)[0] ?? part.thinking);
+          const line = expanded ? part.thinking : firstContentLine(part.thinking);
           detail(C.magenta('◆ think'), line, C.dim, 220);
         } else if (
           part.type === 'text' &&
