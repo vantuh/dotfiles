@@ -1,0 +1,22 @@
+--- a/src/runs/background/run-child-session.js
++++ b/src/runs/background/run-child-session.js
+@@ -11,10 +11,6 @@
+ import { reconcileAttemptUsage } from "../shared/usage-reconciliation.js";
+ import { formatSteerMessage } from "../shared/subagent-prompt-runtime.js";
+ import { takeMatchingAcceptedSteer, unconsumedSteerReason } from "./steering.js";
+-/** Events the child emits while the model streams; not persisted into the diagnostic log. */
+-function shouldPersistChildEvent(event) {
+-    return event.type !== "message_update";
+-}
+ function assistantStartsToolCall(message) {
+     return Array.isArray(message.content)
+         && message.content.some((part) => part.type === "toolCall");
+@@ -143,8 +139,6 @@
+         };
+         const appendChildEvent = (event) => {
+             if (!input.childEventContext)
+-                return;
+-            if (!shouldPersistChildEvent(event))
+                 return;
+             input.appendChildEvent({
+                 ...event,
