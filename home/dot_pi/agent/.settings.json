@@ -31,10 +31,8 @@
     "openai/gpt-6-luna",
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
-    "openrouter/deepseek/deepseek-v4.1-flash",
-    "openrouter/z-ai/glm-5.3-flash",
-    "openrouter/z-ai/glm-5.3",
-    "cursor/grok-4.7@256k:slow"
+    "cursor/grok-4.7@256k:slow",
+    "openrouter/deepseek/deepseek-v4.1-flash"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
@@ -48,11 +46,12 @@
       "enforce": true,
       "strict": true,
       "allow": [
+        "anthropic/claude-opus-5-5",
+        "anthropic/claude-sonnet-5-5",
+        "cursor/grok-4.7@256k:slow",
         "inherit",
         "openai/gpt-6-luna",
         "openai/gpt-6.1-sol",
-        "openrouter/deepseek/deepseek-v4.1-flash",
-        "anthropic/claude-opus-5-5",
         "opencode-go/glm-5.3-flash"
       ],
       "agents": {
@@ -63,7 +62,7 @@
         },
         "delegate": {
           "allow": [
-            "openrouter/deepseek/deepseek-v4.1-flash"
+            "cursor/grok-4.7@256k:slow"
           ]
         },
         "researcher": {
@@ -73,12 +72,12 @@
         },
         "worker": {
           "allow": [
-            "openrouter/deepseek/deepseek-v4.1-flash"
+            "cursor/grok-4.7@256k:slow"
           ]
         },
         "reviewer": {
           "allow": [
-            "openai/gpt-6.1-sol"
+            "anthropic/claude-sonnet-5-5"
           ]
         },
         "oracle": {
@@ -110,23 +109,23 @@
     },
     "agentOverrides": {
       "scout": {
-        "model": "anthropic/claude-haiku-4-5",
+        "model": "openai/gpt-6-luna",
         "thinking": "minimal"
       },
       "delegate": {
-        "model": "openrouter/deepseek/deepseek-v4.1-flash"
+        "model": "cursor/grok-4.7@256k:slow"
       },
       "researcher": {
-        "model": "anthropic/claude-sonnet-5-5",
+        "model": "openai/gpt-6.1-sol",
         "extensions": [
           "~/.pi/agent/npm/node_modules/pi-web-access"
         ]
       },
       "reviewer": {
-        "model": "anthropic/claude-opus-5-5"
+        "model": "anthropic/claude-sonnet-5-5"
       },
       "worker": {
-        "model": "openrouter/deepseek/deepseek-v4.1-flash",
+        "model": "cursor/grok-4.7@256k:slow",
         "thinking": "high",
         "skills": [
           "tdd",
@@ -138,7 +137,7 @@
         ]
       },
       "oracle": {
-        "model": "anthropic/claude-opus-5-5"
+        "model": "openai/gpt-6.1-sol"
       },
       "claude-code": {
         "disabled": true
@@ -159,7 +158,7 @@
         "disabled": true
       },
       "evidence-auditor": {
-        "model": "anthropic/claude-opus-5-5"
+        "model": "openai/gpt-6.1-sol"
       },
       "council-codex": {
         "model": "openai/gpt-6.1-sol"
