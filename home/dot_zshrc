@@ -13,3 +13,4 @@ if [[ -d "$_zshrc_dir" ]]; then
 fi
 
 unset _zshrc_dir _zshrc_file
+

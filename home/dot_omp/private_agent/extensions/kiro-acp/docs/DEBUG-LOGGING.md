@@ -1,7 +1,7 @@
 # kiro-acp Debug Logging
 
 > **Oh My Pi copy.** Source and identity: [README.md](../README.md).
-> Do not edit `home/dot_pi/agent/extensions/kiro-acp` for omp work.
+> Do not edit `home/dot_pi/private_agent/extensions/kiro-acp` for omp work.
 > In this catalog, "pi" means the host SDK / tool loop, not the Pi target tree.
 
 ## Log File

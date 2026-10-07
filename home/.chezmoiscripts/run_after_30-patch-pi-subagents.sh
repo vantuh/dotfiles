@@ -6,7 +6,7 @@ set -eu
 
 pkg="${CHEZMOI_DEST_DIR}/.pi/agent/npm/node_modules/pi-subagents"
 file="$pkg/src/runs/background/run-child-session.js"
-patch="${CHEZMOI_SOURCE_DIR}/dot_pi/agent/patches/pi-subagents-persist-message-update.patch"
+patch="${CHEZMOI_SOURCE_DIR}/dot_pi/private_agent/patches/pi-subagents-persist-message-update.patch"
 
 if [ ! -f "$file" ]; then
   echo "skip pi-subagents message_update patch: package not installed"

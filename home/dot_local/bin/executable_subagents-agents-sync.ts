@@ -8,8 +8,8 @@
  * package default and never freeze into the repo.
  *
  * Layout under the repo:
- *   home/dot_pi/agent/agents/<name>.md                  our editable copy (chezmoi target)
- *   home/dot_pi/agent/subagents-agents-base/<name>.md   pristine package copy of the same version
+ *   home/dot_pi/private_agent/agents/<name>.md                  our editable copy (chezmoi target)
+ *   home/dot_pi/private_agent/subagents-agents-base/<name>.md   pristine package copy of the same version
  *
  * On a package upgrade the pristine copy is the merge base:
  *   local == base  -> fast-forward both files to the new package content
@@ -38,9 +38,9 @@ const PACKAGE_AGENTS = join(
   process.env.HOME ?? '',
   '.pi/agent/npm/node_modules/pi-subagents/agents',
 );
-const AGENTS_REL = 'home/dot_pi/agent/agents';
-const BASE_REL = 'home/dot_pi/agent/subagents-agents-base';
-const SETTINGS_REL = 'home/dot_pi/agent/.settings.json';
+const AGENTS_REL = 'home/dot_pi/private_agent/agents';
+const BASE_REL = 'home/dot_pi/private_agent/subagents-agents-base';
+const SETTINGS_REL = 'home/dot_pi/private_agent/.settings.json';
 
 type SyncResult =
   | 'added'

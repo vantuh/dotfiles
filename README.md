@@ -16,13 +16,13 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_config/ghostty` | `~/.config/ghostty` (macOS) |
 | `home/dot_config/lazygit` | `~/.config/lazygit` |
 | `home/dot_local/bin` | `~/.local/bin` |
-| `home/dot_pi/agent` | `~/.pi/agent` |
+| `home/dot_pi/private_agent` | `~/.pi/agent` |
 | `home/dot_omp/private_agent` | `~/.omp/agent` (`0700`) |
 | `home/dot_omp/private_agent/.config.yml` | `~/.omp/agent/config.yml` (symlink into the repo) |
 | `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
-| `home/dot_pi/agent/.settings.json` | `~/.pi/agent/settings.json` (symlink into the repo) |
-| `home/dot_pi/profiles/work/agent` | `~/.pi/profiles/work/agent` (Pi work profile; `piw`) |
-| `home/dot_pi/profiles/work/agent/.settings.json` | `~/.pi/profiles/work/agent/settings.json` (symlink into the repo) |
+| `home/dot_pi/private_agent/.settings.json` | `~/.pi/agent/settings.json` (symlink into the repo) |
+| `home/dot_pi/profiles/work/private_agent` | `~/.pi/profiles/work/agent` (Pi work profile; `piw`) |
+| `home/dot_pi/profiles/work/private_agent/.settings.json` | `~/.pi/profiles/work/agent/settings.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
 
 `home/.chezmoiignore.tmpl` selects platform-specific targets. macOS receives
@@ -143,12 +143,12 @@ Everything both profiles must agree on — `extensions/`, packages (`npm/`,
 `mcp.json`, `keybindings.json`, `auth.json`, `intercom/`, `trust.json` — is a
 symlink into `~/.pi/agent` (OMP does the same under `~/.omp/profiles/work`).
 Sessions, caches, and `run-history.jsonl` stay per-profile. Add another
-`symlink_*.tmpl` under `home/dot_pi/profiles/work/agent/` for anything else that
+`symlink_*.tmpl` under `home/dot_pi/profiles/work/private_agent/` for anything else that
 must stay shared, or leave it out to get a fresh per-profile copy.
 
 ## Retired Pi extensions
 
-Retired personal extensions live under `home/dot_pi/agent/archive/` and are
+Retired personal extensions live under `home/dot_pi/private_agent/archive/` and are
 excluded from the applied state. See its `README.md` for history and restore
 instructions.
 
@@ -160,7 +160,7 @@ must not be updated as if they were mirrors.
 | Host | Source path | Applied path |
 | --- | --- | --- |
 | Oh My Pi (`omp`) | `home/dot_omp/private_agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
-| Pi (`pi`) | `home/dot_pi/agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
+| Pi (`pi`) | `home/dot_pi/private_agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
 
 The vendored `test/` directories are source-only and intentionally excluded
 from `$HOME`; run their checks from the repository paths above. Chezmoi deploys

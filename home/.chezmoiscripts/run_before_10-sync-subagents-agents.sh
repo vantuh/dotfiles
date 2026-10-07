@@ -17,6 +17,6 @@ printf '%s\n' "$out"
 
 case "$status" in
   0) ;;
-  1) echo "subagents agent sync reported conflicts; resolve home/dot_pi/agent/agents/*.conflict.md" >&2 ;;
+  1) echo "subagents agent sync reported conflicts; resolve home/dot_pi/private_agent/agents/*.conflict.md" >&2 ;;
   *) echo "subagents agent sync failed; install left untouched" >&2; exit "$status" ;;
 esac
