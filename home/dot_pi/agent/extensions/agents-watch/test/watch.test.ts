@@ -240,3 +240,62 @@ const leadingFinal = visible([
 ]);
 
 assert.match(leadingFinal, /лише після переносу/);
+
+// A short replay must not pin the next live line to the bottom row.
+{
+  const dir = mkdtempSync(join(tmpdir(), 'agents-watch-pty-'));
+  const events = join(dir, 'events.jsonl');
+  writeFileSync(events, `${JSON.stringify({ type: 'turn_start' })}\n`);
+  writeFileSync(join(dir, 'status.json'), '{"state":"running"}\n');
+  const probe = spawnSync(
+    'python3',
+    [
+      '-c',
+      `
+import fcntl, os, pty, select, struct, termios, time
+rows = 24
+master, slave = pty.openpty()
+fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", rows, 80, 0, 0))
+pid = os.fork()
+if pid == 0:
+    os.setsid()
+    os.dup2(slave, 0)
+    os.dup2(slave, 1)
+    os.dup2(slave, 2)
+    os.close(master)
+    os.close(slave)
+    os.execvp("bun", ["bun", ${JSON.stringify(watch)}, ${JSON.stringify(dir)}])
+os.close(slave)
+buf = b""
+deadline = time.time() + 3
+while time.time() < deadline and b"turn 1" not in buf:
+    ready, _, _ = select.select([master], [], [], 0.2)
+    if ready:
+        buf += os.read(master, 65536)
+with open(${JSON.stringify(events)}, "a") as fh:
+    fh.write(${JSON.stringify(JSON.stringify({ type: 'message_end', message: { role: 'assistant', content: [{ type: 'text', text: 'HELLO-LINE' }] } }) + '\n')})
+deadline = time.time() + 2
+while time.time() < deadline and b"HELLO-LINE" not in buf:
+    ready, _, _ = select.select([master], [], [], 0.2)
+    if ready:
+        buf += os.read(master, 65536)
+os.kill(pid, 15)
+os.waitpid(pid, 0)
+open(${JSON.stringify(join(dir, 'screen.bin'))}, "wb").write(buf)
+`,
+    ],
+    { encoding: 'utf8' },
+  );
+  assert.equal(probe.status, 0, probe.stderr || probe.stdout);
+  const screen = Buffer.from(
+    // python wrote the capture; read it back without the bun runner's tty.
+    spawnSync('cat', [join(dir, 'screen.bin')]).stdout,
+  );
+  assert.equal(screen.includes(Buffer.from('HELLO-LINE')), true, screen.toString());
+  assert.equal(
+    screen.includes(Buffer.from('\x1b[23;1H')),
+    false,
+    'live line jumped to the bottom row',
+  );
+  rmSync(dir, { recursive: true, force: true });
+}

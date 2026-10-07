@@ -592,6 +592,7 @@ let lastEventAt = Date.now();
 // Pin a status bar to the bottom row with a scroll region, so hotkeys survive
 // scrolling and ctrl+o repaints. Restored on exit.
 let barRows = 0;
+let logRow = 1;
 const realLog = console.log;
 
 /**
@@ -656,6 +657,7 @@ function enableBar(): void {
     if (rows !== pinnedRows) {
       process.stdout.write(`\x1b[1;${rows - 1}r`);
       pinnedRows = rows;
+      if (logRow > rows - 1) logRow = Math.max(1, rows - 1);
       process.stdout.write(`\x1b[${rows};1H`);
     }
     barRows = rows;
@@ -663,7 +665,12 @@ function enableBar(): void {
   };
 
   console.log = (...parts: unknown[]) => {
-    if (barRows) process.stdout.write(`\x1b[${barRows - 1};1H`);
+    if (barRows) {
+      const last = barRows - 1;
+      const row = Math.min(Math.max(logRow, 1), last);
+      process.stdout.write(`\x1b[${row};1H`);
+      logRow = row >= last ? last : row + 1;
+    }
     realLog(...parts);
   };
   const restore = (): void => {
@@ -706,6 +713,7 @@ function drain(): void {
 
 function repaint(): void {
   process.stdout.write('\x1b[2J\x1b[H');
+  logRow = 1;
   resetStream();
   turn = undefined;
   turnNumber = 0;
@@ -716,6 +724,9 @@ function repaint(): void {
   paintBar();
 }
 
+// Pin the bar before the replay, so later lines continue under it instead of
+// jumping to the bottom row of an otherwise short log.
+if (follow) enableBar();
 drain();
 if (!follow) process.exit(0);
 
@@ -778,7 +789,6 @@ function exitWhenSettled(): void {
   process.exit(0);
 }
 
-enableBar();
 setInterval(() => {
   try {
     drain();
