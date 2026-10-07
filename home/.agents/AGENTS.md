@@ -28,6 +28,13 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 - Remove only the imports, variables, and functions your change made unused.
 - Treat unexpected working-tree changes as user work: never revert, overwrite, or stage them.
 
+## Comments and tests
+
+- Default to no comment. A comment says why (a reason, constraint, or non-obvious behavior), never what the code does. Keep it to one or two lines; longer means the code needs a better name or shape.
+- JSDoc only on exported contracts whose behavior is not clear from their types.
+- Test real behavior, not coverage. Prefer real boundaries over mocks; unit-test only genuinely complex logic.
+- No tautological tests (something renders, DI resolves, a framework does what it guarantees, a mock returns what it was told). A test must be able to fail for a real defect.
+
 ## Evidence
 
 - Turn the task into a verifiable check (test, repro, command) and loop until it passes.
