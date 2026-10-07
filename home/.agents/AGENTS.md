@@ -38,11 +38,9 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 ## Git
 
-- Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval before creating it.
-- Commit each completed, verified concern locally as you go; no need to ask. Never push.
-- When a skill defines commit points, follow it.
-- Follow the repository's commit conventions; otherwise use caveman-commit with Conventional Commits. Subject line only by default.
-- Add a body only for what the diff cannot show: a breaking change, a migration, a reverted decision. Never restate the diff.
+- Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval first.
+- Commit each completed, verified concern locally as you go, or at the commit points a skill defines; no need to ask. Never push.
+- Follow the repo's commit conventions, else caveman-commit (Conventional Commits). Subject line only; add a body only for what the diff cannot show (breaking change, migration, reverted decision). Never restate the diff.
 - Stage only your own paths or hunks. Let hooks run; no `--no-verify`.
 - Amend only your own unpushed commits from the current task. Never rewrite other history.
 
