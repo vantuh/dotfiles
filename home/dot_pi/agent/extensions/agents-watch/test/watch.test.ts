@@ -175,3 +175,68 @@ const expanded = visible(
 );
 
 assert.equal(expanded.split('BODY-SHOULD-HIDE').length - 1, 1);
+
+const paragraphs = visible([
+  { type: 'turn_start' },
+  update({ type: 'text_delta', contentIndex: 0, delta: 'перший абзац\n\n' }),
+  update({ type: 'text_delta', contentIndex: 0, delta: 'другий абзац\n' }),
+  {
+    type: 'message_end',
+    message: {
+      role: 'assistant',
+      content: [{ type: 'text', text: 'перший абзац\n\nдругий абзац\n' }],
+    },
+  },
+  { type: 'turn_end' },
+]);
+const paragraphLines = paragraphs.split('\n');
+const firstParagraph = paragraphLines.findIndex((line) =>
+  line.includes('перший абзац'),
+);
+const secondParagraph = paragraphLines.findIndex((line) =>
+  line.includes('другий абзац'),
+);
+assert.equal(secondParagraph, firstParagraph + 2);
+assert.equal(paragraphLines[firstParagraph + 1].replace(/│/g, '').trim(), '');
+assert.equal(paragraphs.split('перший абзац').length - 1, 1);
+
+const leadingThink = visible([
+  { type: 'turn_start' },
+  update({
+    type: 'thinking_delta',
+    contentIndex: 0,
+    delta: '\nреальний рядок\nтіло thinking',
+  }),
+  update({
+    type: 'thinking_end',
+    contentIndex: 0,
+    content: '\nреальний рядок\nтіло thinking',
+  }),
+  {
+    type: 'message_end',
+    message: {
+      role: 'assistant',
+      content: [
+        { type: 'thinking', thinking: '\nреальний рядок\nтіло thinking' },
+      ],
+    },
+  },
+  { type: 'turn_end' },
+]);
+
+assert.equal(leadingThink.split('реальний рядок').length - 1, 1);
+assert.equal(leadingThink.includes('тіло thinking'), false);
+
+const leadingFinal = visible([
+  { type: 'turn_start' },
+  {
+    type: 'message_end',
+    message: {
+      role: 'assistant',
+      content: [{ type: 'thinking', thinking: '\nлише після переносу' }],
+    },
+  },
+  { type: 'turn_end' },
+]);
+
+assert.match(leadingFinal, /лише після переносу/);
