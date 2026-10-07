@@ -13,7 +13,9 @@
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "git:github.com/obra/superpowers"
+    "git:github.com/obra/superpowers",
+    "npm:pi-antigravity-acp-provider",
+    "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "1.0.4",
   "hideThinkingBlock": true,
@@ -29,10 +31,10 @@
     "openai/gpt-6-luna",
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
-    "opencode-go/space-bunny-free",
     "openrouter/deepseek/deepseek-v4.1-flash",
     "openrouter/z-ai/glm-5.3-flash",
-    "openrouter/z-ai/glm-5.3"
+    "openrouter/z-ai/glm-5.3",
+    "cursor/grok-4.7@256k:slow"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
