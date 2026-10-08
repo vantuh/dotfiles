@@ -3,7 +3,10 @@
   "$schema": "https://aka.ms/terminal-profiles-schema",
   "actions": [
     {
-      "command": { "action": "sendInput", "input": "\n" },
+      "command": {
+        "action": "sendInput",
+        "input": "\u001b[13;28;13;1;16;1_\u001b[13;28;13;0;16;1_"
+      },
       "id": "User.sendNewLineInput"
     }
   ],
