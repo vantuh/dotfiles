@@ -64,4 +64,7 @@ delivery = "system"
 
 [terminal]
 default_shell = 'C:\msys64\usr\bin\zsh.exe'
+# MSYS2 zsh builds PATH in /etc/profile, reached only through /etc/zsh/zprofile,
+# which a login shell alone reads.
+shell_mode = "login"
 {{- end }}
