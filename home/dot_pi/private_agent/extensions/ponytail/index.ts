@@ -52,8 +52,8 @@ export function parseCommand(raw: string): Command {
     .trim()
     .toLowerCase();
   if (!arg) return { kind: 'bare' };
-  if (arg === 'status') return { kind: 'status' };
   if (isMode(arg)) return { kind: 'set', mode: arg };
+  if (arg === 'status') return { kind: 'status' };
   return { kind: 'invalid', arg };
 }
 
@@ -97,10 +97,9 @@ export function loadSkill(candidates: readonly string[]): string {
       raw = readFileSync(file, 'utf8');
     } catch (error) {
       if ((error as { code?: string }).code === 'ENOENT') continue;
-      throw new Error(
-        `ponytail skill unreadable at ${file}: ${String(error)}`,
-        { cause: error },
-      );
+      throw new Error(`ponytail skill unreadable at ${file}: ${String(error)}`, {
+        cause: error,
+      });
     }
     const body = stripFrontmatter(raw).trim();
     if (body) return body;
@@ -111,7 +110,7 @@ export function loadSkill(candidates: readonly string[]): string {
 }
 
 const OFF_SECTION = [
-  'PONYTAIL MODE OFF — selected through the `/ponytail` command and shown in the footer as `🐴 ponytail: OFF`.',
+  'PONYTAIL MODE OFF — selected through the `/ponytail` command and shown in the footer as `ponytail: OFF`.',
   'Reply without Ponytail rules. Ignore every Ponytail instruction still present earlier in this conversation, including its persistence rule. `/ponytail` turns it back on at full. `/ponytail lite`, `/ponytail full`, and `/ponytail ultra` select a level.',
 ].join('\n');
 
@@ -120,7 +119,7 @@ export function promptSection(mode: Mode, body: string): string {
   if (mode === 'off') return OFF_SECTION;
   const level = mode.toUpperCase();
   return [
-    `PONYTAIL MODE ${level} — full by default in a fresh session, changed only through the \`/ponytail\` command, and shown in the footer as \`🐴 ponytail: ${level}\`.`,
+    `PONYTAIL MODE ${level} — full by default in a fresh session, changed only through the \`/ponytail\` command, and shown in the footer as \`ponytail: ${level}\`.`,
     `Authority: \`/ponytail lite\`, \`/ponytail full\`, and \`/ponytail ultra\` set the level. \`/ponytail off\` turns it off. \`/ponytail status\` reports it. A bare \`/ponytail\` turns it on at full when it is off, and reports the level when it is already on. This section overrides the skill rules below: chat phrases such as "stop ponytail" or "normal mode" do not change the mode. Follow the ${mode} level. The other level rows do not apply.`,
     '',
     body,
@@ -147,18 +146,6 @@ export default function ponytailExtension(pi: ExtensionAPI): void {
     setStatus(ctx);
   };
 
-  const apply = (next: Mode, ctx: ExtensionContext): void => {
-    if (next !== mode) {
-      mode = next;
-      pi.appendEntry(PONYTAIL_MODE_ENTRY, { mode });
-    }
-    setStatus(ctx);
-    // before_agent_start fires once per submitted prompt, so a change during
-    // a run lands on the next agent run, not the streaming one.
-    const applies = ctx.isIdle() ? '' : ' (applies to the next agent run)';
-    ctx?.ui?.notify?.(`ponytail: ${mode.toUpperCase()}${applies}`, 'info');
-  };
-
   pi.registerCommand('ponytail', {
     description: 'Set ponytail level: /ponytail [lite|full|ultra|off|status]',
     handler: async (args, ctx) => {
@@ -174,13 +161,23 @@ export default function ponytailExtension(pi: ExtensionAPI): void {
         );
         return;
       }
-      apply(command.kind === 'bare' ? 'full' : command.mode, ctx);
+      const next = command.kind === 'bare' ? 'full' : command.mode;
+      if (next !== mode) {
+        mode = next;
+        pi.appendEntry(PONYTAIL_MODE_ENTRY, { mode });
+      }
+      setStatus(ctx);
+      // before_agent_start fires once per submitted prompt, so a change during
+      // a run lands on the next agent run, not the streaming one.
+      const applies = ctx.isIdle() ? '' : ' (applies to the next agent run)';
+      ctx?.ui?.notify?.(`ponytail: ${mode.toUpperCase()}${applies}`, 'info');
     },
   });
 
   pi.on('session_start', (_event, ctx) => restore(ctx));
   pi.on('session_tree', (_event, ctx) => restore(ctx));
   pi.on('before_agent_start', (event) => {
+    // Own section only; `caveman` and any other section are left untouched.
     event.systemPromptOptions.sections[PONYTAIL_SECTION] = promptSection(
       mode,
       body,
