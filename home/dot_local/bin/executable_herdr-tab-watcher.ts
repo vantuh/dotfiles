@@ -61,6 +61,10 @@ const SOCKET_PATH =
   process.env.HERDR_SOCKET_PATH ||
   path.join(os.homedir(), ".config", "herdr", "herdr.sock");
 
+// On Windows Herdr's "socket" is a named pipe whose name is the socket path.
+const SOCKET_ENDPOINT =
+  process.platform === "win32" ? `\\\\.\\pipe\\${SOCKET_PATH}` : SOCKET_PATH;
+
 type ProcessInfo = { name?: string; argv0?: string };
 
 type PaneCache = { pane_id: string; tab_id: string; terminal_title_stripped?: string };
@@ -99,7 +103,7 @@ function rpc(method: string, params: Record<string, unknown> = {}): Promise<any>
     let buf = "";
     let done = false;
     Bun.connect({
-      unix: SOCKET_PATH,
+      unix: SOCKET_ENDPOINT,
       socket: {
         data(socket, chunk) {
           buf += chunk;
@@ -137,7 +141,7 @@ async function subscribe(onEvent: (event: string, data: any) => void): Promise<(
 
     const connect = () => {
       Bun.connect({
-        unix: SOCKET_PATH,
+        unix: SOCKET_ENDPOINT,
         socket: {
           data(_socket, chunk) {
             buf += chunk;
@@ -215,7 +219,7 @@ async function subscribe(onEvent: (event: string, data: any) => void): Promise<(
 
 function baseName(proc: ProcessInfo): string {
   const raw = proc.argv0 || proc.name || "";
-  return path.basename(raw).replace(/^-/, "");
+  return path.basename(raw).replace(/^-/, "").replace(/\.(exe|cmd|bat|com)$/i, "");
 }
 
 function pickProcess(procs: ProcessInfo[]): ProcessInfo | null {
