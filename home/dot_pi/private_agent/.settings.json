@@ -32,7 +32,8 @@
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
     "cursor/grok-4.7@256k:slow",
-    "openrouter/deepseek/deepseek-v4.1-flash"
+    "openrouter/deepseek/deepseek-v4.1-flash",
+    "local/qwen3.8-flash-next-coder-iq1_m"
   ],
   "defaultThinkingLevel": "medium",
   "kiroSubagentsBridge": {
