@@ -6,7 +6,6 @@
   ],
   "packages": [
     "npm:pi-web-access",
-    "npm:pi-prompt-template-model",
     "npm:pi-subagents",
     "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth",
