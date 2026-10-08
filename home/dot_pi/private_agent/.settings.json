@@ -8,7 +8,8 @@
     "npm:pi-web-access",
     {
       "source": "npm:pi-subagents",
-      "prompts": ["prompts/council.md"]
+      "prompts": [],
+      "skills": ["!council-mode"]
     },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
@@ -89,21 +90,6 @@
           "allow": [
             "openai/gpt-6.1-sol"
           ]
-        },
-        "council-codex": {
-          "allow": [
-            "openai/gpt-6.1-sol"
-          ]
-        },
-        "council-opus": {
-          "allow": [
-            "anthropic/claude-opus-5-5"
-          ]
-        },
-        "council-glm": {
-          "allow": [
-            "opencode-go/glm-5.3-flash"
-          ]
         }
       }
     },
@@ -158,9 +144,6 @@
         "disabled": true
       },
       "evidence-auditor": {
-        "model": "openai/gpt-6.1-sol"
-      },
-      "council-codex": {
         "model": "openai/gpt-6.1-sol"
       }
     }
