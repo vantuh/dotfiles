@@ -10,7 +10,6 @@
       "source": "npm:pi-subagents",
       "prompts": ["prompts/council.md"]
     },
-    "git:github.com/DietrichGebert/ponytail",
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question"
