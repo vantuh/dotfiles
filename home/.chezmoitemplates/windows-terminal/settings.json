@@ -9,7 +9,7 @@
   ],
   "copyFormatting": "none",
   "copyOnSelect": false,
-  "defaultProfile": "{3f4346a4-fd7d-448c-b9ac-5513e8c3d0a6}",
+  "defaultProfile": "{1225b8d6-6e8c-44ad-b62e-5557d14a0ac4}",
   "launchMode": "maximized",
   "initialCols": 180,
   "showTabsInTitlebar": false,
@@ -87,6 +87,18 @@
         "hidden": false,
         "name": "PowerShell",
         "source": "Windows.Terminal.PowershellCore"
+      },
+      {
+        "commandline": "C:\\msys64\\msys2_shell.cmd -defterm -here -no-start -mingw64 -full-path -shell zsh",
+        "font": {
+          "face": "JetBrainsMonoNL Nerd Font",
+          "weight": "light"
+        },
+        "guid": "{1225b8d6-6e8c-44ad-b62e-5557d14a0ac4}",
+        "hidden": false,
+        "icon": "C:\\msys64\\msys2.ico",
+        "name": "zsh",
+        "startingDirectory": "%USERPROFILE%"
       }
     ]
   },
