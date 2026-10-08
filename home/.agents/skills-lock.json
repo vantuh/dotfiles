@@ -25,6 +25,12 @@
       "skillPath": "skills/herdr/SKILL.md",
       "computedHash": "66715d76e5947497431ec0db32f2693b9c916ad799c3f32b99e6174b4b9c607f"
     },
+    "ponytail": {
+      "source": "dietrichgebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "99f0589e5646b46da07b9419a5daa178004b3dd8930fec528918a51ab07f5efc"
+    },
     "skill-creator": {
       "source": "anthropics/skills",
       "sourceType": "github",
