@@ -1,6 +1,8 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 const CHARS_PER_TOKEN = 4;
+const WIDGET = "tok/s";
+const BELOW = { placement: "belowEditor" as const };
 
 export default function (pi: ExtensionAPI) {
   let firstTokenTime = 0;
@@ -13,13 +15,22 @@ export default function (pi: ExtensionAPI) {
     charCount = 0;
   };
 
+  const show = (ctx: ExtensionContext, text: string) => {
+    ctx.ui.setWidget(WIDGET, [text], BELOW);
+  };
+
+  const hide = (ctx: ExtensionContext) => {
+    ctx.ui.setWidget(WIDGET, undefined);
+  };
+
   pi.on("agent_start", async (_event, ctx) => {
     reset();
-    ctx.ui.setStatus("tok/s", ctx.ui.theme.fg("dim", "⏱ generating..."));
+    show(ctx, ctx.ui.theme.fg("dim", "⏱ generating..."));
   });
 
-  pi.on("before_provider_request", async () => {
+  pi.on("before_provider_request", async (_event, ctx) => {
     reset();
+    show(ctx, ctx.ui.theme.fg("dim", "⏱ generating..."));
   });
 
   pi.on("message_update", async (event, ctx) => {
@@ -46,8 +57,7 @@ export default function (pi: ExtensionAPI) {
         ? official
         : Math.round(charCount / CHARS_PER_TOKEN);
     const tps = Math.round(tokens / genTime);
-    const theme = ctx.ui.theme;
-    ctx.ui.setStatus("tok/s", theme.fg("accent", `${tps} tok/s`));
+    show(ctx, ctx.ui.theme.fg("accent", `⏱ ${tps} tok/s`));
   });
 
   pi.on("message_end", async (event, ctx) => {
@@ -58,6 +68,12 @@ export default function (pi: ExtensionAPI) {
     const tokens =
       output && output > 0 ? output : Math.round(charCount / CHARS_PER_TOKEN);
     const tps = Math.round(tokens / genTime);
-    ctx.ui.setStatus("tok/s", ctx.ui.theme.fg("accent", `${tps} tok/s`));
+    show(ctx, ctx.ui.theme.fg("accent", `⏱ ${tps} tok/s`));
+  });
+
+  // message_end still has tool rounds ahead. Hide once the turn is idle.
+  pi.on("agent_settled", async (_event, ctx) => {
+    if (!ctx.isIdle()) return;
+    hide(ctx);
   });
 }
