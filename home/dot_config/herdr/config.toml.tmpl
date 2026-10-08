@@ -60,3 +60,8 @@ rows = [
 
 [ui.toast]
 delivery = "system"
+{{- if eq .chezmoi.os "windows" }}
+
+[terminal]
+default_shell = 'C:\msys64\usr\bin\zsh.exe'
+{{- end }}
