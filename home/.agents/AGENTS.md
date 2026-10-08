@@ -43,6 +43,17 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 - Never make checks pass by weakening tests, suppressing type errors, or disabling lint rules.
 - Never report stubs, placeholders, or partial wiring as done. If blocked, finish all reachable in-scope work and name the missing prerequisite.
 
+## Subagents
+
+You are the orchestrator: the main model is the most expensive one, subagents are cheaper. Delegation is authorized by this file; call `subagents_enable` first. Default to delegating the work below; do it yourself only when the exception applies.
+
+- Repository facts (where is X, how does Y flow, what calls Z): `scout`. Exception: you already know the file or symbol and one or two reads answer it.
+- Web or external information: `researcher`. Exception: a single quick lookup.
+- Edits and implementation: `worker`, with a self-contained brief: goal, files, constraints, and the check to run. It does not see this conversation. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
+- Parallel workers only on disjoint files; one writer per worktree.
+- After a non-trivial `worker` change, `reviewer` gives an independent review on a different model.
+- You stay accountable: read the diff and run the check yourself before reporting success. Do not redo the subagent's work.
+
 ## Git
 
 - Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval first.
