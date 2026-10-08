@@ -252,11 +252,16 @@ function titleGuessForTab(panes: PaneCache[]): string | "shell" | null {
     if (!title) return null;
     sawPane = true;
     if (SHELL_TITLE_RE.test(title)) continue;
-    const first = title.split(/\s+/)[0].toLowerCase();
+    const words = title.toLowerCase().split(/\s+/);
+    const first = words[0];
     if (SHELL_NAMES.has(first)) continue;
     // Object.hasOwn: a title like "constructor" must not hit prototypes.
-    if (Object.hasOwn(TITLE_PROC, first)) return TITLE_PROC[first];
-    if (Object.hasOwn(LABEL_MAP, first)) return first;
+    // Apps title the pane "<context> - <app>" (lazygit: "repo - Lazygit"),
+    // so any word can name the process, not just the first one.
+    const hit = words.find(
+      (w) => Object.hasOwn(TITLE_PROC, w) || Object.hasOwn(LABEL_MAP, w),
+    );
+    if (hit) return TITLE_PROC[hit] ?? hit;
     return null;
   }
   return sawPane ? "shell" : null;
