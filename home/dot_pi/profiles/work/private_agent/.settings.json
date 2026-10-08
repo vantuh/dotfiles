@@ -86,29 +86,22 @@
         }
       }
     },
+    "defaultSubagentOnlyExtensions": [
+      "~/.pi/agent/extensions/kiro-acp"
+    ],
     "agentOverrides": {
       "scout": {
         "model": "kiro-acp/claude-haiku-4.5",
-        "thinking": "minimal",
-        "extensions": [
-          "~/.pi/agent/extensions/kiro-acp"
-        ]
+        "thinking": "minimal"
       },
       "delegate": {
         "model": "kiro-acp/claude-sonnet-5.5"
       },
       "researcher": {
-        "model": "kiro-acp/claude-sonnet-5.5",
-        "extensions": [
-          "~/.pi/agent/extensions/kiro-acp",
-          "~/.pi/agent/npm/node_modules/pi-web-access"
-        ]
+        "model": "kiro-acp/claude-sonnet-5.5"
       },
       "reviewer": {
-        "model": "kiro-acp/claude-opus-5.5",
-        "extensions": [
-          "~/.pi/agent/extensions/kiro-acp"
-        ]
+        "model": "kiro-acp/claude-opus-5.5"
       },
       "worker": {
         "model": "kiro-acp/claude-sonnet-5.5",
@@ -116,10 +109,6 @@
         "skills": [
           "tdd",
           "fix-sonar"
-        ],
-        "extensions": [
-          "~/.pi/agent/extensions/oxc-auto",
-          "~/.pi/agent/extensions/kiro-acp"
         ]
       },
       "oracle": {
