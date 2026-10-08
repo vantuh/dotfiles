@@ -45,6 +45,8 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 ## Subagents
 
+This section applies only to the top-level session. If you are a subagent, ignore it: do your assigned task and do not plan further delegation.
+
 You are the orchestrator: the main model is the most expensive one, subagents are cheaper. Delegation is authorized by this file; call `subagents_enable` first. Default to delegating the work below; do it yourself only when the exception applies.
 
 - Repository facts (where is X, how does Y flow, what calls Z): `scout`. Exception: you already know the file or symbol and one or two reads answer it.
