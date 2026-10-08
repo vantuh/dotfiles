@@ -140,7 +140,7 @@ pi    # default profile
 
 Everything both profiles must agree on — `extensions/`, packages (`npm/`,
 `git/`), `skills/`, `prompts/`, `agents/`, `AGENTS.md`, `models.json`,
-`mcp.json`, `keybindings.json`, `auth.json`, `intercom/`, `trust.json` — is a
+`mcp.json`, `keybindings.json`, `auth.json`, `trust.json` — is a
 symlink into `~/.pi/agent` (OMP does the same under `~/.omp/profiles/work`).
 Sessions, caches, and `run-history.jsonl` stay per-profile. Add another
 `symlink_*.tmpl` under `home/dot_pi/profiles/work/private_agent/` for anything else that
