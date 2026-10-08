@@ -51,7 +51,8 @@
       "allow": [
         "cursor/grok-4.7@256k:slow",
         "openai/gpt-6-luna",
-        "openai/gpt-6.1-sol"
+        "openai/gpt-6.1-sol",
+        "openrouter/deepseek/deepseek-v4.1-flash"
       ],
       "agents": {
         "scout": {
@@ -71,7 +72,7 @@
         },
         "worker": {
           "allow": [
-            "cursor/grok-4.7@256k:slow"
+            "openrouter/deepseek/deepseek-v4.1-flash"
           ]
         },
         "reviewer": {
@@ -100,25 +101,16 @@
         "model": "cursor/grok-4.7@256k:slow"
       },
       "researcher": {
-        "model": "openai/gpt-6.1-sol",
-        "extensions": [
-          "~/.pi/agent/npm/node_modules/pi-web-access"
-        ]
+        "model": "openai/gpt-6.1-sol"
       },
       "reviewer": {
         "model": "openai/gpt-6.1-sol"
       },
       "worker": {
-        "model": "cursor/grok-4.7@256k:slow",
-        "thinking": "high",
-        "skills": [
-          "tdd",
-          "fix-sonar"
-        ],
-        "extensions": [
-          "~/.pi/agent/extensions/oxc-auto",
-          "~/.pi/agent/subagent-extensions/ponytail-full.ts"
-        ]
+        "model": "openrouter/deepseek/deepseek-v4.1-flash"
+      },
+      "evidence-auditor": {
+        "model": "openai/gpt-6.1-sol"
       },
       "oracle": {
         "model": "openai/gpt-6.1-sol"
@@ -140,9 +132,6 @@
       },
       "cursor-agent-writer": {
         "disabled": true
-      },
-      "evidence-auditor": {
-        "model": "openai/gpt-6.1-sol"
       }
     }
   },
