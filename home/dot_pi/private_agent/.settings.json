@@ -149,5 +149,12 @@
   "deviceId": "faf2e207-5602-4512-b672-bf788257bea8",
   "extensions": [
     "-builtin:mcp"
+  ],
+  "skills": [
+    "-skills/fix-pipeline/SKILL.md",
+    "-skills/fix-sonar/SKILL.md",
+    "-skills/check-pipeline/SKILL.md",
+    "-skills/resolve-mr-comments/SKILL.md",
+    "-skills/split-to-prs/SKILL.md"
   ]
 }
