@@ -120,9 +120,8 @@ export function readSubagentSettingsForScope(
  *
  * `subagents.modelScope` is kept in sync so the pin cannot be overridden per run:
  * every agent gets a one-model allow list, and the shared `allow` is the union of
- * those lists plus `inherit` (the fallback a cleared override locks the agent to).
- * Clearing an override therefore pins the agent to the parent session model
- * instead of unlocking it.
+ * those lists. `inherit` is not added on its own; it appears only when an agent
+ * rule is `inherit` (a cleared override locks that agent to the parent model).
  */
 export function writeAgentModelOverride(
   scope: SettingsScope,
@@ -180,7 +179,7 @@ function withAgentScope(
   agents[agent] = { allow: [model ?? INHERIT] };
   modelScope.agents = agents;
 
-  const allow = new Set<string>([INHERIT]);
+  const allow = new Set<string>();
   for (const entry of Object.values(agents)) {
     if (!isRecord(entry) || !Array.isArray(entry.allow)) continue;
     for (const pattern of entry.allow) {

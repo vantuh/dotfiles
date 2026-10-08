@@ -368,7 +368,7 @@ const data: PickerData = {
         enforce: true,
         strict: true,
         agents: { worker: { allow: ['a/b'] } },
-        allow: ['a/b', 'inherit'],
+        allow: ['a/b'],
       }),
     'pinning writes the matching modelScope rule',
   );
@@ -385,7 +385,7 @@ const data: PickerData = {
         enforce: true,
         strict: true,
         agents: { worker: { allow: ['a/b'] }, scout: { allow: ['c/d'] } },
-        allow: ['a/b', 'c/d', 'inherit'],
+        allow: ['a/b', 'c/d'],
       }),
     'a second pin unions the shared allow list',
   );

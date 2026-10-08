@@ -41,7 +41,6 @@
       "enforce": true,
       "strict": true,
       "allow": [
-        "inherit",
         "kiro-acp/claude-haiku-4.5",
         "kiro-acp/claude-sonnet-5.5",
         "kiro-acp/claude-opus-5.5",
