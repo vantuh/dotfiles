@@ -48,11 +48,9 @@
       "enforce": true,
       "strict": true,
       "allow": [
-        "anthropic/claude-opus-5-5",
         "cursor/grok-4.7@256k:slow",
         "openai/gpt-6-luna",
-        "openai/gpt-6.1-sol",
-        "opencode-go/glm-5.3-flash"
+        "openai/gpt-6.1-sol"
       ],
       "agents": {
         "scout": {
