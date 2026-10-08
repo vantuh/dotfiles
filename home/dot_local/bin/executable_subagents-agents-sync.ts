@@ -50,11 +50,16 @@ type SyncResult =
   | 'unchanged'
   | 'conflict';
 
+/** Normalize CRLF/CR to LF so Windows checkouts never look like edits. */
+function readText(path: string): string {
+  return readFileSync(path, 'utf8').replace(/\r\n?/g, '\n');
+}
+
 type SyncEntry = { name: string; result: SyncResult; detail?: string };
 
 function readDisabledAgents(settingsPath: string): Set<string> {
   const overrides =
-    (JSON.parse(readFileSync(settingsPath, 'utf8')).subagents ?? {})
+    (JSON.parse(readText(settingsPath)).subagents ?? {})
       .agentOverrides ?? {};
   return new Set(
     Object.entries(overrides as Record<string, { disabled?: boolean }>)
@@ -114,7 +119,7 @@ function syncAgent(
       detail: 'unresolved conflict file present, skipped',
     };
 
-  const local = existsSync(localPath) ? readFileSync(localPath, 'utf8') : null;
+  const local = existsSync(localPath) ? readText(localPath) : null;
   if (local === null) {
     mkdirSync(agentsDir, { recursive: true });
     writeFileSync(localPath, theirs);
@@ -133,7 +138,7 @@ function syncAgent(
     };
   }
 
-  const base = readFileSync(basePath, 'utf8');
+  const base = readText(basePath);
   if (local === base) {
     writeFileSync(localPath, theirs);
     writeFileSync(basePath, theirs);
@@ -174,7 +179,7 @@ function sync(repoRoot: string): number {
       agentsDir,
       baseDir,
       name,
-      readFileSync(join(PACKAGE_AGENTS, `${name}.md`), 'utf8'),
+      readText(join(PACKAGE_AGENTS, `${name}.md`)),
     ),
   );
 
