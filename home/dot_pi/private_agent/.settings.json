@@ -9,12 +9,13 @@
     {
       "source": "npm:pi-subagents",
       "prompts": [],
-      "skills": ["!council-mode"]
+      "skills": [
+        "!council-mode"
+      ]
     },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "git:github.com/obra/superpowers",
     "npm:pi-antigravity-acp-provider",
     "npm:pi-cursor-sdk"
   ],
