@@ -52,9 +52,9 @@ talk pi-subagents into running an agent on another model:
 - `modelScope.agents.<agent>.allow` becomes the single pinned model. A per-run
   `model` on the `subagent` tool, `--model`, a clarify pick, or a workflow
   script then fails the launch with a scope error instead of taking effect.
-- `modelScope.allow` is recomputed as the union of every agent rule plus
-  `inherit`. The shared list has to admit each pin, and it fails closed for an
-  agent with no rule yet.
+- `modelScope.allow` is recomputed as the union of every agent rule. The shared
+  list has to admit each pin, and it fails closed for an agent with no rule yet.
+  `inherit` is not added on its own; it shows up only when a rule is `inherit`.
 - `modelScope.enforce` and `modelScope.strict` default to `true` when absent.
   An explicit `false` is preserved, which leaves the rules inert.
 - Clearing an override writes `allow: ["inherit"]` rather than deleting the
