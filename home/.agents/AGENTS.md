@@ -53,7 +53,7 @@ You are the orchestrator: the main model is the most expensive one, subagents ar
 - Web or external information: `researcher`. Exception: a single quick lookup.
 - Edits and implementation: `worker`, with a self-contained brief: goal, files, constraints, and the check to run. It does not see this conversation. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
 - Parallel workers only on disjoint files; one writer per worktree.
-- After a non-trivial `worker` change, `reviewer` gives an independent review on a different model.
+- After a non-trivial `worker` change, `reviewer` gives an independent review on a different model, unless the active workflow runs its own review step.
 - You stay accountable: read the diff and run the check yourself before reporting success. Do not redo the subagent's work.
 
 ## Git
