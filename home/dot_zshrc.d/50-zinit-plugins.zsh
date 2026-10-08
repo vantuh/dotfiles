@@ -3,7 +3,14 @@
 # Prompt — starship (fast, Rust-based, cached init)
 if [[ ! -f ~/.cache/starship/init.zsh ]] || [[ ~/.config/starship.toml -nt ~/.cache/starship/init.zsh ]]; then
     mkdir -p ~/.cache/starship
-    starship init zsh > ~/.cache/starship/init.zsh
+    __starship_posix="$(command -v starship)"
+    __starship_win="$(cygpath -w "$__starship_posix" 2>/dev/null)"
+    if [[ -n "$__starship_win" && "$__starship_win" == *\\* ]]; then
+        starship init zsh | sed "s|${__starship_win//\\/\\\\}|${__starship_posix}|g" > ~/.cache/starship/init.zsh
+    else
+        starship init zsh > ~/.cache/starship/init.zsh
+    fi
+    unset __starship_posix __starship_win
 fi
 source ~/.cache/starship/init.zsh
 

@@ -1,9 +1,10 @@
 # Prevent /etc/zsh/zshrc from calling compinit before we filter fpath in .zshrc
 skip_global_compinit=1
 
-# Platform detection
 if [[ "$OSTYPE" == "darwin"* ]]; then
   typeset -g DOTFILES_PLATFORM=macos DOTFILES_USER=vantuh
+elif [[ "$OSTYPE" == (cygwin|msys|mingw|win32)* ]]; then
+  typeset -g DOTFILES_PLATFORM=windows DOTFILES_USER=Ivan
 else
   typeset -g DOTFILES_PLATFORM=wsl DOTFILES_USER=Ivan
 fi
@@ -19,9 +20,11 @@ export EDITOR='nvim'
 export VISUAL='nvim'
 export GIT_EDITOR='nvim'
 
-# macOS default is ~/Library/Application Support. Linux already uses XDG.
-if [[ "$DOTFILES_PLATFORM" == macos ]]; then
+if [[ "$DOTFILES_PLATFORM" == macos || "$DOTFILES_PLATFORM" == windows ]]; then
   export CONFIG_DIR="$HOME/.config/lazygit"
+fi
+if [[ "$DOTFILES_PLATFORM" == windows ]]; then
+  export HERDR_CONFIG_PATH="$HOME/.config/herdr/config.toml"
 fi
 
 # Tool env
