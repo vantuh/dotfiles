@@ -19,7 +19,12 @@ customCommands:
   - key: "<c-g>"
     context: "files"
     description: "Generate commit message with omp"
+{{- if eq .chezmoi.os "windows" }}
+    # Windows: lazygit runs custom commands through cmd.exe, which cannot exec a shebang script.
+    command: "bash -c \"{{ .chezmoi.destDir }}/.local/bin/pi-commit-msg > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt\""
+{{- else }}
     command: "{{ .chezmoi.destDir }}/.local/bin/pi-commit-msg > /tmp/pi-commit.txt && nvim /tmp/pi-commit.txt && git commit -F /tmp/pi-commit.txt"
+{{- end }}
     output: terminal
     loadingText: "Generating commit message..."
 services:
