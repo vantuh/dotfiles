@@ -17,7 +17,7 @@
     "npm:pi-antigravity-acp-provider",
     "npm:pi-cursor-sdk"
   ],
-  "lastChangelogVersion": "1.0.4",
+  "lastChangelogVersion": "1.1.0",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
