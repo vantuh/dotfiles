@@ -92,48 +92,6 @@
           ]
         }
       }
-    },
-    "agentOverrides": {
-      "scout": {
-        "model": "openai/gpt-6-luna",
-        "thinking": "minimal"
-      },
-      "delegate": {
-        "model": "cursor/grok-4.7@256k:slow"
-      },
-      "researcher": {
-        "model": "openai/gpt-6.1-sol"
-      },
-      "reviewer": {
-        "model": "openai/gpt-6.1-sol"
-      },
-      "worker": {
-        "model": "openrouter/deepseek/deepseek-v4.1-flash"
-      },
-      "evidence-auditor": {
-        "model": "openai/gpt-6.1-sol"
-      },
-      "oracle": {
-        "model": "openai/gpt-6.1-sol"
-      },
-      "claude-code": {
-        "disabled": true
-      },
-      "claude-code-writer": {
-        "disabled": true
-      },
-      "codex-exec": {
-        "disabled": true
-      },
-      "codex-exec-writer": {
-        "disabled": true
-      },
-      "cursor-agent": {
-        "disabled": true
-      },
-      "cursor-agent-writer": {
-        "disabled": true
-      }
     }
   },
   "deviceId": "faf2e207-5602-4512-b672-bf788257bea8",
