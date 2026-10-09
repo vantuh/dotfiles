@@ -3,9 +3,9 @@
  * Mirror pi-subagents package agents into this dotfiles repo so their prompts
  * live in our source state instead of inside the installed package.
  *
- * Only agents that are not disabled in `.settings.json` are mirrored, so
- * disabled runners (claude-code, codex-exec, cursor-agent, ...) stay on the
- * package default and never freeze into the repo.
+ * Only agents listed in SYNCED_AGENTS are mirrored, so the external runners
+ * (claude-code, codex-exec, cursor-agent and their -writer variants) stay on
+ * the package default and never freeze into the repo.
  *
  * Layout under the repo:
  *   home/dot_pi/private_agent/agents/<name>.md                  our editable copy (chezmoi target)
@@ -27,7 +27,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -41,6 +40,16 @@ const PACKAGE_AGENTS = join(
 const AGENTS_REL = 'home/dot_pi/private_agent/agents';
 const BASE_REL = 'home/dot_pi/private_agent/subagents-agents-base';
 const SETTINGS_REL = 'home/dot_pi/private_agent/.settings.json';
+
+const SYNCED_AGENTS = [
+  'delegate',
+  'evidence-auditor',
+  'oracle',
+  'researcher',
+  'reviewer',
+  'scout',
+  'worker',
+];
 
 type SyncResult =
   | 'added'
@@ -56,17 +65,6 @@ function readText(path: string): string {
 }
 
 type SyncEntry = { name: string; result: SyncResult; detail?: string };
-
-function readDisabledAgents(settingsPath: string): Set<string> {
-  const overrides =
-    (JSON.parse(readText(settingsPath)).subagents ?? {})
-      .agentOverrides ?? {};
-  return new Set(
-    Object.entries(overrides as Record<string, { disabled?: boolean }>)
-      .filter(([, v]) => v.disabled)
-      .map(([name]) => name),
-  );
-}
 
 /** Three-way merge. `git merge-file` exits non-zero and still prints a conflicted file. */
 function merge3(
@@ -168,13 +166,11 @@ function sync(repoRoot: string): number {
   if (!existsSync(PACKAGE_AGENTS))
     throw new Error(`pi-subagents package agents not found: ${PACKAGE_AGENTS}`);
 
-  const disabled = readDisabledAgents(settingsPath);
   const agentsDir = join(repoRoot, AGENTS_REL);
   const baseDir = join(repoRoot, BASE_REL);
   mkdirSync(baseDir, { recursive: true });
 
-  const names = packageAgentNames(disabled);
-  const entries = names.map((name) =>
+  const entries = SYNCED_AGENTS.map((name) =>
     syncAgent(
       agentsDir,
       baseDir,
@@ -198,32 +194,12 @@ function sync(repoRoot: string): number {
   return conflicts.length > 0 ? 1 : 0;
 }
 
-function packageAgentNames(disabled: Set<string>): string[] {
-  return readdirSync(PACKAGE_AGENTS)
-    .filter((path) => path.endsWith('.md'))
-    .map((path) => path.slice(0, -'.md'.length))
-    .filter((name) => !disabled.has(name))
-    .sort();
-}
-
 function selfTest(): void {
   const root = mkdtempSync(join(tmpdir(), 'subagents-sync-'));
   try {
     const agentsDir = join(root, AGENTS_REL);
     const baseDir = join(root, BASE_REL);
     mkdirSync(baseDir, { recursive: true });
-    writeFileSync(
-      join(root, SETTINGS_REL),
-      JSON.stringify({
-        subagents: {
-          agentOverrides: { worker: {}, ghost: { disabled: true } },
-        },
-      }),
-    );
-
-    const names = packageAgentNames(new Set(['ghost']));
-    if (names.includes('ghost')) throw new Error('disabled agent was mirrored');
-
     const PACKAGE_V1 = 'l1\nl2\nl3\nl4\nl5\n';
     const PACKAGE_V2 = `${PACKAGE_V1}theirs\n`;
 
