@@ -52,8 +52,8 @@ archive/            Retired configs kept for reference; never applied
   `home/dot_pi/private_agent/agents/` by `subagents-agents-sync`
   (`home/dot_local/bin/executable_subagents-agents-sync.ts`). Edit those copies
   freely; the pristine package version lives next to them in
-  `home/dot_pi/private_agent/subagents-agents-base/` and is the merge base the script
-  uses on upgrades. Never edit files under `subagents-agents-base/`.
+  `~/.local/state/pi-subagents-agents-base/` (outside the repo) and is the merge base the
+  script uses on upgrades; a missing base is re-seeded from the package. Never edit it.
 - Refresh upstream skills with `skills-update` (`home/dot_local/bin/executable_skills-update`).
   It drives `npx skills` from `~/.agents`, which writes to `<cwd>/.agents/skills`,
   so `home/.agents/.agents/skills` must stay a symlink to `../skills`;
