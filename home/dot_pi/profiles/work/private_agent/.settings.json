@@ -9,13 +9,15 @@
     {
       "source": "npm:pi-subagents",
       "prompts": [],
-      "skills": ["!council-mode"]
+      "skills": [
+        "!council-mode"
+      ]
     },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question"
   ],
-  "lastChangelogVersion": "1.0.4",
+  "lastChangelogVersion": "1.1.0",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -37,16 +39,14 @@
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
   "subagents": {
+    "disableBuiltins": true,
     "modelScope": {
       "enforce": true,
       "strict": true,
       "allow": [
         "kiro-acp/claude-haiku-4.5",
         "kiro-acp/claude-sonnet-5.5",
-        "kiro-acp/claude-opus-5.5",
-        "openai/gpt-6.1-sol",
-        "anthropic/claude-opus-5-5",
-        "opencode-go/glm-5.3-flash"
+        "kiro-acp/claude-opus-5.5"
       ],
       "agents": {
         "scout": {
@@ -81,7 +81,7 @@
         },
         "evidence-auditor": {
           "allow": [
-            "openai/gpt-6.1-sol"
+            "kiro-acp/claude-sonnet-5.5"
           ]
         }
       }
@@ -114,26 +114,8 @@
       "oracle": {
         "model": "kiro-acp/claude-opus-5.5"
       },
-      "claude-code": {
-        "disabled": true
-      },
-      "claude-code-writer": {
-        "disabled": true
-      },
-      "codex-exec": {
-        "disabled": true
-      },
-      "codex-exec-writer": {
-        "disabled": true
-      },
-      "cursor-agent": {
-        "disabled": true
-      },
-      "cursor-agent-writer": {
-        "disabled": true
-      },
       "evidence-auditor": {
-        "model": "openai/gpt-6.1-sol"
+        "model": "kiro-acp/claude-sonnet-5.5"
       }
     }
   },
