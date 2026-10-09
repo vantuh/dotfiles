@@ -1,8 +1,9 @@
 ---
 name: oracle
-aliases: advisor
 description: High-context decision-consistency oracle that protects inherited state and prevents drift
+aliases: advisor
 tools: read, grep, find, ls, bash
+model: openai/gpt-6.1-sol
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true

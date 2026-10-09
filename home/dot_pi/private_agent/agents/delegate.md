@@ -1,10 +1,11 @@
 ---
 name: delegate
 description: Lightweight subagent that inherits the parent model with no default reads
+tools: read, grep, find, ls, bash, edit, write, contact_supervisor
+model: openrouter/deepseek/deepseek-v4.1-flash
 systemPromptMode: append
 inheritProjectContext: true
 inheritGlobalContext: true
-tools: read, grep, find, ls, bash, edit, write, contact_supervisor
 inheritSkills: false
 subagentOnlyExtensions: ~/.pi/agent/npm/node_modules/pi-cursor-sdk
 ---

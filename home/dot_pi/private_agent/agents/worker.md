@@ -2,16 +2,17 @@
 name: worker
 description: Implementation agent for normal tasks and approved oracle handoffs
 aliases: developer, coder, implementer, develop
-acceptanceRole: writer
+tools: read, grep, find, ls, bash, edit, write, contact_supervisor
+model: openrouter/deepseek/deepseek-v4.1-flash
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
 inheritGlobalContext: true
 inheritSkills: false
+defaultContext: fresh
+acceptanceRole: writer
 skills: tdd, fix-sonar
 extensions: ~/.pi/agent/npm/node_modules/pi-cursor-sdk, ~/.pi/agent/extensions/oxc-auto, ~/.pi/agent/subagent-extensions/ponytail-full.ts
-tools: read, grep, find, ls, bash, edit, write, contact_supervisor
-defaultContext: fresh
 defaultReads: context.md, plan.md
 defaultProgress: true
 ---
