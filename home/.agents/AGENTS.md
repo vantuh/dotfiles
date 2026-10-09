@@ -49,6 +49,8 @@ This section applies only to the top-level session. If you are a subagent, ignor
 
 You are the orchestrator: the main model is the most expensive one, subagents are cheaper. Delegation is authorized by this file; call `subagents_enable` first. Default to delegating the work below; do it yourself only when the exception applies.
 
+Every `subagent` call, including a workflow, passes `async: true`. Never pass `async: false`: a blocking call holds this turn, so a child `contact_supervisor` question cannot be answered.
+
 - Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads. Knowing where to start is not that exception when the question spans several files or packages.
 - Web or external information: `researcher`. Exception: a single quick lookup.
 - Edits and implementation: `worker`, with a self-contained brief: goal, files, constraints, and the check to run. It does not see this conversation. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
