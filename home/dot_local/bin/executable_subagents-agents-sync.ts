@@ -30,16 +30,16 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 
 const PACKAGE_AGENTS = join(
-  process.env.HOME ?? '',
+  homedir(),
   '.pi/agent/npm/node_modules/pi-subagents/agents',
 );
 const AGENTS_REL = 'home/dot_pi/private_agent/agents';
 const BASE_DIR = join(
-  process.env.XDG_STATE_HOME ?? join(process.env.HOME ?? '', '.local/state'),
+  process.env.XDG_STATE_HOME ?? join(homedir(), '.local/state'),
   'pi-subagents-agents-base',
 );
 const SETTINGS_REL = 'home/dot_pi/private_agent/.settings.json';
@@ -244,7 +244,7 @@ if (process.argv.includes('--self-test')) {
   const repoRoot =
     process.argv[2] ??
     process.env.DOTFILES ??
-    join(process.env.HOME ?? '', 'dotfiles');
+    join(homedir(), 'dotfiles');
   try {
     process.exit(sync(repoRoot));
   } catch (error) {
