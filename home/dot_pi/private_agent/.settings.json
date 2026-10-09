@@ -16,7 +16,6 @@
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:pi-antigravity-acp-provider",
     "npm:pi-cursor-sdk"
   ],
   "lastChangelogVersion": "1.1.0",
