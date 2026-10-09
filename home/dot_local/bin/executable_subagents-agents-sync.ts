@@ -9,7 +9,7 @@
  *
  * Layout under the repo:
  *   home/dot_pi/private_agent/agents/<name>.md                  our editable copy (chezmoi target)
- *   home/dot_pi/private_agent/subagents-agents-base/<name>.md   pristine package copy of the same version
+ *   ~/.local/state/pi-subagents-agents-base/<name>.md          pristine package copy of the same version (outside the repo)
  *
  * On a package upgrade the pristine copy is the merge base:
  *   local == base  -> fast-forward both files to the new package content
@@ -38,7 +38,10 @@ const PACKAGE_AGENTS = join(
   '.pi/agent/npm/node_modules/pi-subagents/agents',
 );
 const AGENTS_REL = 'home/dot_pi/private_agent/agents';
-const BASE_REL = 'home/dot_pi/private_agent/subagents-agents-base';
+const BASE_DIR = join(
+  process.env.XDG_STATE_HOME ?? join(process.env.HOME ?? '', '.local/state'),
+  'pi-subagents-agents-base',
+);
 const SETTINGS_REL = 'home/dot_pi/private_agent/.settings.json';
 
 const SYNCED_AGENTS = [
@@ -167,7 +170,7 @@ function sync(repoRoot: string): number {
     throw new Error(`pi-subagents package agents not found: ${PACKAGE_AGENTS}`);
 
   const agentsDir = join(repoRoot, AGENTS_REL);
-  const baseDir = join(repoRoot, BASE_REL);
+  const baseDir = BASE_DIR;
   mkdirSync(baseDir, { recursive: true });
 
   const entries = SYNCED_AGENTS.map((name) =>
@@ -198,7 +201,7 @@ function selfTest(): void {
   const root = mkdtempSync(join(tmpdir(), 'subagents-sync-'));
   try {
     const agentsDir = join(root, AGENTS_REL);
-    const baseDir = join(root, BASE_REL);
+    const baseDir = join(root, 'base');
     mkdirSync(baseDir, { recursive: true });
     const PACKAGE_V1 = 'l1\nl2\nl3\nl4\nl5\n';
     const PACKAGE_V2 = `${PACKAGE_V1}theirs\n`;
