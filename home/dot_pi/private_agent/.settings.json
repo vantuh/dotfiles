@@ -45,6 +45,7 @@
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
   "subagents": {
+    "disableBuiltins": true,
     "modelScope": {
       "enforce": true,
       "strict": true,
