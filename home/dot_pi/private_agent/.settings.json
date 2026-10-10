@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-sonnet-5-5",
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-6.1-sol",
   "defaultTools": [
     "+codemode"
   ],
@@ -52,45 +52,9 @@
         "cursor/grok-4.7@256k:slow",
         "openai/gpt-6-luna",
         "openai/gpt-6.1-sol",
-        "openrouter/deepseek/deepseek-v4.1-flash"
-      ],
-      "agents": {
-        "scout": {
-          "allow": [
-            "openai/gpt-6-luna"
-          ]
-        },
-        "delegate": {
-          "allow": [
-            "cursor/grok-4.7@256k:slow"
-          ]
-        },
-        "researcher": {
-          "allow": [
-            "openai/gpt-6.1-sol"
-          ]
-        },
-        "worker": {
-          "allow": [
-            "openrouter/deepseek/deepseek-v4.1-flash"
-          ]
-        },
-        "reviewer": {
-          "allow": [
-            "openai/gpt-6.1-sol"
-          ]
-        },
-        "oracle": {
-          "allow": [
-            "openai/gpt-6.1-sol"
-          ]
-        },
-        "evidence-auditor": {
-          "allow": [
-            "openai/gpt-6.1-sol"
-          ]
-        }
-      }
+        "openrouter/deepseek/deepseek-v4.1-flash",
+        "anthropic/claude-sonnet-5-5"
+      ]
     }
   },
   "deviceId": "faf2e207-5602-4512-b672-bf788257bea8",
