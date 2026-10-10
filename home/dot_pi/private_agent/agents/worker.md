@@ -10,7 +10,7 @@ inheritProjectContext: true
 inheritGlobalContext: true
 inheritSkills: false
 defaultContext: fresh
-acceptanceRole: writer
+acceptanceRole: write
 skills: tdd, fix-sonar
 extensions: ~/.pi/agent/npm/node_modules/pi-cursor-sdk, ~/.pi/agent/extensions/oxc-auto, ~/.pi/agent/subagent-extensions/ponytail-full.ts
 defaultReads: context.md, plan.md
