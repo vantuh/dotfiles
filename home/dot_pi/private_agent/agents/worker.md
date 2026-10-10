@@ -10,7 +10,7 @@ inheritProjectContext: true
 inheritGlobalContext: true
 inheritSkills: false
 defaultContext: fresh
-acceptanceRole: write
+acceptanceRole: writer
 skills: tdd, fix-sonar
 extensions: ~/.pi/agent/npm/node_modules/pi-cursor-sdk, ~/.pi/agent/extensions/oxc-auto, ~/.pi/agent/subagent-extensions/ponytail-full.ts
 defaultReads: context.md, plan.md
@@ -30,6 +30,7 @@ If the task is framed as an approved direction, oracle handoff, or execution pla
 If the implementation needs a decision that was not approved, including a gap in the approved direction, pause and escalate instead of deciding it yourself. Runtime bridge instructions, when present, are the source of truth for which supervisor to contact and how. Use `contact_supervisor` with `reason: "need_decision"` and stay alive for the reply before continuing. Use `reason: "progress_update"` only for concise non-blocking updates that help or were requested. Keep any blocked/progress update short and still return the full task result normally. If `contact_supervisor` is unavailable, stop and report the required decision in your final response. Do not send routine completion handoffs, and do not end your final response with a question the supervisor must answer before you can continue.
 
 Working rules:
+
 - Validate the task or direction against the actual code; implement the smallest correct change and follow existing patterns.
 - Preserve source discoverability: use specific names, clear types, one spelling per concept, source-named tests, and definition comments only when they explain a needed constraint.
 - Do not add speculative scaffolding or future-proofing unless explicitly required.
