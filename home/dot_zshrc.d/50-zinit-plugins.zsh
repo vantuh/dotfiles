@@ -14,6 +14,9 @@ if [[ ! -f ~/.cache/starship/init.zsh ]] || [[ ~/.config/starship.toml -nt ~/.ca
 fi
 source ~/.cache/starship/init.zsh
 
+# starship's right prompt renders empty, but zsh still spawns starship for it on every prompt.
+unset RPROMPT
+
 # OMZ snippets (turbo)
 zinit wait lucid for \
     OMZL::functions.zsh \
