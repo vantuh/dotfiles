@@ -80,7 +80,7 @@ profile's `~/.pi/profiles/work/agent/settings.json` are dest-symlinks into the
 repo, so UI or in-place edits land in git. OMP's atomic writer preserves those symlink
 targets; Pi rewrites its JSON files in place (`settings.json` under a
 `settings.json.lock` guard that never enters the repo). Leave nvim, zsh, herdr,
-and the kiro-acp extension trees as regular applied files.
+and the OMP kiro-acp extension tree as regular applied files.
 
 ```bash
 chezmoi diff
@@ -154,17 +154,30 @@ instructions.
 
 ## Two kiro-acp trees
 
-`kiro-acp` is vendored separately for each host. The trees have diverged and
-must not be updated as if they were mirrors.
+`kiro-acp` is vendored separately for each host: Oh My Pi keeps its copy in this
+repository, Pi loads a local package that lives outside it.
 
-| Host | Source path | Applied path |
+| Host | Source | Applied path |
 | --- | --- | --- |
 | Oh My Pi (`omp`) | `home/dot_omp/private_agent/extensions/kiro-acp` | `~/.omp/agent/extensions/kiro-acp` |
-| Pi (`pi`) | `home/dot_pi/private_agent/extensions/kiro-acp` | `~/.pi/agent/extensions/kiro-acp` |
+| Pi (`pi`) | `~/projects/personal/pi-kiro-acp` (local Pi package) | loaded in place, no copy under `$HOME` |
 
-The vendored `test/` directories are source-only and intentionally excluded
-from `$HOME`; run their checks from the repository paths above. Chezmoi deploys
-runtime extension files as regular files, not Stow symlinks.
+The two trees started as the same extension and then diverged; never update one
+as if it were a mirror of the other.
+
+Pi loads its copy through the `packages` entry `"~/projects/personal/pi-kiro-acp"`
+in `~/.pi/agent/settings.json` and in the work profile's `settings.json`. A local
+package is loaded from its directory — Pi neither installs nor copies it — so
+that checkout is the source of truth for Pi. The work profile also lists it under
+`subagents.defaultSubagentOnlyExtensions`, because subagent children run with a
+fixed extension list rather than ambient discovery. `home/.chezmoiremove` drops
+the `~/.pi/agent/extensions/kiro-acp` copy this repository used to apply; the
+bundled tree and that removal entry must land in the same commit, since chezmoi
+refuses to build a source state that both applies and removes one target.
+
+The OMP tree keeps its vendored `test/` directory in the repository but out of
+`$HOME`; run its checks from the repository path above. Chezmoi deploys runtime
+extension files as regular files, not Stow symlinks.
 
 Read the matching tree's `README.md` before editing, then apply that target and
 run its checks.

@@ -15,7 +15,8 @@
     },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
-    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "~/projects/personal/pi-kiro-acp"
   ],
   "lastChangelogVersion": "1.1.0",
   "hideThinkingBlock": true,
@@ -87,7 +88,7 @@
       }
     },
     "defaultSubagentOnlyExtensions": [
-      "~/.pi/agent/extensions/kiro-acp"
+      "~/projects/personal/pi-kiro-acp"
     ],
     "agentOverrides": {
       "scout": {

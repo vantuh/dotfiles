@@ -19,3 +19,7 @@ Library/Application Support/lazygit/config.yml
 .config/herdr/plugins/nvim-cheatsheet
 .local/bin/my-usage
 .local/bin/my-usage-status
+
+# The Pi kiro-acp extension now comes from the ~/projects/personal/pi-kiro-acp
+# package; drop the copy this repository used to apply so only one loads.
+.pi/agent/extensions/kiro-acp

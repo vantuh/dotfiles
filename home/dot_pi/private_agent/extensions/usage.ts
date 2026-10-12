@@ -8,7 +8,7 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 
-import { getKiroUsage, type KiroUsage } from './kiro-acp/usage.ts';
+import { getKiroUsage, type KiroUsage } from './usage/kiro.ts';
 
 interface Bucket {
   label: string;

@@ -31,10 +31,10 @@ archive/            Retired configs kept for reference; never applied
   scoped template/script, not in duplicate source trees.
 - Runtime/generated files are never source state. Keep them out of `home/` or
   add a precise ignore when source-only material must live beside config.
-- `kiro-acp` exists twice on purpose:
-  `home/dot_omp/private_agent/extensions/kiro-acp` is Oh My Pi and
-  `home/dot_pi/private_agent/extensions/kiro-acp` is Pi. Read the copy's `README.md`;
-  do not port changes across hosts unless asked.
+- `kiro-acp` exists twice on purpose: `home/dot_omp/private_agent/extensions/kiro-acp`
+  is Oh My Pi and is applied from this repository; `~/projects/personal/pi-kiro-acp`
+  is Pi and is a local Pi package declared in `packages`, so chezmoi never manages
+  it. Read the copy's `README.md`; do not port changes across hosts unless asked.
 
 ## Rules
 
