@@ -14,3 +14,6 @@ export PI_CURSOR_PI_TOOL_BRIDGE_DEBUG_FILE=/tmp/pi-cursor-bridge.ndjson
 export PI_CURSOR_SDK_EVENT_DEBUG=1
 export PI_CURSOR_SDK_EVENT_DEBUG_DIR=/tmp/pi-cursor-sdk-events
 
+typeset -U path
+path=($path)
+
