@@ -80,7 +80,7 @@
           "input": [
             "text"
           ],
-          "contextWindow": 131072,
+          "contextWindow": 262144,
           "maxTokens": 32768,
           "thinkingLevelMap": {
             "minimal": null,
