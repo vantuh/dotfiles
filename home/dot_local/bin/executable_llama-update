@@ -5,11 +5,11 @@ set -Eeuo pipefail
 #
 # Usage:
 #   ./llama-update.sh                        # download latest
-#   ./llama-update.sh --dir /mnt/c/Users/Ivan/llama-bin
+#   ./llama-update.sh --dir /mnt/c/Users/Ivan/AI/llama-cpp
 #   ./llama-update.sh --build b8849          # pin specific build
 #   ./llama-update.sh --dry-run
 
-INSTALL_DIR="${INSTALL_DIR:-/mnt/c/Users/Ivan/llama-bin}"
+INSTALL_DIR="${INSTALL_DIR:-/mnt/c/Users/Ivan/AI/llama-cpp}"
 CUDA_VER="13.4"
 TARGETS="llama-server llama-bench llama-cli llama-mtmd-cli"
 
