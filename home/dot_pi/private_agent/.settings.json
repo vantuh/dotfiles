@@ -19,7 +19,7 @@
     "npm:pi-cursor-sdk",
     "~/projects/personal/pi-kiro-acp"
   ],
-  "lastChangelogVersion": "1.1.0",
+  "lastChangelogVersion": "1.2.0",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
