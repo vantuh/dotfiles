@@ -6,17 +6,11 @@
   ],
   "packages": [
     "npm:pi-web-access",
-    {
-      "source": "npm:pi-subagents",
-      "prompts": [],
-      "skills": [
-        "!council-mode"
-      ]
-    },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "npm:pi-cursor-sdk",
-    "~/projects/personal/pi-kiro-acp"
+    "~/projects/personal/pi-kiro-acp",
+    "~/projects/personal/pi-herdr-subagents"
   ],
   "lastChangelogVersion": "1.2.0",
   "hideThinkingBlock": true,
