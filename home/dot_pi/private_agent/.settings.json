@@ -37,22 +37,6 @@
   "showHardwareCursor": false,
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
-  "subagents": {
-    "disableBuiltins": true,
-    "modelScope": {
-      "enforce": true,
-      "strict": true,
-      "allow": [
-        "cursor/grok-4.7@256k:slow",
-        "openai/gpt-6-luna",
-        "openai/gpt-6.1-sol",
-        "openrouter/deepseek/deepseek-v4.1-flash",
-        "anthropic/claude-sonnet-5-5",
-        "anthropic/claude-haiku-5-5",
-        "local/qwen3.8-flash-next-coder-iq1_m"
-      ]
-    }
-  },
   "deviceId": "faf2e207-5602-4512-b672-bf788257bea8",
   "extensions": [
     "-builtin:mcp"
