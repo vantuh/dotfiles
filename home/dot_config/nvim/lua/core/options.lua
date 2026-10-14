@@ -22,6 +22,7 @@ opt.completeopt = 'menu,menuone,noselect' -- Always show completion as a menu wi
 opt.conceallevel = 2 -- Hide markup characters when a syntax plugin provides a cleaner visual replacement.
 opt.confirm = true -- Ask whether to save changes instead of failing when closing a modified file.
 opt.cursorline = true -- Highlight the screen line containing the cursor.
+opt.fixendofline = false -- Keep a missing final newline. Pi and OMP rewrite their configs without one; the default puts it back on write.
 opt.expandtab = true -- Insert spaces when the Tab key is pressed.
 opt.fillchars = { -- Customize characters used for diffs and empty lines.
   diff = '╱', -- Character shown for deleted lines in diff mode.

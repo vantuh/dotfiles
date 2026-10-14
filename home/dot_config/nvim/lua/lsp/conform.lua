@@ -84,10 +84,13 @@ require('conform').setup {
       return nil
     end
 
-    if format_on_save_ft[vim.bo[bufnr].filetype] then
-      return { timeout_ms = 3000 }
+    if not format_on_save_ft[vim.bo[bufnr].filetype] then
+      return nil
     end
-    return nil
+    if not vim.bo[bufnr].endofline then
+      return nil
+    end
+    return { timeout_ms = 3000 }
   end,
   default_format_opts = {
     lsp_format = 'fallback',
