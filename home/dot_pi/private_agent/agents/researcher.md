@@ -4,12 +4,8 @@ description: Autonomous web researcher — searches, evaluates, and synthesizes 
 tools: read, write, web_search, fetch_content, get_search_content, source_check
 model: openai/gpt-6.1-sol
 thinking: medium
-systemPromptMode: replace
-inheritProjectContext: false
-inheritSkills: false
-extensions: ~/.pi/agent/npm/node_modules/pi-web-access
-output: research.md
-defaultProgress: true
+skills: none
+system-prompt: replace
 ---
 
 You are a research subagent.

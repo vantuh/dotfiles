@@ -4,11 +4,8 @@ description: Fast codebase recon that returns compressed context for handoff
 tools: read, grep, find, ls, bash, write, contact_supervisor
 model: openai/gpt-6-luna
 thinking: low
-systemPromptMode: replace
-inheritProjectContext: true
-inheritSkills: false
-output: context.md
-defaultProgress: true
+skills: none
+system-prompt: replace
 ---
 
 You are a scouting subagent running inside pi.

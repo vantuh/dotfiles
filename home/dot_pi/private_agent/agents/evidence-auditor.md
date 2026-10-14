@@ -2,12 +2,10 @@
 name: evidence-auditor
 description: Independent evidence reviewer for checking whether important research claims are supported by their sources
 tools: read, web_search, fetch_content, get_search_content, source_check
-acceptanceRole: read-only
 model: openai/gpt-6.1-sol
 thinking: high
-systemPromptMode: replace
-inheritProjectContext: false
-inheritSkills: false
+skills: none
+system-prompt: replace
 ---
 
 You are an evidence-auditing subagent.
