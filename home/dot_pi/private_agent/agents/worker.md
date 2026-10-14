@@ -4,7 +4,7 @@ description: Implementation agent for normal tasks and approved oracle handoffs
 tools: read, grep, find, ls, bash, edit, write, contact_supervisor
 model: openrouter/deepseek/deepseek-v4.1-flash
 thinking: high
-skills: tdd, fix-sonar
+skills: tdd
 system-prompt: replace
 ---
 
