@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ──────────────────────────────────────────────────────────
-#  transcribe — Transcribe audio files with WhisperX
+#  transcribe — Transcribe audio files with WhisperMLX or WhisperX
 #
 #  Usage:
 #    transcribe <audio_file> [output_dir] [options]
@@ -18,10 +18,11 @@ set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────
 WHISPERX_VENV="$HOME/whisperx-env"
+WHISPERMLX_VENV="$HOME/whispermlx-env"
 MODEL="large-v3-turbo"
 LANGUAGE="uk"
 AUTO_LANG=false
-# auto: float16 on CUDA, int8 on CPU/MPS
+# auto: float16 on the NVIDIA backend
 COMPUTE_TYPE="auto"
 BATCH_SIZE=32
 MIN_SPEAKERS=2
@@ -106,42 +107,77 @@ if [[ -z "$OUTPUT_DIR" ]]; then
     OUTPUT_DIR="$(dirname "$AUDIO_FILE")"
 fi
 
-# ── Activate venv ─────────────────────────────────────────
-if [[ ! -d "$WHISPERX_VENV" ]]; then
-    echo "Error: WhisperX venv not found at $WHISPERX_VENV"
-    echo "Install: python3.12 -m venv $WHISPERX_VENV && source $WHISPERX_VENV/bin/activate && pip install whisperx"
+# ── Select backend ────────────────────────────────────────
+case "$(uname -s):$(uname -m)" in
+    Darwin:arm64)
+        BACKEND="whispermlx"
+        ACTIVE_VENV="$WHISPERMLX_VENV"
+        ;;
+    Linux:*)
+        if ! command -v nvidia-smi >/dev/null 2>&1 || ! nvidia-smi -L >/dev/null 2>&1; then
+            echo "Error: this script supports Apple Silicon macOS or Linux with an NVIDIA GPU."
+            exit 1
+        fi
+        BACKEND="whisperx"
+        ACTIVE_VENV="$WHISPERX_VENV"
+        ;;
+    *)
+        echo "Error: this script supports Apple Silicon macOS or Linux with an NVIDIA GPU."
+        exit 1
+        ;;
+esac
+
+if [[ ! -d "$ACTIVE_VENV" ]]; then
+    echo "Error: $BACKEND environment not found at $ACTIVE_VENV"
+    if [[ "$BACKEND" == "whispermlx" ]]; then
+        echo "Install: python3.12 -m venv $ACTIVE_VENV && source $ACTIVE_VENV/bin/activate && pip install whispermlx"
+    else
+        echo "Install: python3.12 -m venv $ACTIVE_VENV && source $ACTIVE_VENV/bin/activate && pip install whisperx"
+    fi
     exit 1
 fi
 
-source "$WHISPERX_VENV/bin/activate"
+source "$ACTIVE_VENV/bin/activate"
 
-# ── Auto compute type ─────────────────────────────────────
-if [[ "$COMPUTE_TYPE" == "auto" ]]; then
-    COMPUTE_TYPE=$(python3 -c "
-import torch
-if torch.cuda.is_available():
-    print('float16')
-else:
-    print('float32')
-")
-    echo "Compute type:  $COMPUTE_TYPE (auto-detected)"
+if ! command -v "$BACKEND" >/dev/null 2>&1; then
+    echo "Error: $BACKEND is not installed in $ACTIVE_VENV"
+    exit 1
+fi
+
+if [[ "$BACKEND" == "whisperx" ]]; then
+    if ! python3 -c 'import torch, sys; sys.exit(not torch.cuda.is_available())'; then
+        echo "Error: WhisperX environment cannot access the NVIDIA GPU."
+        exit 1
+    fi
+    if [[ "$COMPUTE_TYPE" == "auto" ]]; then
+        COMPUTE_TYPE="float16"
+        echo "Compute type:  $COMPUTE_TYPE (NVIDIA GPU)"
+    fi
 fi
 
 # ── Light mode: reduce load ───────────────────────────────
 if $LIGHT; then
-    BATCH_SIZE=4
-    echo "Light mode:    ON (nice=15, batch_size=$BATCH_SIZE)"
+    if [[ "$BACKEND" == "whisperx" ]]; then
+        BATCH_SIZE=4
+        echo "Light mode:    ON (nice=15, batch_size=$BATCH_SIZE)"
+    else
+        echo "Light mode:    ON (nice=15)"
+    fi
 fi
 
 # ── Build command ─────────────────────────────────────────
 CMD=(
-    whisperx "$AUDIO_FILE"
+    "$BACKEND" "$AUDIO_FILE"
     --model "$MODEL"
-    --compute_type "$COMPUTE_TYPE"
-    --batch_size "$BATCH_SIZE"
     --output_format "$OUTPUT_FORMAT"
     --output_dir "$OUTPUT_DIR"
 )
+
+if [[ "$BACKEND" == "whisperx" ]]; then
+    CMD+=(--device cuda --compute_type "$COMPUTE_TYPE" --batch_size "$BATCH_SIZE")
+else
+    CMD+=(--device mps)
+fi
 
 if ! $AUTO_LANG; then
     CMD+=(--language "$LANGUAGE")
@@ -157,7 +193,6 @@ if $DIARIZE; then
         --diarize
         --min_speakers "$MIN_SPEAKERS"
         --max_speakers "$MAX_SPEAKERS"
-        --hf_token "$HF_TOKEN"
     )
 fi
 
@@ -167,6 +202,10 @@ echo "Transcribing: $FILENAME"
 echo "Output dir:   $OUTPUT_DIR"
 echo "Format:       $OUTPUT_FORMAT"
 echo "Diarize:      $DIARIZE"
+echo "Backend:      $BACKEND"
+if [[ "$BACKEND" == "whisperx" ]]; then
+    echo "Compute type: $COMPUTE_TYPE"
+fi
 if $AUTO_LANG; then
     echo "Language:     auto (no --language flag)"
 else
