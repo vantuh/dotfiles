@@ -47,7 +47,6 @@ const SETTINGS_REL = 'home/dot_pi/private_agent/.settings.json';
 const SYNCED_AGENTS = [
   'delegate',
   'evidence-auditor',
-  'oracle',
   'researcher',
   'reviewer',
   'scout',
@@ -242,9 +241,7 @@ if (process.argv.includes('--self-test')) {
   selfTest();
 } else {
   const repoRoot =
-    process.argv[2] ??
-    process.env.DOTFILES ??
-    join(homedir(), 'dotfiles');
+    process.argv[2] ?? process.env.DOTFILES ?? join(homedir(), 'dotfiles');
   try {
     process.exit(sync(repoRoot));
   } catch (error) {
