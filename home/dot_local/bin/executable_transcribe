@@ -1,0 +1,184 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ──────────────────────────────────────────────────────────
+#  transcribe — Transcribe audio files with WhisperX
+#
+#  Usage:
+#    transcribe <audio_file> [output_dir] [options]
+#
+#  Examples:
+#    transcribe recording.mp3
+#    transcribe recording.mp3 /tmp/output
+#    transcribe recording.mp3 --no-diarize
+#
+#  Environment:
+#    HF_TOKEN  — HuggingFace token (required for diarization)
+# ──────────────────────────────────────────────────────────
+
+# ── Config ────────────────────────────────────────────────
+WHISPERX_VENV="$HOME/whisperx-env"
+MODEL="large-v3-turbo"
+LANGUAGE="uk"
+AUTO_LANG=false
+# auto: float16 on CUDA, int8 on CPU/MPS
+COMPUTE_TYPE="auto"
+BATCH_SIZE=32
+MIN_SPEAKERS=2
+MAX_SPEAKERS=6
+OUTPUT_FORMAT="txt"
+# ──────────────────────────────────────────────────────────
+
+usage() {
+    echo "Usage: $0 <audio_file> [output_dir] [--no-diarize] [--json] [--lang <code>]"
+    echo ""
+    echo "Options:"
+    echo "  --no-diarize   Skip speaker diarization"
+    echo "  --json         Output JSON instead of TXT"
+    echo "  --lang <code>  Language code (default: uk)"
+    echo "  --speakers <min> <max>  Min/max speakers (default: 2 6)"
+    echo "  --light        Low-priority mode: nice + small batch (lets you work while transcribing)"
+    exit 1
+}
+
+# ── Parse args ────────────────────────────────────────────
+AUDIO_FILE=""
+OUTPUT_DIR=""
+DIARIZE=true
+LIGHT=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --no-diarize)
+            DIARIZE=false
+            shift
+            ;;
+        --light)
+            LIGHT=true
+            shift
+            ;;
+        --json)
+            OUTPUT_FORMAT="json"
+            shift
+            ;;
+        --lang)
+            if [[ "$2" == "auto" ]]; then
+                AUTO_LANG=true
+            else
+                LANGUAGE="$2"
+            fi
+            shift 2
+            ;;
+        --speakers)
+            MIN_SPEAKERS="$2"
+            MAX_SPEAKERS="$3"
+            shift 3
+            ;;
+        --help|-h)
+            usage
+            ;;
+        *)
+            if [[ -z "$AUDIO_FILE" ]]; then
+                AUDIO_FILE="$1"
+            elif [[ -z "$OUTPUT_DIR" ]]; then
+                OUTPUT_DIR="$1"
+            else
+                echo "Error: unexpected argument '$1'"
+                usage
+            fi
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$AUDIO_FILE" ]]; then
+    echo "Error: audio file is required"
+    usage
+fi
+
+if [[ ! -f "$AUDIO_FILE" ]]; then
+    echo "Error: file not found: $AUDIO_FILE"
+    exit 1
+fi
+
+# Default output dir = same directory as input file
+if [[ -z "$OUTPUT_DIR" ]]; then
+    OUTPUT_DIR="$(dirname "$AUDIO_FILE")"
+fi
+
+# ── Activate venv ─────────────────────────────────────────
+if [[ ! -d "$WHISPERX_VENV" ]]; then
+    echo "Error: WhisperX venv not found at $WHISPERX_VENV"
+    echo "Install: python3.12 -m venv $WHISPERX_VENV && source $WHISPERX_VENV/bin/activate && pip install whisperx"
+    exit 1
+fi
+
+source "$WHISPERX_VENV/bin/activate"
+
+# ── Auto compute type ─────────────────────────────────────
+if [[ "$COMPUTE_TYPE" == "auto" ]]; then
+    COMPUTE_TYPE=$(python3 -c "
+import torch
+if torch.cuda.is_available():
+    print('float16')
+else:
+    print('float32')
+")
+    echo "Compute type:  $COMPUTE_TYPE (auto-detected)"
+fi
+
+# ── Light mode: reduce load ───────────────────────────────
+if $LIGHT; then
+    BATCH_SIZE=4
+    echo "Light mode:    ON (nice=15, batch_size=$BATCH_SIZE)"
+fi
+
+# ── Build command ─────────────────────────────────────────
+CMD=(
+    whisperx "$AUDIO_FILE"
+    --model "$MODEL"
+    --compute_type "$COMPUTE_TYPE"
+    --batch_size "$BATCH_SIZE"
+    --output_format "$OUTPUT_FORMAT"
+    --output_dir "$OUTPUT_DIR"
+)
+
+if ! $AUTO_LANG; then
+    CMD+=(--language "$LANGUAGE")
+fi
+
+if $DIARIZE; then
+    if [[ -z "${HF_TOKEN:-}" ]]; then
+        echo "Warning: HF_TOKEN not set, diarization will fail."
+        echo "Set it with: export HF_TOKEN=hf_..."
+        exit 1
+    fi
+    CMD+=(
+        --diarize
+        --min_speakers "$MIN_SPEAKERS"
+        --max_speakers "$MAX_SPEAKERS"
+        --hf_token "$HF_TOKEN"
+    )
+fi
+
+# ── Run ───────────────────────────────────────────────────
+FILENAME="$(basename "$AUDIO_FILE")"
+echo "Transcribing: $FILENAME"
+echo "Output dir:   $OUTPUT_DIR"
+echo "Format:       $OUTPUT_FORMAT"
+echo "Diarize:      $DIARIZE"
+if $AUTO_LANG; then
+    echo "Language:     auto (no --language flag)"
+else
+    echo "Language:     $LANGUAGE"
+fi
+echo "──────────────────────────────────────"
+
+if $LIGHT; then
+    nice -n 15 "${CMD[@]}"
+else
+    "${CMD[@]}"
+fi
+
+echo "──────────────────────────────────────"
+echo "Done. Output in: $OUTPUT_DIR"
