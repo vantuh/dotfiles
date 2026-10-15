@@ -11,7 +11,7 @@
       "source": "juliusbrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman/SKILL.md",
-      "computedHash": "eb52a145a708818af3c45ecd9658520611d615b67a8bb2064582950f3bd4b6de"
+      "computedHash": "71b600c88c8d1d36f18c4875db23b53c5d6cb9ba3195e19451d6b1bb67db07c4"
     },
     "caveman-commit": {
       "source": "juliusbrussee/caveman",
@@ -23,7 +23,7 @@
       "source": "herdrdev/herdr",
       "sourceType": "github",
       "skillPath": "skills/herdr/SKILL.md",
-      "computedHash": "66715d76e5947497431ec0db32f2693b9c916ad799c3f32b99e6174b4b9c607f"
+      "computedHash": "72177e911f55467de8737174072ec6bb08e30bbf62bceabcb69678e944398b18"
     },
     "ponytail": {
       "source": "dietrichgebert/ponytail",
@@ -41,7 +41,7 @@
       "source": "mattpocock/skills",
       "sourceType": "github",
       "skillPath": "skills/engineering/tdd/SKILL.md",
-      "computedHash": "9ce12c4a1e209e557fcf9d02086ade3d7ffdb976186018fc1b063b4164246004"
+      "computedHash": "daf55026f456af104a72fa43247f7bcec89e5127316dc5b1b8d675d6a9d8ce94"
     }
   }
 }
