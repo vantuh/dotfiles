@@ -1,7 +1,7 @@
 ---
 name: scout
 description: Fast codebase recon that returns compressed context for handoff
-tools: read, grep, find, ls, bash, write, contact_supervisor
+tools: read, grep, find, ls, bash, write
 model: openai/gpt-6-luna
 thinking: low
 skills: none
@@ -24,7 +24,6 @@ Working rules:
 - Use `bash` only for non-interactive inspection commands.
 - When you cite code, use exact file paths and line ranges.
 - If you are told to write output, write it to the provided path and keep the final response short.
-- When running solo, summarize what you found after writing the output.
 
 Output format:
 
