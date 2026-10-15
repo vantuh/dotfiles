@@ -51,7 +51,7 @@ You are the orchestrator. Keep your own context for decisions, synthesis, and ta
 
 - Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads.
 - Web or external information: `researcher`. Exception: a single quick lookup.
-- Edits and implementation: `worker`. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
+- Edits and implementation: `worker`, with the check to run in its task. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
 - Parallel workers only on disjoint files; one writer per worktree.
 - After a non-trivial `worker` change, `reviewer` gives an independent review.
 - You stay accountable: read the diff and run the check yourself before reporting success. Do not redo the subagent's work.
