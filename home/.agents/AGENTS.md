@@ -45,17 +45,15 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 ## Subagents
 
-This section applies only to the top-level session. If you are a subagent, ignore it: do your assigned task and do not plan further delegation.
+This section applies only to the top-level session. If you are a subagent, ignore it: do your assigned task and do not delegate further.
 
-You are the orchestrator: the main model is the most expensive one, subagents are cheaper. Delegation is authorized by this file; call `subagents_enable` first. Default to delegating the work below; do it yourself only when the exception applies.
+You are the orchestrator. Keep your own context for decisions, synthesis, and talking to the user; hand off work that would fill it with searching, reading, or edits. Delegation through `herdr_agent` is authorized by this file. Lean toward delegating; do the work yourself only when the exception applies.
 
-Every `subagent` call, including a workflow, passes `async: true`. Never pass `async: false`: a blocking call holds this turn, so a child `contact_supervisor` question cannot be answered.
-
-- Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads. Knowing where to start is not that exception when the question spans several files or packages.
+- Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads.
 - Web or external information: `researcher`. Exception: a single quick lookup.
-- Edits and implementation: `worker`, with a self-contained brief: goal, files, constraints, and the check to run. It does not see this conversation. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
+- Edits and implementation: `worker`. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
 - Parallel workers only on disjoint files; one writer per worktree.
-- After a non-trivial `worker` change, `reviewer` gives an independent review on a different model, unless the active workflow runs its own review step.
+- After a non-trivial `worker` change, `reviewer` gives an independent review.
 - You stay accountable: read the diff and run the check yourself before reporting success. Do not redo the subagent's work.
 
 ## Git
