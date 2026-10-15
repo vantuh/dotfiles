@@ -47,13 +47,6 @@ archive/            Retired configs kept for reference; never applied
 - Do not modify shared agent instructions (`home/.agents/AGENTS.md`) unless
   explicitly asked; changes affect Pi, OMP, OpenCode, Kiro, and Claude.
 - Add shared skills under `home/.agents/skills/<name>/SKILL.md`.
-- pi-subagents package agents that are not disabled in
-  `home/dot_pi/private_agent/.settings.json` are mirrored into
-  `home/dot_pi/private_agent/agents/` by `subagents-agents-sync`
-  (`home/dot_local/bin/executable_subagents-agents-sync.ts`). Edit those copies
-  freely; the pristine package version lives next to them in
-  `~/.local/state/pi-subagents-agents-base/` (outside the repo) and is the merge base the
-  script uses on upgrades; a missing base is re-seeded from the package. Never edit it.
 - Refresh upstream skills with `skills-update` (`home/dot_local/bin/executable_skills-update`).
   It drives `npx skills` from `~/.agents`, which writes to `<cwd>/.agents/skills`,
   so `home/.agents/.agents/skills` must stay a symlink to `../skills`;
