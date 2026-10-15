@@ -21,6 +21,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_omp/private_agent/.config.yml` | `~/.omp/agent/config.yml` (symlink into the repo) |
 | `home/dot_omp/private_agent/.kiro-acp.json` | `~/.omp/agent/kiro-acp.json` (symlink into the repo) |
 | `home/dot_pi/private_agent/.settings.json` | `~/.pi/agent/settings.json` (symlink into the repo) |
+| `home/dot_pi/private_agent/.agents` | `~/.pi/agent/agents` (symlink into the repo; dot-named so chezmoi ignores the role files) |
 | `home/dot_pi/profiles/work/private_agent` | `~/.pi/profiles/work/agent` (Pi work profile; `piw`) |
 | `home/dot_pi/profiles/work/private_agent/.settings.json` | `~/.pi/profiles/work/agent/settings.json` (symlink into the repo) |
 | `home/.agents` | `~/.agents` (symlink into the repo) |
