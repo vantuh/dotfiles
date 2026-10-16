@@ -2,7 +2,7 @@
 name: delegate
 description: Lightweight general-purpose subagent with no default reads
 tools: read, grep, find, ls, bash, edit, write
-model: kiro-acp/claude-sonnet-5.5
+model: "kiro-acp/claude-sonnet-5.5"
 skills: none
 system-prompt: append
 ---

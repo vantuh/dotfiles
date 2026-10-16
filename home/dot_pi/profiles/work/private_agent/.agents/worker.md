@@ -2,7 +2,7 @@
 name: worker
 description: Implementation agent for normal tasks and approved plans
 tools: read, grep, find, ls, bash, edit, write
-model: kiro-acp/claude-sonnet-5.5
+model: "kiro-acp/claude-sonnet-5.5"
 thinking: high
 skills: tdd
 system-prompt: replace

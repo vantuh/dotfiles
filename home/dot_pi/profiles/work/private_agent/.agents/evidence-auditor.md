@@ -2,7 +2,7 @@
 name: evidence-auditor
 description: Independent evidence reviewer for checking whether important research claims are supported by their sources
 tools: read, web_search, fetch_content, get_search_content, source_check
-model: kiro-acp/claude-sonnet-5.5
+model: "kiro-acp/claude-sonnet-5.5"
 thinking: high
 skills: none
 system-prompt: replace
