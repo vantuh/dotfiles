@@ -18,8 +18,8 @@
     "~/projects/personal/pi-kiro-acp",
     "~/projects/personal/pi-herdr-subagents"
   ],
-  "lastChangelogVersion": "1.2.0",
   "hideThinkingBlock": true,
+  "lastChangelogVersion": "1.3.0",
   "compaction": {
     "enabled": true,
     "reserveTokens": 8192,
