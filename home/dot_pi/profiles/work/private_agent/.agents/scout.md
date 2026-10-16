@@ -2,7 +2,7 @@
 name: scout
 description: Fast codebase recon that returns compressed context for handoff
 tools: read, grep, find, ls, bash, write
-model: kiro-acp/claude-sonnet-5.5
+model: "kiro-acp/claude-haiku-4.5"
 thinking: low
 skills: none
 system-prompt: replace

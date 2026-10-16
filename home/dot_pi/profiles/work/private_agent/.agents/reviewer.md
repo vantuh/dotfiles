@@ -2,7 +2,7 @@
 name: reviewer
 description: Versatile review specialist for code diffs, plans, proposed solutions, codebase health, and PR/issue validation
 tools: read, grep, find, ls, bash
-model: kiro-acp/claude-sonnet-5.5
+model: "kiro-acp/claude-opus-5.5"
 thinking: high
 skills: none
 system-prompt: replace
