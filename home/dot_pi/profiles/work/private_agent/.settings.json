@@ -6,13 +6,6 @@
   ],
   "packages": [
     "npm:pi-web-access",
-    {
-      "source": "npm:pi-subagents",
-      "prompts": [],
-      "skills": [
-        "!council-mode"
-      ]
-    },
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:@plannotator/pi-extension",
     "~/projects/personal/pi-kiro-acp",
