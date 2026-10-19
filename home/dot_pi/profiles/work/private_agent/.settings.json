@@ -33,9 +33,6 @@
     "kiro-acp/claude-sonnet-5.5"
   ],
   "defaultThinkingLevel": "medium",
-  "kiroSubagentsBridge": {
-    "enabled": false
-  },
   "showHardwareCursor": false,
   "collapseChangelog": true,
   "tuiMode": "fullscreen",

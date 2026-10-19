@@ -1,0 +1,12 @@
+{
+  "main": {
+    "kiroSubagentsBridge": {
+      "enabled": false
+    }
+  },
+  "work": {
+    "kiroSubagentsBridge": {
+      "enabled": false
+    }
+  }
+}

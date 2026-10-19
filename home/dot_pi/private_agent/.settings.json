@@ -31,9 +31,6 @@
     "local/qwen3.8-flash-next-coder-iq1_m"
   ],
   "defaultThinkingLevel": "medium",
-  "kiroSubagentsBridge": {
-    "enabled": false
-  },
   "showHardwareCursor": false,
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
