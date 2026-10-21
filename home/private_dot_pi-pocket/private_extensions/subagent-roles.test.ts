@@ -113,6 +113,20 @@ test("a role's model that the owner did not allow stops the spawn", async () => 
     }
 });
 
+test("a profile is found inside a longer name, with a suffix, a prefix, or both", async () => {
+    const dir = await profiles();
+    try {
+        for (const name of ["worker-2", "pre-worker", "my-worker-check"]) {
+            const seen = await call(dir, { action: "spawn", name, message: "fix the bug" });
+
+            assert.equal(seen.model, WORKER_MODEL);
+            assert.match(String(seen.message), /^You are worker: the implementation subagent\./);
+        }
+    } finally {
+        await rm(dir, { recursive: true });
+    }
+});
+
 test("an unknown name, a path outside the folder, and other actions pass through", async () => {
     const dir = await profiles();
     try {

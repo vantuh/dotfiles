@@ -1,8 +1,9 @@
 /**
  * Uses the agent profiles in `~/.pi/agent/agents/` for Pi Pocket's background subagents: a spawn with a profile's
  * name starts with the profile's body, and takes the profile's `tools`, `thinking`, and `model` when Pi left them out.
+ * A profile is found inside a longer name too: `scout-spec` and `pre-scout` run as `scout`.
  */
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import { defineExtension, wrapTool } from "@earendil-works/pi-durable";
@@ -30,15 +31,47 @@ function toolsOf(value: unknown): string[] | undefined {
     return list.length === 0 ? undefined : list;
 }
 
-async function profileOf(host: Host, name: string): Promise<Profile | undefined> {
-    if (!SAFE_NAME.test(name) || name.includes("..")) return undefined;
+/**
+ * The profiles that a spawn name may mean, longest first: `scout-spec` is `scout`. The name is split into parts
+ * (`-` or `_`), and a profile matches when its parts appear in it in order, so `pre-scout` is `scout` too.
+ */
+function candidatesOf(name: string, known: ReadonlySet<string>): string[] {
+    if (!SAFE_NAME.test(name) || name.includes("..")) return [];
 
-    let text: string;
-    try {
-        text = await readFile(join(host.agentDir, "agents", `${name}.md`), "utf8");
-    } catch {
-        return undefined;
+    const parts = name.split(/[-_]/);
+    const found: string[] = [];
+
+    for (let length = parts.length; length >= 1; length -= 1) {
+        for (let start = 0; start + length <= parts.length; start += 1) {
+            const candidate = parts.slice(start, start + length).join("-");
+            if (known.has(candidate) && !found.includes(candidate)) found.push(candidate);
+        }
     }
+
+    return found;
+}
+
+async function profiles(host: Host): Promise<ReadonlySet<string>> {
+    try {
+        const files = await readdir(join(host.agentDir, "agents"));
+        return new Set(files.filter((file) => file.endsWith(".md")).map((file) => file.slice(0, -3)));
+    } catch {
+        return new Set();
+    }
+}
+
+async function profileOf(host: Host, name: string): Promise<Profile | undefined> {
+    let text: string | undefined;
+    for (const candidate of candidatesOf(name, await profiles(host))) {
+        try {
+            text = await readFile(join(host.agentDir, "agents", `${candidate}.md`), "utf8");
+            break;
+        } catch {
+            // A file gone since the folder was read: try the next profile.
+        }
+    }
+
+    if (text === undefined) return undefined;
 
     const { frontmatter, body } = parseFrontmatter(text);
     const asked =
