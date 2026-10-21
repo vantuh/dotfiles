@@ -12,6 +12,8 @@ const DEFAULT_COMMITS = 50;
 /** Past this much patch in a commit, the files that are left are named but not rendered: a page cannot draw more. */
 const MAX_PATCH_CHARS = 300_000;
 const GIT_TIMEOUT_MS = 15_000;
+/** A push, or a fetch, talks to a server: it gets longer, and it never waits for a password at a terminal. */
+const GIT_REMOTE_TIMEOUT_MS = 120_000;
 const MAX_BUFFER = 32 * 1024 * 1024;
 
 /** A commit's short fields, each ended by a NUL, and the record by a RS. A subject is text, so it can hold anything. */
@@ -47,12 +49,18 @@ async function loadRenderer(): Promise<Pierre> {
     }
 }
 
-function git(cwd: string, args: string[]): Promise<string> {
+function git(cwd: string, args: string[], timeoutMs = GIT_TIMEOUT_MS): Promise<string> {
     return new Promise((resolve, reject) => {
         execFile(
             "git",
             ["--no-pager", ...args],
-            { cwd, timeout: GIT_TIMEOUT_MS, maxBuffer: MAX_BUFFER, windowsHide: true },
+            {
+                cwd,
+                timeout: timeoutMs,
+                maxBuffer: MAX_BUFFER,
+                windowsHide: true,
+                env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+            },
             (failure, stdout, stderr) => {
                 if (failure) {
                     reject(new Error(`${stderr}`.trim() || failure.message));
@@ -65,8 +73,13 @@ function git(cwd: string, args: string[]): Promise<string> {
 }
 
 /** Git's own words for a failure, as the page shows them. */
-function gitOrFail(web: Web, cwd: string, args: string[]): Promise<string> {
-    return git(cwd, args).catch((failure: unknown) => {
+function gitOrFail(
+    web: Web,
+    cwd: string,
+    args: string[],
+    timeoutMs = GIT_TIMEOUT_MS,
+): Promise<string> {
+    return git(cwd, args, timeoutMs).catch((failure: unknown) => {
         throw web.error(400, failure instanceof Error ? failure.message : String(failure));
     });
 }
@@ -315,6 +328,40 @@ export default function createGitHistory(_host: unknown, web: Web) {
                     : DEFAULT_COMMITS;
 
             return logOf(web, conversation.cwd, limit);
+        },
+        { conversation: "source" },
+    );
+
+    // The top bar's count of commits not pushed: cheap enough to ask for every few seconds.
+    web.conversationRoute(
+        "GET",
+        "track/:source",
+        ({ conversation }) => trackOf(conversation.cwd),
+        { conversation: "source" },
+    );
+
+    web.conversationRoute(
+        "POST",
+        "push/:source",
+        async ({ conversation }) => {
+            const before = await trackOf(conversation.cwd);
+
+            if (before.upstream === undefined) {
+                throw web.error(
+                    400,
+                    "This branch follows no remote branch. Push it once with -u, in a terminal.",
+                );
+            }
+
+            const ahead = before.ahead ?? 0;
+
+            if (ahead === 0) {
+                return { pushed: 0, ...before };
+            }
+
+            await gitOrFail(web, conversation.cwd, ["push"], GIT_REMOTE_TIMEOUT_MS);
+
+            return { pushed: ahead, ...(await trackOf(conversation.cwd)) };
         },
         { conversation: "source" },
     );

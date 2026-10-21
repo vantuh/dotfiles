@@ -219,5 +219,45 @@ test(
             `);
 
         await until(async () => (await offset()) < 12, "the opened row to reach the top of the view");
+
+        // The header has no buttons while the page covers the conversation: back to the session first.
+        await page.press("Escape");
+        await until(async () => !(await has(".ext-page")), "the page to close");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // The header's count of unpushed commits: a tap on it pushes them.
+        await until(
+            async () =>
+                (await inPage<string>(
+                    `return JSON.stringify([...document.querySelectorAll(".ext-top-button .badge")].map((each) => each.textContent).join("|"))`,
+                )) === "↑1",
+            "the count of unpushed commits",
+        );
+
+        await page.evaluate(`
+            const button = [...document.querySelectorAll(".ext-top-button")].find((each) =>
+                (each.querySelector(".badge")?.textContent ?? "").startsWith("↑"),
+            );
+            button.click();
+            return "ok";
+        `);
+
+        await until(
+            async () =>
+                (await inPage<number>(
+                    `return JSON.stringify(document.querySelectorAll(".ext-top-button .badge").length)`,
+                )) === 0,
+            "the count to clear after the push",
+        );
+
+        const onRemote = execFileSync(
+            "git",
+            ["--git-dir", join(root, "origin.git"), "log", "--format=%s", "main"],
+            { encoding: "utf8" },
+        )
+            .trim()
+            .split("\n");
+
+        assert.deepEqual(onRemote, ["third commit", "second commit", "first commit"]);
     },
 );

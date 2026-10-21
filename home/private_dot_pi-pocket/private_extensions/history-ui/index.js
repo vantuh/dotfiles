@@ -312,8 +312,124 @@ export default function setup(pocket) {
         page: "history",
     });
 
-    // New in 0.19.0: the button sits just before Changes, with the app's own git places.
     if (typeof pocket.topbar === "function") {
+        // The header's count of commits not pushed, which a tap pushes. New in 0.19.0, like the top bar buttons.
+        let last = null;
+        let pushing = false;
+
+        const describe = (status) => {
+            const counts = [
+                status?.ahead > 0 ? `↑${status.ahead}` : "",
+                status?.behind > 0 ? `↓${status.behind}` : "",
+            ]
+                .filter((part) => part !== "")
+                .join(" ");
+
+            if (status === null) {
+                return { badge: "", title: "Git remote: open a session to see its branch" };
+            }
+
+            if (status.upstream === undefined) {
+                return { badge: "", title: `${status.branch || "This branch"} follows no remote branch` };
+            }
+
+            return {
+                badge: counts,
+                title:
+                    `${status.ahead} to push, ${status.behind} to pull · ${status.branch} → ${status.upstream}` +
+                    (status.ahead > 0 ? ". Click to push." : ""),
+            };
+        };
+
+        const button = pocket.topbar({
+            id: "track",
+            title: "Git remote",
+            icon: "up",
+            run: () => void push(),
+            before: "core:changes",
+        });
+
+        const refresh = async () => {
+            const id = pocket.conversationId();
+
+            if (id === null) {
+                last = null;
+                button.update(describe(null));
+
+                return;
+            }
+
+            try {
+                last = await pocket.api(`track/${id}`);
+                button.update(describe(last));
+            } catch {
+                // Not a repository, or no remote: the title says what the last look found.
+            }
+        };
+
+        async function push() {
+            const id = pocket.conversationId();
+
+            if (id === null || pushing) {
+                return;
+            }
+
+            if (last !== null && last.upstream === undefined) {
+                pocket.notify("warning", "This branch follows no remote branch: push it once with -u.");
+                return;
+            }
+
+            if (last === null || (last.ahead ?? 0) === 0) {
+                pocket.notify(
+                    "info",
+                    (last?.behind ?? 0) > 0
+                        ? `${last.behind} commits to pull are on the remote only.`
+                        : "Nothing to push.",
+                );
+
+                return;
+            }
+
+            const ahead = last.ahead;
+
+            pushing = true;
+            button.update({ badge: "…", title: "Pushing…" });
+
+            try {
+                const result = await pocket.api(`push/${id}`, {});
+
+                pocket.notify(
+                    "info",
+                    `Pushed ${ahead} ${ahead === 1 ? "commit" : "commits"}` +
+                        (result.behind > 0 ? `; ${result.behind} to pull.` : "."),
+                );
+            } catch (failure) {
+                pocket.notify("error", failure.message);
+            } finally {
+                pushing = false;
+                void refresh();
+            }
+        }
+
+        const timer = setInterval(() => {
+            if (!document.hidden) {
+                void refresh();
+            }
+        }, 15_000);
+        const onVisible = () => {
+            if (!document.hidden) {
+                void refresh();
+            }
+        };
+
+        document.addEventListener("visibilitychange", onVisible);
+        pocket.onDispose(() => {
+            clearInterval(timer);
+            document.removeEventListener("visibilitychange", onVisible);
+        });
+        void refresh();
+
+        // The page itself, just before Changes, with the app's own git places.
         pocket.topbar({
             id: "history",
             title: "Git history",

@@ -86,6 +86,21 @@ after(async () => {
     cleanUp();
 });
 
+/** A POST as the owner. */
+async function post(path: string) {
+    const response = await fetch(`${base}${path}`, {
+        method: "POST",
+        headers: {
+            authorization: `Bearer ${app.config.ownerToken}`,
+            "x-pocket": "1",
+            "content-type": "application/json",
+        },
+        body: "{}",
+    });
+
+    return { status: response.status, data: (await response.json()) as Record<string, unknown> };
+}
+
 /** A route call as the owner, or as Gale with `asGuest`. */
 async function call(path: string, asGuest = false) {
     const response = await fetch(`${base}${path}`, {
@@ -139,6 +154,30 @@ test("the commit route shows one commit's files, each with the diff that @pierre
     assert.match(files[0]!.html, /data-diffs/);
     assert.match(files[0]!.html, /data-core-css/);
     assert.match(files[0]!.html, />two</);
+});
+
+test("track says how far the branch is ahead, and push sends the commits", async () => {
+    const track = await call(`/api/x/git-history/track/${id}`);
+
+    assert.equal(track.status, 200);
+    assert.equal(track.data.upstream, "origin/main");
+    assert.equal(track.data.ahead, 1);
+    assert.equal(track.data.behind, 0);
+
+    const pushed = await post(`/api/x/git-history/push/${id}`);
+
+    assert.equal(pushed.status, 200, JSON.stringify(pushed.data));
+    assert.equal(pushed.data.pushed, 1);
+    assert.equal(pushed.data.ahead, 0);
+    assert.equal((await call(`/api/x/git-history/track/${id}`)).data.ahead, 0);
+
+    const onRemote = execFileSync("git", ["--git-dir", origin, "log", "--format=%s", "main"], {
+        encoding: "utf8",
+    })
+        .trim()
+        .split("\n");
+
+    assert.deepEqual(onRemote, ["third commit", "second commit", "first commit"]);
 });
 
 test("a commit id that is not one, and a folder outside a repository, get 400 with the reason", async () => {
