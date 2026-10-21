@@ -316,6 +316,8 @@ export default function setup(pocket) {
         // The header's counts of commits: green for what waits to be pushed (a tap pushes it), red for what waits to
         // be pulled. Each hides when its side has nothing.
         let last = null;
+        /** The session the counts belong to: a switch to another one reads its own at once. */
+        let shownFor;
         let pushing = false;
 
         const pushButton = pocket.topbar({
@@ -356,10 +358,11 @@ export default function setup(pocket) {
             });
         };
 
-        const refresh = async () => {
+        const read = async () => {
             const id = pocket.conversationId();
 
             if (id === null) {
+                shownFor = null;
                 last = null;
                 show();
 
@@ -367,8 +370,21 @@ export default function setup(pocket) {
             }
 
             try {
-                last = await pocket.api(`track/${id}`);
+                const status = await pocket.api(`track/${id}`);
+
+                // The tab may have moved to another session while this waited: its answer is not this one's.
+                if (pocket.conversationId() !== id) {
+                    return;
+                }
+
+                shownFor = id;
+                last = status;
             } catch {
+                if (pocket.conversationId() !== id) {
+                    return;
+                }
+
+                shownFor = id;
                 last = null;
             }
 
@@ -416,7 +432,11 @@ export default function setup(pocket) {
 
             try {
                 const result = await pocket.api(`push/${id}`, {});
-                last = result;
+
+                if (pocket.conversationId() === id) {
+                    shownFor = id;
+                    last = result;
+                }
 
                 pocket.notify(
                     "info",
@@ -427,27 +447,35 @@ export default function setup(pocket) {
                 pocket.notify("error", failure.message);
             } finally {
                 pushing = false;
-                void refresh();
+                void read();
             }
         }
 
+        // A switch to another session shows that session's own counts within a second; and they are read again now and
+        // then, for what happens in the folder.
+        const switched = setInterval(() => {
+            if (!document.hidden && pocket.conversationId() !== shownFor) {
+                void read();
+            }
+        }, 500);
         const timer = setInterval(() => {
             if (!document.hidden) {
-                void refresh();
+                void read();
             }
         }, 15_000);
         const onVisible = () => {
             if (!document.hidden) {
-                void refresh();
+                void read();
             }
         };
 
         document.addEventListener("visibilitychange", onVisible);
         pocket.onDispose(() => {
+            clearInterval(switched);
             clearInterval(timer);
             document.removeEventListener("visibilitychange", onVisible);
         });
-        void refresh();
+        void read();
 
         // The page itself, just before Changes, with the app's own git places.
         pocket.topbar({

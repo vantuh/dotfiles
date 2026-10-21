@@ -29,6 +29,7 @@ const DESKTOP = { width: 1440, height: 900, scale: 1, mobile: false };
 const dataDir = join(root, "data");
 const dropIns = join(dataDir, "extensions");
 const project = join(root, "project");
+const plain = join(root, "plain");
 
 let app: Awaited<ReturnType<typeof openApp>>;
 let server: Server;
@@ -36,6 +37,7 @@ let browsers: Browsers;
 let page: BrowserPage;
 let base = "";
 let session: number;
+let plainSession: number;
 
 async function inPage<T>(script: string): Promise<T> {
     return JSON.parse(await page.evaluate(script)) as T;
@@ -74,6 +76,7 @@ before(async () => {
         });
 
     mkdirSync(project, { recursive: true });
+    mkdirSync(plain, { recursive: true });
     git("init", "-q", "-b", "main");
     const lines = (tag: string) =>
         `${Array.from({ length: 150 }, (_, index) => `${tag} line ${index + 1}`).join("\n")}\n`;
@@ -98,6 +101,7 @@ before(async () => {
     base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
     await app.setExtensionEnabled(owner(app), "git-history.ts", true);
     session = await newSession(app, project);
+    plainSession = await newSession(app, plain);
 
     browsers = new Browsers({
         dataDir: mkdtempSync(join(root, "git-history-ui-")),
@@ -233,6 +237,17 @@ test(
                 )) === "↑1",
             "the count of unpushed commits",
         );
+
+        // Another session, in a folder that is no repository: its own answer, and no count.
+        const counts = () =>
+            inPage<string>(
+                `return JSON.stringify([...document.querySelectorAll(".ext-top-button .badge")].map((each) => each.textContent).join("|"))`,
+            );
+
+        await page.click({ selector: `.session-row[data-id="${plainSession}"] button.session` });
+        await until(async () => (await counts()) === "", "the count to follow the other session");
+        await page.click({ selector: `.session-row[data-id="${session}"] button.session` });
+        await until(async () => (await counts()) === "↑1", "the count to come back");
 
         await page.evaluate(`
             const button = [...document.querySelectorAll(".ext-top-button")].find((each) =>
