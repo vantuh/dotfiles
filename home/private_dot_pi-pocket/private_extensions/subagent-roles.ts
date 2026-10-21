@@ -81,14 +81,11 @@ export default function createSubagentRoles(host: Host) {
                         }
                     }
 
-                    // The owner picks the models that subagents may use; a role cannot widen that list.
-                    const roleModel =
-                        found.model !== undefined && host.subagentModels().includes(found.model)
-                            ? found.model
-                            : undefined;
-                    if (call.model === undefined && found.model !== undefined && roleModel === undefined) {
-                        notes.push(
-                            `Your role's model ${found.model} is not allowed for subagents here; you run on this session's model.`,
+                    // A role's model wins, and it must be one the owner allows: never fall back to the session's model,
+                    // so a role can never start somewhere its profile did not name.
+                    if (found.model !== undefined && !host.subagentModels().includes(found.model)) {
+                        throw new Error(
+                            `The role ${call.name} must run on ${found.model}, which the owner did not allow for subagents. Ask the owner to add it under Menu, Providers, Models for subagents.`,
                         );
                     }
 
@@ -104,9 +101,7 @@ export default function createSubagentRoles(host: Host) {
                             ...(call.thinking === undefined && found.thinking !== undefined
                                 ? { thinking: found.thinking }
                                 : {}),
-                            ...(call.model === undefined && roleModel !== undefined
-                                ? { model: roleModel }
-                                : {}),
+                            ...(found.model === undefined ? {} : { model: found.model }),
                         },
                         api,
                         context,

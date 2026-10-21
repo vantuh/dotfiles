@@ -80,7 +80,7 @@ test("a role's body starts the spawn message, with only the tools this session o
     }
 });
 
-test("what Pi chose wins over the role's tools and thinking", async () => {
+test("what Pi chose wins over the role's tools and thinking, never over its model", async () => {
     const dir = await profiles();
     try {
         const seen = await call(dir, {
@@ -89,25 +89,24 @@ test("what Pi chose wins over the role's tools and thinking", async () => {
             message: "fix the bug",
             tools: ["bash"],
             thinking: "low",
+            model: "openai/gpt-6.1-sol",
         });
 
         assert.deepEqual(seen.tools, ["bash"]);
         assert.equal(seen.thinking, "low");
+        assert.equal(seen.model, WORKER_MODEL);
         assert.equal(seen.message, "You are worker: the implementation subagent.\n\n## Your task\n\nfix the bug");
     } finally {
         await rm(dir, { recursive: true });
     }
 });
 
-test("a role's model that the owner did not allow is left out, and the subagent is told", async () => {
+test("a role's model that the owner did not allow stops the spawn", async () => {
     const dir = await profiles();
     try {
-        const seen = await call(dir, { action: "spawn", name: "worker", message: "fix the bug" }, []);
-
-        assert.equal(seen.model, undefined);
-        assert.match(
-            String(seen.message),
-            /Your role's model openrouter\/deepseek\/deepseek-v4\.1-flash-1017 is not allowed for subagents here/,
+        await assert.rejects(
+            call(dir, { action: "spawn", name: "worker", message: "fix the bug" }, []),
+            /The role worker must run on openrouter\/deepseek\/deepseek-v4\.1-flash-1017, which the owner did not allow/,
         );
     } finally {
         await rm(dir, { recursive: true });
