@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# The git-history module stays one file in the source state, and the drop-in folder gets a link to it: an edit there is
+# the edit Pi Pocket reloads. Its browser module and its renderer are read beside the real file, so nothing else is
+# linked, and the 10 MB renderer is never copied into the data folder (see .chezmoiignore.tmpl).
+set -u
+
+source="{{ .chezmoi.workingTree }}/home/private_dot_pi-pocket/private_extensions/git-history.ts"
+dest="{{ .chezmoi.destDir }}/.pi-pocket/extensions"
+link="$dest/git-history.ts"
+
+[[ -f "$source" ]] || exit 0
+mkdir -p "$dest"
+
+if [[ -L "$link" && "$(readlink "$link")" == "$source" ]]; then
+  exit 0
+fi
+
+rm -rf "$link"
+ln -s "$source" "$link"

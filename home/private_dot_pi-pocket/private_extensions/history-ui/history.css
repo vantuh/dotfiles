@@ -1,0 +1,221 @@
+/* The Git history page. Colors and type come from the theme's tokens, so it follows the app's look, dark or light. The
+   diffs themselves are drawn by `@pierre/diffs` inside a shadow root, with their own styles. */
+
+.gh {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 1100px;
+}
+
+.gh-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gh-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+}
+
+.gh-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.gh-item + .gh-item {
+    border-top: 1px solid var(--line);
+}
+
+.gh-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 0.6rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.gh-row:hover {
+    background: var(--card);
+}
+
+.gh-hash {
+    color: var(--muted);
+}
+
+.gh-subject {
+    flex: 1 1 12rem;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.gh-row-meta {
+    flex: 1 0 100%;
+}
+
+.gh-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.2rem 0.7rem 0.9rem;
+}
+
+.gh-meta-line {
+    margin: 0;
+}
+
+.gh-body {
+    margin: 0;
+    padding: 0.5rem 0.6rem;
+    background: var(--card);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font: inherit;
+}
+
+.gh-add {
+    color: var(--ok);
+}
+
+.gh-del {
+    color: var(--err);
+}
+
+.gh-file {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card);
+}
+
+.gh-file-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.35rem 0.6rem;
+    background: var(--card);
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.gh-file-head:hover {
+    background: color-mix(in srgb, var(--text) 6%, var(--card));
+}
+
+.gh-chevron {
+    display: inline-flex;
+    color: var(--muted);
+    transition: transform 180ms ease;
+}
+
+.gh-chevron[data-open="true"] {
+    transform: rotate(90deg);
+}
+
+/* The fold: 0fr to 1fr animates the height of what is inside, whatever it is, without a height in the CSS. */
+.gh-fold {
+    display: grid;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transition:
+        grid-template-rows 220ms ease,
+        opacity 160ms ease;
+}
+
+.gh-fold[data-open="false"] {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+.gh-fold-inner {
+    min-height: 0;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+}
+
+.gh-fold[data-open="false"] .gh-fold-inner {
+    border-top-width: 0;
+    border-top-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-fold,
+    .gh-chevron {
+        transition: none;
+    }
+}
+
+.gh-path {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.gh-kind {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.3em;
+    height: 1.3em;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 0.8em;
+}
+
+.gh-kind[data-kind="added"] {
+    color: var(--ok);
+}
+
+.gh-kind[data-kind="deleted"] {
+    color: var(--err);
+}
+
+.gh-kind[data-kind="renamed"],
+.gh-kind[data-kind="modified"] {
+    color: var(--muted);
+}
+
+.gh-note {
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+}
+
+.gh-diff-view {
+    display: block;
+    overflow: hidden;
+}
+
+.gh-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}

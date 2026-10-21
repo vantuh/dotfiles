@@ -1,0 +1,173 @@
+// The Git history page in a real Chromium: its top bar button, the commits it lists, and a commit opening into its diff.
+// Run it with `node --test git-history-ui.test.ts` in the drop-in folder.
+import {
+    cleanUp,
+    newSession,
+    openApp,
+    owner,
+    root,
+    scriptedModel,
+    until,
+} from "/Users/vantuh/projects/opensource-test/pi-pocket/test/helpers.ts";
+import { Browsers } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/browser.ts";
+import { findBrowser } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/browser/discovery.ts";
+import type { BrowserPage } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/browser/page.ts";
+import { createHandler } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/http.ts";
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { cpSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
+import { createServer, type Server } from "node:http";
+import { join } from "node:path";
+import { after, before, test } from "node:test";
+
+const chromium = findBrowser();
+const real = {
+    skip: chromium === undefined ? "no Chromium-based browser on this machine" : false,
+} as const;
+const DESKTOP = { width: 1440, height: 900, scale: 1, mobile: false };
+
+const dataDir = join(root, "data");
+const dropIns = join(dataDir, "extensions");
+const project = join(root, "project");
+
+let app: Awaited<ReturnType<typeof openApp>>;
+let server: Server;
+let browsers: Browsers;
+let page: BrowserPage;
+let base = "";
+let session: number;
+
+async function inPage<T>(script: string): Promise<T> {
+    return JSON.parse(await page.evaluate(script)) as T;
+}
+
+const has = (selector: string) =>
+    inPage<boolean>(
+        `return JSON.stringify(document.querySelector(${JSON.stringify(selector)}) !== null)`,
+    );
+
+const text = (selector: string) =>
+    inPage<string>(
+        `return JSON.stringify(document.querySelector(${JSON.stringify(selector)})?.textContent.trim() ?? "")`,
+    );
+
+before(async () => {
+    mkdirSync(dropIns, { recursive: true });
+    // As in the data folder: the module is a link to where it lives, and its browser module is beside it. The diff
+    // renderer is not copied: the module finds it beside its real file.
+    symlinkSync(join(import.meta.dirname, "git-history.ts"), join(dropIns, "git-history.ts"));
+    cpSync(join(import.meta.dirname, "history-ui"), join(dropIns, "history-ui"), {
+        recursive: true,
+    });
+
+    const identity = {
+        GIT_AUTHOR_NAME: "Tess",
+        GIT_AUTHOR_EMAIL: "tess@example.com",
+        GIT_COMMITTER_NAME: "Tess",
+        GIT_COMMITTER_EMAIL: "tess@example.com",
+    };
+    const git = (...args: string[]) =>
+        execFileSync("git", args, {
+            cwd: project,
+            stdio: "pipe",
+            env: { ...process.env, ...identity },
+        });
+
+    mkdirSync(project, { recursive: true });
+    git("init", "-q", "-b", "main");
+    writeFileSync(join(project, "a.txt"), "one\n");
+    git("add", ".");
+    git("commit", "-q", "-m", "first commit");
+    writeFileSync(join(project, "a.txt"), "one\ntwo\n");
+    git("commit", "-q", "-am", "second commit");
+
+    app = await openApp(scriptedModel(), dataDir);
+    server = createServer(
+        createHandler({ app, listen: { host: "127.0.0.1", port: 0 }, restart: () => {} }),
+    );
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+    await app.setExtensionEnabled(owner(app), "git-history.ts", true);
+    session = await newSession(app, project);
+
+    browsers = new Browsers({
+        dataDir: mkdtempSync(join(root, "git-history-ui-")),
+        load: async () => undefined,
+        save: () => {},
+    });
+    page = await browsers.open(1);
+    await page.setViewport(DESKTOP);
+    await page.navigate(`${base}/login?token=${encodeURIComponent(app.config.ownerToken)}`);
+});
+
+after(async () => {
+    await browsers?.closeAll({ final: true });
+    server?.closeAllConnections();
+    server?.close();
+    await app?.close();
+    cleanUp();
+});
+
+test(
+    "the top bar button opens the page, which lists the commits and opens one into its diff",
+    real,
+    async () => {
+        await page.navigate(`${base}/s/${session}`);
+
+        const button = '.ext-top-button[title="Git history"]';
+
+        await until(() => has(button), "the history button");
+        await page.click({ selector: button });
+
+        await until(async () => (await has(".gh-chip")) && (await has(".gh-row")), "the commits");
+        // The page fades in: a click while it does is let go (back.js), as the app's own UI tests wait it out.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        assert.match(await text(".gh-chip"), /main/);
+        assert.equal(await text(".gh-subject"), "second commit");
+        assert.equal(
+            await inPage<number>(
+                `return JSON.stringify(document.querySelectorAll(".gh-row").length)`,
+            ),
+            2,
+        );
+
+        await page.click({ selector: ".gh-row" });
+
+        await until(() => has(".gh-file .gh-diff-view"), "the diff");
+        assert.equal(await text(".gh-path"), "a.txt");
+        // The diff is in a shadow root, where the app's own query cannot reach it.
+        await until(
+            async () =>
+                await inPage<boolean>(
+                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("two")))`,
+                ),
+            "the added line",
+        );
+
+        // The file's header folds its diff away, and opens it again.
+        await page.click({ selector: ".gh-file-head" });
+        await until(
+            () =>
+                inPage<boolean>(
+                    `return JSON.stringify(document.querySelector(".gh-file-head").getAttribute("aria-expanded") === "false")`,
+                ),
+            "the file to fold",
+        );
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        assert.ok(
+            (await inPage<number>(
+                `return JSON.stringify(document.querySelector(".gh-fold").getBoundingClientRect().height)`,
+            )) < 1,
+            "a folded diff takes no height",
+        );
+
+        await page.click({ selector: ".gh-file-head" });
+        await until(
+            async () =>
+                (await inPage<number>(
+                    `return JSON.stringify(document.querySelector(".gh-fold").getBoundingClientRect().height)`,
+                )) > 10,
+            "the diff to open again",
+        );
+    },
+);
