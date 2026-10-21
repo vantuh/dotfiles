@@ -80,7 +80,7 @@ test("a role's body starts the spawn message, with only the tools this session o
     }
 });
 
-test("what Pi chose wins over the role's tools and thinking, never over its model", async () => {
+test("what Pi chose wins over the role's tools, never over its thinking or model", async () => {
     const dir = await profiles();
     try {
         const seen = await call(dir, {
@@ -93,7 +93,7 @@ test("what Pi chose wins over the role's tools and thinking, never over its mode
         });
 
         assert.deepEqual(seen.tools, ["bash"]);
-        assert.equal(seen.thinking, "low");
+        assert.equal(seen.thinking, "high");
         assert.equal(seen.model, WORKER_MODEL);
         assert.equal(seen.message, "You are worker: the implementation subagent.\n\n## Your task\n\nfix the bug");
     } finally {

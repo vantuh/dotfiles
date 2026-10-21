@@ -1,6 +1,7 @@
 /**
  * Uses the agent profiles in `~/.pi/agent/agents/` for Pi Pocket's background subagents: a spawn with a profile's
- * name starts with the profile's body, and takes the profile's `tools`, `thinking`, and `model` when Pi left them out.
+ * name starts with the profile's body, takes the profile's `thinking` and `model` over what Pi asked for, and its
+ * `tools` when Pi left them out.
  * A profile is found inside a longer name too: `scout-spec` and `pre-scout` run as `scout`.
  */
 import { readdir, readFile } from "node:fs/promises";
@@ -131,9 +132,7 @@ export default function createSubagentRoles(host: Host) {
                             ...(call.tools === undefined && kept !== undefined && kept.length > 0
                                 ? { tools: kept }
                                 : {}),
-                            ...(call.thinking === undefined && found.thinking !== undefined
-                                ? { thinking: found.thinking }
-                                : {}),
+                            ...(found.thinking === undefined ? {} : { thinking: found.thinking }),
                             ...(found.model === undefined ? {} : { model: found.model }),
                         },
                         api,
