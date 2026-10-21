@@ -147,6 +147,20 @@ test(
             "the added line",
         );
 
+        // The row glides to the top when the commit opens: a click waits for the view to stop moving.
+        let was = -1;
+
+        await until(async () => {
+            const now = await inPage<number>(
+                `return JSON.stringify(document.querySelector(".ext-page-body").scrollTop)`,
+            );
+            const still = now === was;
+
+            was = now;
+
+            return still;
+        }, "the view to stop moving");
+
         // The file's header folds its diff away, and opens it again.
         await page.click({ selector: ".gh-file-head" });
         await until(
@@ -186,16 +200,17 @@ test(
                 ),
             "the other commit to open",
         );
-        await new Promise((resolve) => setTimeout(resolve, 300));
 
-        const offset = await inPage<number>(`
-            const body = document.querySelector(".ext-page-body");
-            const row = document.querySelector(".gh-item:nth-child(2) .gh-row");
-            return JSON.stringify(
-                Math.round(row.getBoundingClientRect().top - body.getBoundingClientRect().top),
-            );
-        `);
+        // The row glides there, so the check waits for it to settle.
+        const offset = () =>
+            inPage<number>(`
+                const body = document.querySelector(".ext-page-body");
+                const row = document.querySelector(".gh-item:nth-child(2) .gh-row");
+                return JSON.stringify(
+                    Math.round(row.getBoundingClientRect().top - body.getBoundingClientRect().top),
+                );
+            `);
 
-        assert.ok(offset < 12, `the opened row sits at the top of the view, not ${offset}px below it`);
+        await until(async () => (await offset()) < 12, "the opened row to reach the top of the view");
     },
 );

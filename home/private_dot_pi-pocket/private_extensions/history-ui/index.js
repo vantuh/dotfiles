@@ -177,9 +177,9 @@ export default function setup(pocket) {
         /** Counts the commits whose diff has come in: the row lines up again once the height is final. */
         const [loaded, setLoaded] = useState(0);
 
-        // A commit that opens above the one just opened collapses, which takes away height: put the new row at the
-        // top of the view, so its changes start right under it, wherever the page was scrolled to. The first pass
-        // runs while the diff is still loading and the page may not scroll far enough yet, hence the second.
+        // A commit that opens above the one just opened collapses, which takes away height: glide the new row to the
+        // top of the view, so its changes start right under it, wherever the page was scrolled to. The first pass runs
+        // while the diff is still loading and the page may not scroll far enough yet, hence the second.
         useEffect(() => {
             const row = open === null ? undefined : rows.current.get(open);
 
@@ -187,10 +187,14 @@ export default function setup(pocket) {
                 return;
             }
 
+            const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
             const frame = requestAnimationFrame(() => {
                 const box = scrollerOf(row);
+                const delta = row.getBoundingClientRect().top - box.getBoundingClientRect().top;
 
-                box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top;
+                if (Math.abs(delta) >= 1) {
+                    box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
+                }
             });
 
             return () => cancelAnimationFrame(frame);

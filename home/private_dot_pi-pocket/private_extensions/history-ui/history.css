@@ -6,6 +6,8 @@
     flex-direction: column;
     gap: 0.75rem;
     width: 100%;
+    /* A diff that fills in while the page glides to a row must not pull the scroll position with it. */
+    overflow-anchor: none;
 }
 
 .gh-head {
