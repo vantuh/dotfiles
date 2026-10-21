@@ -159,12 +159,45 @@ function splitPatch(diff: string): FilePatch[] {
     return files;
 }
 
-/** The folder's commits, newest first, and whether there are more than the page shows. */
-async function logOf(web: Web, cwd: string, limit: number) {
-    const branch = await git(cwd, ["rev-parse", "--abbrev-ref", "HEAD"]).then(
+/** How far the checked-out branch is from the remote branch it follows: `{}` when it follows none. */
+async function trackOf(cwd: string): Promise<{ upstream?: string; ahead?: number; behind?: number }> {
+    const upstream = await git(cwd, [
+        "rev-parse",
+        "--abbrev-ref",
+        "--symbolic-full-name",
+        "@{upstream}",
+    ]).then(
         (name) => name.trim(),
         () => "",
     );
+
+    if (upstream === "") {
+        return {};
+    }
+
+    // `HEAD...@{upstream}`: the commits HEAD has and the remote branch has not, then the others.
+    const counts = await git(cwd, ["rev-list", "--left-right", "--count", "HEAD...@{upstream}"]).then(
+        (text) => text.trim(),
+        () => "",
+    );
+    const [ahead = "", behind = ""] = counts.split(/\s+/);
+
+    if (ahead === "" || behind === "") {
+        return { upstream };
+    }
+
+    return { upstream, ahead: Number(ahead), behind: Number(behind) };
+}
+
+/** The folder's commits, newest first, and whether there are more than the page shows. */
+async function logOf(web: Web, cwd: string, limit: number) {
+    const [branch, track] = await Promise.all([
+        git(cwd, ["rev-parse", "--abbrev-ref", "HEAD"]).then(
+            (name) => name.trim(),
+            () => "",
+        ),
+        trackOf(cwd),
+    ]);
     let output: string;
 
     try {
@@ -174,7 +207,7 @@ async function logOf(web: Web, cwd: string, limit: number) {
 
         // A repository with no commit yet is empty, not broken.
         if (/does not have any commits yet/.test(words)) {
-            return { branch, commits: [], more: 0 };
+            return { branch, ...track, commits: [], more: 0 };
         }
 
         throw web.error(400, words);
@@ -192,6 +225,7 @@ async function logOf(web: Web, cwd: string, limit: number) {
 
     return {
         branch,
+        ...track,
         commits: commits.slice(0, limit),
         more: Math.max(0, commits.length - limit),
     };

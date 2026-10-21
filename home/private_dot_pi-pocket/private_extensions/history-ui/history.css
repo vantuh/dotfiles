@@ -27,6 +27,18 @@
     color: var(--muted);
 }
 
+.gh-track {
+    gap: 0.35rem;
+}
+
+.gh-ahead {
+    color: var(--ok);
+}
+
+.gh-behind {
+    color: var(--muted);
+}
+
 .gh-list {
     margin: 0;
     padding: 0;

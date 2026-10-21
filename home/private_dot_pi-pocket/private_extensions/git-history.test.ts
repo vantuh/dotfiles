@@ -19,6 +19,7 @@ import { after, before, test } from "node:test";
 const dataDir = join(root, "data");
 const dropIns = join(dataDir, "extensions");
 const project = join(root, "project");
+const origin = join(root, "origin.git");
 const plain = join(root, "plain");
 
 let app: Awaited<ReturnType<typeof openApp>>;
@@ -58,6 +59,12 @@ before(async () => {
     git("commit", "-q", "-m", "first commit");
     writeFileSync(join(project, "a.txt"), "one\ntwo\n");
     git("commit", "-q", "-am", "second commit");
+    // A remote with the two commits, and a third one that is not pushed yet.
+    execFileSync("git", ["init", "--bare", "-q", origin], { stdio: "pipe" });
+    git("remote", "add", "origin", origin);
+    git("push", "-q", "-u", "origin", "main");
+    writeFileSync(join(project, "a.txt"), "one\ntwo\nthree\n");
+    git("commit", "-q", "-am", "third commit");
 
     app = await openApp(scriptedModel(), dataDir);
     server = createServer(
@@ -91,22 +98,27 @@ async function call(path: string, asGuest = false) {
     return { status: response.status, data: (await response.json()) as Record<string, unknown> };
 }
 
-test("the log route lists the session folder's commits, newest first", async () => {
+test("the log route lists the session folder's commits, newest first, and how far they are unpushed", async () => {
     const { status, data } = await call(`/api/x/git-history/log/${id}`);
     const commits = data.commits as { subject: string; hash: string }[];
 
     assert.equal(status, 200);
     assert.equal(data.branch, "main");
+    assert.equal(data.upstream, "origin/main");
+    assert.equal(data.ahead, 1);
+    assert.equal(data.behind, 0);
     assert.deepEqual(
         commits.map((commit) => commit.subject),
-        ["second commit", "first commit"],
+        ["third commit", "second commit", "first commit"],
     );
     assert.match(commits[0]!.hash, /^[0-9a-f]{40}$/);
 });
 
 test("the commit route shows one commit's files, each with the diff that @pierre/diffs drew", async () => {
     const log = await call(`/api/x/git-history/log/${id}`);
-    const hash = (log.data.commits as { hash: string }[])[0]!.hash;
+    const hash = (log.data.commits as { hash: string; subject: string }[]).find(
+        (commit) => commit.subject === "second commit",
+    )!.hash;
     const { status, data } = await call(`/api/x/git-history/commit/${id}/${hash}?theme=dark&style=split`);
     const files = data.files as {
         path: string;

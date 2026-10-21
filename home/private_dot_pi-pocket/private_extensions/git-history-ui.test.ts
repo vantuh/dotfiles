@@ -83,6 +83,12 @@ before(async () => {
     git("commit", "-q", "-m", "first commit");
     writeFileSync(join(project, "a.txt"), lines("two"));
     git("commit", "-q", "-am", "second commit");
+    // A remote with the two commits, and a third one that is not pushed yet: the header says ↑1.
+    execFileSync("git", ["init", "--bare", "-q", join(root, "origin.git")], { stdio: "pipe" });
+    git("remote", "add", "origin", join(root, "origin.git"));
+    git("push", "-q", "-u", "origin", "main");
+    writeFileSync(join(project, "a.txt"), lines("three"));
+    git("commit", "-q", "-am", "third commit");
 
     app = await openApp(scriptedModel(), dataDir);
     server = createServer(
@@ -126,12 +132,13 @@ test(
         // The page fades in: a click while it does is let go (back.js), as the app's own UI tests wait it out.
         await new Promise((resolve) => setTimeout(resolve, 500));
         assert.match(await text(".gh-chip"), /main/);
-        assert.equal(await text(".gh-subject"), "second commit");
+        assert.equal(await text(".gh-subject"), "third commit");
+        assert.equal(await text(".gh-track"), "↑1");
         assert.equal(
             await inPage<number>(
                 `return JSON.stringify(document.querySelectorAll(".gh-row").length)`,
             ),
-            2,
+            3,
         );
 
         await page.click({ selector: ".gh-row" });
@@ -142,7 +149,7 @@ test(
         await until(
             async () =>
                 await inPage<boolean>(
-                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("two line 1")))`,
+                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("three line 1")))`,
                 ),
             "the added line",
         );

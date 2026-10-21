@@ -239,7 +239,18 @@ export default function setup(pocket) {
         return html`<div class="gh">
             <div class="gh-head">
                 ${log.branch !== ""
-                    ? html`<span class="gh-chip mono"><${Icon} name="fork" size=${14} /> ${log.branch}</span>`
+                    ? html`<span class="gh-chip mono" title="The checked-out branch">
+                          <${Icon} name="fork" size=${14} /> ${log.branch}
+                      </span>`
+                    : null}
+                ${log.ahead > 0 || log.behind > 0
+                    ? html`<span
+                          class="gh-chip mono gh-track"
+                          title=${`Against ${log.upstream}: ${log.ahead} to push, ${log.behind} to pull`}
+                      >
+                          ${log.ahead > 0 ? html`<span class="gh-ahead">↑${log.ahead}</span>` : null}
+                          ${log.behind > 0 ? html`<span class="gh-behind">↓${log.behind}</span>` : null}
+                      </span>`
                     : null}
                 <span class="muted small">
                     ${log.commits.length} ${log.commits.length === 1 ? "commit" : "commits"}${log.more > 0 ? `, ${log.more} older not shown` : ""}
