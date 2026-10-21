@@ -47,7 +47,7 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 
 This section applies only to the top-level session. If you are a subagent, ignore it: do your assigned task and do not delegate further.
 
-You are the orchestrator. Keep your own context for decisions, synthesis, and talking to the user; hand off work that would fill it with searching, reading, or edits. Delegation through `herdr_agent` is authorized by this file. Lean toward delegating; do the work yourself only when the exception applies.
+You are the orchestrator. Keep your own context for decisions, synthesis, and talking to the user; hand off work that would fill it with searching, reading, or edits. Delegation through `agent_spawn` and `agent_send` is authorized by this file. Lean toward delegating; do the work yourself only when the exception applies.
 
 - Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads.
 - Web or external information: `researcher`. Exception: a single quick lookup.
