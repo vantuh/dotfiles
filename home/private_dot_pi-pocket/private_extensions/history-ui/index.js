@@ -34,6 +34,17 @@ function fullDate(at) {
     return new Date(at).toLocaleString();
 }
 
+/** The nearest box above `node` that scrolls, or the page. */
+function scrollerOf(node) {
+    for (let box = node.parentElement; box !== null; box = box.parentElement) {
+        if (/(auto|scroll)/.test(getComputedStyle(box).overflowY) && box.scrollHeight > box.clientHeight) {
+            return box;
+        }
+    }
+
+    return document.scrollingElement;
+}
+
 /** `+2 −1`, without a side that has nothing. */
 function counts(plus, minus) {
     return `${plus > 0 ? `+${plus}` : ""} ${minus > 0 ? `−${minus}` : ""}`.trim();
@@ -95,7 +106,7 @@ export default function setup(pocket) {
     }
 
     /** One commit's diff: its files with their hunks, or the reason it could not be read. */
-    function Commit({ id, hash }) {
+    function Commit({ id, hash, onLoaded }) {
         const [state, setState] = useState({ loading: true });
 
         useEffect(() => {
@@ -108,10 +119,14 @@ export default function setup(pocket) {
                     signal: stop.signal,
                 })
                 .then(
-                    (commit) => setState({ commit }),
+                    (commit) => {
+                        setState({ commit });
+                        onLoaded();
+                    },
                     (failure) => {
                         if (!stop.signal.aborted) {
                             setState({ error: failure.message });
+                            onLoaded();
                         }
                     },
                 );
@@ -158,6 +173,28 @@ export default function setup(pocket) {
         const [error, setError] = useState(null);
         const [busy, setBusy] = useState(false);
         const [open, setOpen] = useState(null);
+        const rows = useRef(new Map());
+        /** Counts the commits whose diff has come in: the row lines up again once the height is final. */
+        const [loaded, setLoaded] = useState(0);
+
+        // A commit that opens above the one just opened collapses, which takes away height: put the new row at the
+        // top of the view, so its changes start right under it, wherever the page was scrolled to. The first pass
+        // runs while the diff is still loading and the page may not scroll far enough yet, hence the second.
+        useEffect(() => {
+            const row = open === null ? undefined : rows.current.get(open);
+
+            if (row === undefined) {
+                return;
+            }
+
+            const frame = requestAnimationFrame(() => {
+                const box = scrollerOf(row);
+
+                box.scrollTop += row.getBoundingClientRect().top - box.getBoundingClientRect().top;
+            });
+
+            return () => cancelAnimationFrame(frame);
+        }, [open, loaded]);
 
         const load = async () => {
             if (id === null) {
@@ -214,6 +251,13 @@ export default function setup(pocket) {
                                   class="gh-row"
                                   type="button"
                                   aria-expanded=${open === commit.hash}
+                                  ref=${(node) => {
+                                      if (node === null) {
+                                          rows.current.delete(commit.hash);
+                                      } else {
+                                          rows.current.set(commit.hash, node);
+                                      }
+                                  }}
                                   onClick=${() => setOpen(open === commit.hash ? null : commit.hash)}
                               >
                                   <span class="mono gh-hash">${commit.short}</span>
@@ -223,7 +267,11 @@ export default function setup(pocket) {
                                   </span>
                               </button>
                               ${open === commit.hash
-                                  ? html`<${Commit} id=${id} hash=${commit.hash} />`
+                                  ? html`<${Commit}
+                                        id=${id}
+                                        hash=${commit.hash}
+                                        onLoaded=${() => setLoaded((count) => count + 1)}
+                                    />`
                                   : null}
                           </li>`,
                       )}

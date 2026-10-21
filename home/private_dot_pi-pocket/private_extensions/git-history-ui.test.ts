@@ -75,10 +75,13 @@ before(async () => {
 
     mkdirSync(project, { recursive: true });
     git("init", "-q", "-b", "main");
-    writeFileSync(join(project, "a.txt"), "one\n");
+    const lines = (tag: string) =>
+        `${Array.from({ length: 150 }, (_, index) => `${tag} line ${index + 1}`).join("\n")}\n`;
+
+    writeFileSync(join(project, "a.txt"), lines("one"));
     git("add", ".");
     git("commit", "-q", "-m", "first commit");
-    writeFileSync(join(project, "a.txt"), "one\ntwo\n");
+    writeFileSync(join(project, "a.txt"), lines("two"));
     git("commit", "-q", "-am", "second commit");
 
     app = await openApp(scriptedModel(), dataDir);
@@ -139,7 +142,7 @@ test(
         await until(
             async () =>
                 await inPage<boolean>(
-                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("two")))`,
+                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("two line 1")))`,
                 ),
             "the added line",
         );
@@ -169,5 +172,30 @@ test(
                 )) > 10,
             "the diff to open again",
         );
+
+        // A commit opened while the page is scrolled far down starts at the top of the view, not in the middle of
+        // its own diff: the commit above it closes, and the row takes the place its changes start from.
+        await page.evaluate(`document.querySelector(".ext-page-body").scrollTop = 2500; return "ok";`);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        await page.click({ selector: ".gh-item:nth-child(2) .gh-row" });
+        await until(
+            () =>
+                inPage<boolean>(
+                    `return JSON.stringify(document.querySelectorAll('.gh-row[aria-expanded="true"]').length === 1 && document.querySelector(".gh-item:nth-child(2) .gh-row").getAttribute("aria-expanded") === "true")`,
+                ),
+            "the other commit to open",
+        );
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const offset = await inPage<number>(`
+            const body = document.querySelector(".ext-page-body");
+            const row = document.querySelector(".gh-item:nth-child(2) .gh-row");
+            return JSON.stringify(
+                Math.round(row.getBoundingClientRect().top - body.getBoundingClientRect().top),
+            );
+        `);
+
+        assert.ok(offset < 12, `the opened row sits at the top of the view, not ${offset}px below it`);
     },
 );
