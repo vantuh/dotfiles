@@ -27,7 +27,7 @@
             }
           }
         },
-        "deepseek/deepseek-v4.1-flash": {
+        "deepseek/deepseek-v4.1-flash-1017": {
           "contextWindow": 262144,
           "compat": {
             "openRouterRouting": {
@@ -59,7 +59,7 @@
         "glm-5.3-flash": {
           "contextWindow": 262144
         },
-        "deepseek-v4.1-flash": {
+        "deepseek-v4.1-flash-1017": {
           "contextWindow": 262144
         }
       }
