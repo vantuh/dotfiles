@@ -34,10 +34,24 @@ naming is ever wanted again, the correct minimal version is: gate on
 `ctx.mode === "tui"`, skip when `PI_SUBAGENT_CHILD=1`, and rename directly via
 `herdr tab rename "$HERDR_TAB_ID" <name>` (no snapshot dance).
 
+## Status: retired 2026-10-21
+
+`oxc-auto/` (auto `oxlint`/`eslint --fix` + `oxfmt`/`prettier` after every
+`edit`/`write` on a `.ts` file) retired: it spawned bare `oxlint`, `eslint`,
+`prettier` from `PATH` instead of the project's `node_modules/.bin`, so in the
+common prettier + eslint repo the lint step was a silent no-op and formatting
+fell back to global `oxfmt` with default options (2-space indent), ignoring
+`.prettierrc` and producing churn the repo's own `npm run format` reverts. It
+also rewrote files mid-turn, invalidating the model's `oldText` anchors.
+
+A stop-hook (one pass over changed files at the end of a turn, project-local
+binaries, report-only) is the cheaper design if the idea returns.
+
 ## Contents
 
 | Directory | What it was | Notes |
 |---|---|---|
+| `oxc-auto/` | Post-edit hook: lint `--fix`, then format, then feed findings back into the tool result | Retired 2026-10-21: wrong binary resolution, format churn, stale `oldText` mid-turn. See above |
 | `herdr-agents/` | `herdr_agent` tool: one-shot delegation through Herdr panes/tabs, detached delivery via widget poller, parked questions, session resume, `/run`, `/council`, `/herdr-agents` manager | Superseded by pi-subagents. Home copy and configs (`herdr-agents.json`, `council.json`, state file) removed from `~/.pi/agent/` |
 | `herdr-peers/` | Planning stub only (PLAN.md + proposal.md, no code): user-driven long-lived peer sessions in Herdr tabs | Superseded by pi-intercom + pi-subagents project panes |
 | `herdr-tab-name.ts` | Renamed the Herdr tab to the Pi session name (synced pi-autoname via `session_info_changed`) | Retired 2026-09-06: static "pi" tab name preferred; guard was dead code, background children could hijack the rename |
