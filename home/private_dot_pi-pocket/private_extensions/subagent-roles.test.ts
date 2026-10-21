@@ -8,10 +8,13 @@ import type { Host } from "./_pocket.d.ts";
 
 type Recorded = Record<string, unknown>;
 
+const WORKER_MODEL = "openrouter/deepseek/deepseek-v4.1-flash-1017";
+
 const WORKER = `---
 name: worker
 description: Implementation agent
 tools: read, grep, edit, write, web_search
+model: ${WORKER_MODEL}
 thinking: high
 ---
 
@@ -22,10 +25,11 @@ You are worker: the implementation subagent.
 const OFFERED = ["read", "write", "edit", "bash"];
 
 /** Runs the wrapped subagent tool with a fake one that records the arguments that reach it. */
-async function call(agentDir: string, args: Recorded): Promise<Recorded> {
+async function call(agentDir: string, args: Recorded, allowed: string[] = [WORKER_MODEL]): Promise<Recorded> {
     const host = {
         agentDir,
         thinkingLevels: ["off", "minimal", "low", "medium", "high", "xhigh", "max"],
+        subagentModels: () => allowed,
     } as unknown as Host;
     const [wrap] = createSubagentRoles(host).wraps ?? [];
     assert.ok(wrap !== undefined && "tool" in wrap);
@@ -65,11 +69,12 @@ test("a role's body starts the spawn message, with only the tools this session o
         assert.equal(
             seen.message,
             "You are worker: the implementation subagent.\n\n" +
-                "Note: these tools of your role are not available here: grep, web_search.\n\n" +
+                "These tools of your role are not available here: grep, web_search.\n\n" +
                 "## Your task\n\nfix the bug",
         );
         assert.deepEqual(seen.tools, ["read", "edit", "write"]);
         assert.equal(seen.thinking, "high");
+        assert.equal(seen.model, WORKER_MODEL);
     } finally {
         await rm(dir, { recursive: true });
     }
@@ -89,6 +94,21 @@ test("what Pi chose wins over the role's tools and thinking", async () => {
         assert.deepEqual(seen.tools, ["bash"]);
         assert.equal(seen.thinking, "low");
         assert.equal(seen.message, "You are worker: the implementation subagent.\n\n## Your task\n\nfix the bug");
+    } finally {
+        await rm(dir, { recursive: true });
+    }
+});
+
+test("a role's model that the owner did not allow is left out, and the subagent is told", async () => {
+    const dir = await profiles();
+    try {
+        const seen = await call(dir, { action: "spawn", name: "worker", message: "fix the bug" }, []);
+
+        assert.equal(seen.model, undefined);
+        assert.match(
+            String(seen.message),
+            /Your role's model openrouter\/deepseek\/deepseek-v4\.1-flash-1017 is not allowed for subagents here/,
+        );
     } finally {
         await rm(dir, { recursive: true });
     }
