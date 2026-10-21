@@ -14,6 +14,8 @@ home/               Source state mapped one-to-one to $HOME
   dot_pi/profiles/work/private_agent/  Pi work profile (`piw`): own .settings.json
                      (source-only, dest-symlinked) plus symlinks into
                      ~/.pi/agent for everything else it shares
+  private_dot_pi-pocket/  Pi Pocket drop-in extensions (`0700`), installed into
+                     ~/.pi-pocket/extensions
   dot_omp/private_agent/ Oh My Pi configuration and extensions (`0700`)
     .config.yml / .kiro-acp.json  source-only; dest-symlinked from ~/.omp/agent/
   .chezmoiscripts/  Post-apply integration scripts
@@ -52,6 +54,13 @@ archive/            Retired configs kept for reference; never applied
   so `home/.agents/.agents/skills` must stay a symlink to `../skills`;
   flattening it silently sends updates to a duplicate directory instead of the
   repository.
+- Pi Pocket's extension modules are applied as copies, not symlinks: Node
+  resolves a module's imports from its real path, where the drop-in's
+  `node_modules` link is absent. After editing one, run `chezmoi apply`; Pi
+  Pocket reloads the file itself.
+- Pi Pocket's `config.json` and `pocket.sqlite` are the app's data: it writes
+  `config.json` with an atomic rename, so a symlink there is replaced, and the
+  file holds tokens. Do not source-state them.
 - Add managed home files under `home/` using the correct chezmoi attribute
   names. Update `home/.chezmoiignore.tmpl` for platform-only targets.
 - Keep shell scripts POSIX-compatible where practical; bash-specific features
