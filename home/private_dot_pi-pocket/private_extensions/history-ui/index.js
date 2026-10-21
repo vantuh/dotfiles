@@ -313,59 +313,78 @@ export default function setup(pocket) {
     });
 
     if (typeof pocket.topbar === "function") {
-        // The header's count of commits not pushed, which a tap pushes. New in 0.19.0, like the top bar buttons.
+        // The header's counts of commits: green for what waits to be pushed (a tap pushes it), red for what waits to
+        // be pulled. Each hides when its side has nothing.
         let last = null;
         let pushing = false;
 
-        const describe = (status) => {
-            const counts = [
-                status?.ahead > 0 ? `↑${status.ahead}` : "",
-                status?.behind > 0 ? `↓${status.behind}` : "",
-            ]
-                .filter((part) => part !== "")
-                .join(" ");
-
-            if (status === null) {
-                return { badge: "", title: "Git remote: open a session to see its branch" };
-            }
-
-            if (status.upstream === undefined) {
-                return { badge: "", title: `${status.branch || "This branch"} follows no remote branch` };
-            }
-
-            return {
-                badge: counts,
-                title:
-                    `${status.ahead} to push, ${status.behind} to pull · ${status.branch} → ${status.upstream}` +
-                    (status.ahead > 0 ? ". Click to push." : ""),
-            };
-        };
-
-        const button = pocket.topbar({
-            id: "track",
-            title: "Git remote",
+        const pushButton = pocket.topbar({
+            id: "push",
+            title: "Push commits",
             icon: "up",
             run: () => void push(),
             before: "core:changes",
         });
+        const pullButton = pocket.topbar({
+            id: "pull",
+            title: "Pull commits",
+            icon: "down",
+            run: () => pull(),
+            before: "core:changes",
+        });
+
+        const show = () => {
+            const ahead = last?.ahead ?? 0;
+            const behind = last?.behind ?? 0;
+            const upstream = last?.upstream ?? "the remote";
+
+            pushButton.update({
+                badge: pushing ? "…" : ahead > 0 ? `↑${ahead}` : "",
+                title:
+                    last === null
+                        ? "Push commits: open a session"
+                        : ahead > 0
+                          ? `Push ${ahead} ${ahead === 1 ? "commit" : "commits"} to ${upstream}`
+                          : "Push commits: nothing to push",
+            });
+            pullButton.update({
+                badge: behind > 0 ? `↓${behind}` : "",
+                title:
+                    behind > 0
+                        ? `Pull ${behind} ${behind === 1 ? "commit" : "commits"} from ${upstream}`
+                        : "Pull commits: nothing to pull",
+            });
+        };
 
         const refresh = async () => {
             const id = pocket.conversationId();
 
             if (id === null) {
                 last = null;
-                button.update(describe(null));
+                show();
 
                 return;
             }
 
             try {
                 last = await pocket.api(`track/${id}`);
-                button.update(describe(last));
             } catch {
-                // Not a repository, or no remote: the title says what the last look found.
+                last = null;
             }
+
+            show();
         };
+
+        function pull() {
+            const behind = last?.behind ?? 0;
+
+            pocket.notify(
+                "info",
+                behind > 0
+                    ? `${behind} ${behind === 1 ? "commit" : "commits"} to pull: run git pull in a terminal, or ask Pi.`
+                    : "Nothing to pull.",
+            );
+        }
 
         async function push() {
             const id = pocket.conversationId();
@@ -393,10 +412,11 @@ export default function setup(pocket) {
             const ahead = last.ahead;
 
             pushing = true;
-            button.update({ badge: "…", title: "Pushing…" });
+            show();
 
             try {
                 const result = await pocket.api(`push/${id}`, {});
+                last = result;
 
                 pocket.notify(
                     "info",

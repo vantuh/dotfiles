@@ -233,3 +233,20 @@
     align-items: center;
     gap: 0.6rem;
 }
+
+/* The header's counts: green for what waits to be pushed, red for what waits to be pulled. A side with nothing to say
+   takes no room. The badge is the app's own; these rules color it and hide the button it is missing from. */
+.ext-top-button[data-module="git-history"][aria-label^="Push"] .badge {
+    background: var(--ok);
+    color: var(--accent-ink);
+}
+
+.ext-top-button[data-module="git-history"][aria-label^="Pull"] .badge {
+    background: var(--err);
+    color: var(--accent-ink);
+}
+
+.ext-top-button[data-module="git-history"][aria-label^="Push"]:not(:has(.badge)),
+.ext-top-button[data-module="git-history"][aria-label^="Pull"]:not(:has(.badge)) {
+    display: none;
+}
