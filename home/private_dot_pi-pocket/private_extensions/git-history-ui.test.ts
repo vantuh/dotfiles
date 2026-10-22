@@ -322,6 +322,60 @@ test(
         await page.click({ selector: ".gh-item:first-child .gh-row" });
         await until(() => has(".gh-file .gh-diff-view"), "the uncommitted diff");
 
+        // A pointer that rests on a line's number shows a plus there, beside the number.
+        const at = () =>
+            inPage<{ x: number; y: number }>(`
+                const gutter = document
+                    .querySelector(".gh-diff-view")
+                    .shadowRoot.querySelector('[data-column-number="151"]');
+
+                gutter.scrollIntoView({ block: "center" });
+                const rect = gutter.getBoundingClientRect();
+
+                return JSON.stringify({
+                    x: Math.round(rect.left + rect.width / 2),
+                    y: Math.round(rect.top + rect.height / 2),
+                });
+            `);
+        // The plus is a box with two bars in it, drawn in the CSS and not in the renderer's HTML.
+        const plus = () =>
+            inPage<{ bars: number; color: string; width: number; height: number }>(`
+                const gutter = document
+                    .querySelector(".gh-diff-view")
+                    .shadowRoot.querySelector('[data-column-number="151"]');
+                const style = getComputedStyle(gutter, "::after");
+
+                return JSON.stringify({
+                    bars: style.backgroundImage.split("linear-gradient").length - 1,
+                    color: style.backgroundColor,
+                    width: Math.round(parseFloat(style.width)),
+                    height: Math.round(parseFloat(style.height)),
+                });
+            `);
+
+        const point = await at();
+
+        const numberOpacity = () =>
+            inPage<string>(`
+                const gutter = document
+                    .querySelector(".gh-diff-view")
+                    .shadowRoot.querySelector('[data-column-number="151"]');
+
+                return JSON.stringify(
+                    getComputedStyle(gutter.querySelector("[data-line-number-content]")).opacity,
+                );
+            `);
+
+        await page.input([{ type: "mouse", x: point.x, y: point.y }]);
+        await until(async () => (await plus()).bars === 2, "the plus on the line's number");
+        // A chip, not a dot: taller than the line it belongs to, and with room in it.
+        const chip = await plus();
+
+        assert.ok(chip.width >= 16 && chip.height > chip.width, JSON.stringify(chip));
+        assert.notEqual(chip.color, "rgba(0, 0, 0, 0)");
+        // The plus stands beside the number: the number stays in sight.
+        assert.equal(await numberOpacity(), "1");
+
         // A tap on the number of the line that was added: the box opens for that line.
         const added = () =>
             inPage<boolean>(`

@@ -13,6 +13,44 @@ const WORKTREE_HEADING = "Uncommitted changes";
 /** The side of a line, as a message for Pi names it. */
 const SIDE_WORDS = { additions: "new", deletions: "old" };
 
+/**
+ * The plus that shows where the pointer rests on a line's number, as Plannotator's review does: a tap there comments on
+ * that line. It goes in the diff's own shadow root, beside the renderer's styles, and its place and size are the ones
+ * the renderer gives its own gutter button: the end of the gutter, hanging a little over the code, beside the number.
+ */
+const GUTTER_CSS = `
+[data-column-number] {
+    position: relative;
+    /* A little of the left padding moves to the right: the gutter keeps its width, so the code does not move, and the
+       number gives the plus the three pixels it needs. */
+    padding-left: calc(2ch - 3px);
+    padding-right: calc(1ch + 3px);
+    cursor: pointer;
+}
+
+/* The plus sits in the room the renderer leaves between a number and its code, and never moves either of them. It is
+   drawn with two bars, not with a glyph, so it is square in its box at any font. */
+[data-column-number]:hover::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: calc(-1ch + 1px);
+    z-index: 4;
+    width: calc(1lh - 2px);
+    height: calc(1lh - 1px);
+    border-radius: 5px;
+    background-color: var(--accent, #6ea8fe);
+    background-image:
+        linear-gradient(var(--accent-ink, #08111f), var(--accent-ink, #08111f)),
+        linear-gradient(var(--accent-ink, #08111f), var(--accent-ink, #08111f));
+    background-size:
+        64% 2px,
+        2px 60%;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: translateY(-50%);
+}
+`;
 
 /** Where this session's comments wait: in this browser, apart from anything the app keeps. */
 function reviewKey(id) {
@@ -169,6 +207,11 @@ export default function setup(pocket) {
                 const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
 
                 root.innerHTML = source;
+                // The renderer's own styles come in layers: these, unlayered, are the ones that win.
+                const style = document.createElement("style");
+
+                style.textContent = GUTTER_CSS;
+                root.append(style);
             }
         }, [source]);
 
