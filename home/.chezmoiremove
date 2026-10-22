@@ -23,3 +23,6 @@ Library/Application Support/lazygit/config.yml
 # The Pi kiro-acp extension now comes from the ~/projects/personal/pi-kiro-acp
 # package; drop the copy this repository used to apply so only one loads.
 .pi/agent/extensions/kiro-acp
+
+# The work profile shares the renamed personal Pi subagents config.
+.pi/profiles/work/agent/herdr-agents.json
