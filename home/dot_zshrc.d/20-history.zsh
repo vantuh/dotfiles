@@ -1,6 +1,6 @@
 # History settings.
 HISTSIZE=10000
-if [[ ${HERDR_AGENT_CHILD:-} == 1 ]]; then
+if [[ ${PI_AGENT_CHILD:-} == 1 ]]; then
   HISTFILE=/dev/null
 else
   HISTFILE=${HISTFILE:-$HOME/.zsh_history}
