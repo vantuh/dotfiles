@@ -59,7 +59,7 @@
         "glm-5.3-flash": {
           "contextWindow": 262144
         },
-        "deepseek-v4.1-flash-1017": {
+        "deepseek-v4.1-flash": {
           "contextWindow": 262144
         }
       }
