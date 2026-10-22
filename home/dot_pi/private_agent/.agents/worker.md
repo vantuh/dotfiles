@@ -2,7 +2,7 @@
 name: worker
 description: Implementation agent for normal tasks and approved plans
 tools: read, grep, find, ls, bash, edit, write
-model: "openrouter/deepseek/deepseek-v4.1-flash-1017"
+model: "opencode-go/deepseek-v4.1-flash"
 thinking: high
 skills: tdd
 system-prompt: replace

@@ -2,7 +2,7 @@
 name: delegate
 description: Lightweight general-purpose subagent with no default reads
 tools: read, grep, find, ls, bash, edit, write
-model: "openrouter/deepseek/deepseek-v4.1-flash-1017"
+model: "opencode-go/deepseek-v4.1-flash"
 skills: none
 system-prompt: append
 ---

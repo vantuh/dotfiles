@@ -29,7 +29,7 @@
     "cursor/grok-4.7@256k:slow",
     "local/qwen3.8-flash-next-coder-iq1_m",
     "anthropic/claude-haiku-5-5",
-    "openrouter/deepseek/deepseek-v4.1-flash-1017"
+    "opencode-go/deepseek-v4.1-flash"
   ],
   "defaultThinkingLevel": "medium",
   "showHardwareCursor": false,
