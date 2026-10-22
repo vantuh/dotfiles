@@ -127,6 +127,11 @@ test("the log route lists the session folder's commits, newest first, and how fa
         ["third commit", "second commit", "first commit"],
     );
     assert.match(commits[0]!.hash, /^[0-9a-f]{40}$/);
+    // The third commit is the only one that waits to be pushed.
+    assert.deepEqual(
+        commits.map((commit) => (commit as { unpushed?: boolean }).unpushed ?? false),
+        [true, false, false],
+    );
 });
 
 test("the commit route shows one commit's files, each with the diff that @pierre/diffs drew", async () => {
@@ -178,6 +183,41 @@ test("track says how far the branch is ahead, and push sends the commits", async
         .split("\n");
 
     assert.deepEqual(onRemote, ["third commit", "second commit", "first commit"]);
+});
+
+test("a commit that is only on the remote comes first, marked as not pulled", async () => {
+    const other = join(root, "other");
+
+    execFileSync("git", ["clone", "-q", origin, other], { stdio: "pipe" });
+    execFileSync(
+        "git",
+        [
+            "-C",
+            other,
+            "-c",
+            "user.name=Other",
+            "-c",
+            "user.email=other@example.com",
+            "commit",
+            "-q",
+            "--allow-empty",
+            "-m",
+            "remote work",
+        ],
+        { stdio: "pipe" },
+    );
+    execFileSync("git", ["-C", other, "push", "-q", "origin", "main"], { stdio: "pipe" });
+    execFileSync("git", ["-C", project, "fetch", "-q"], { stdio: "pipe" });
+
+    const { data } = await call(`/api/x/git-history/log/${id}`);
+    const commits = data.commits as { subject: string; remote?: boolean; unpushed?: boolean }[];
+
+    assert.equal(data.behind, 1);
+    assert.equal(data.ahead, 0);
+    assert.equal(commits[0]!.subject, "remote work");
+    assert.equal(commits[0]!.remote, true);
+    assert.equal(commits[1]!.remote ?? false, false);
+    assert.equal(commits[1]!.unpushed ?? false, false);
 });
 
 test("a commit id that is not one, and a folder outside a repository, get 400 with the reason", async () => {

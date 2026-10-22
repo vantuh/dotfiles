@@ -22,6 +22,17 @@ const SHOW_FORMAT = "%H%x00%h%x00%an%x00%ae%x00%at%x00%P%x00%s%x00%b";
 
 type Kind = "modified" | "added" | "deleted" | "renamed";
 
+/** One commit in the list: `unpushed` when it is only here, `remote` when it is only on the remote branch. */
+type Logged = {
+    hash: string;
+    short: string;
+    author: string;
+    at: number;
+    subject: string;
+    unpushed?: boolean;
+    remote?: boolean;
+};
+
 type FilePatch = {
     patch: string;
     path: string;
@@ -172,6 +183,19 @@ function splitPatch(diff: string): FilePatch[] {
     return files;
 }
 
+/** The commits of a `--format=${LOG_FORMAT}` log, newest first. */
+function parseLog(output: string): Logged[] {
+    return output
+        .split("\x1e")
+        .map((record) => record.replace(/^\n/, "").replace(/\n$/, ""))
+        .filter((record) => record !== "")
+        .map((record) => {
+            const [hash = "", short = "", author = "", at = "", subject = ""] = record.split("\0");
+
+            return { hash, short, author, at: Number(at) * 1000, subject };
+        });
+}
+
 /** How far the checked-out branch is from the remote branch it follows: `{}` when it follows none. */
 async function trackOf(cwd: string): Promise<{ upstream?: string; ahead?: number; behind?: number }> {
     const upstream = await git(cwd, [
@@ -226,20 +250,41 @@ async function logOf(web: Web, cwd: string, limit: number) {
         throw web.error(400, words);
     }
 
-    const commits = output
-        .split("\x1e")
-        .map((record) => record.replace(/^\n/, "").replace(/\n$/, ""))
-        .filter((record) => record !== "")
-        .map((record) => {
-            const [hash = "", short = "", author = "", at = "", subject = ""] = record.split("\0");
+    const commits = parseLog(output);
+    // What the branch has and its remote does not is the newest part of its history: a linear branch, and the first
+    // commits of the list for a branch with merges too.
+    for (const [index, commit] of commits.entries()) {
+        if (index < (track.ahead ?? 0)) {
+            commit.unpushed = true;
+        }
+    }
 
-            return { hash, short, author, at: Number(at) * 1000, subject };
-        });
+    let remote: Logged[] = [];
+
+    if (track.upstream !== undefined && (track.behind ?? 0) > 0) {
+        remote = parseLog(
+            await git(cwd, [
+                "log",
+                "-n",
+                `${limit}`,
+                "--date=unix",
+                `--format=${LOG_FORMAT}`,
+                "@{upstream}",
+                "--not",
+                "HEAD",
+            ]).catch(() => ""),
+        );
+
+        for (const commit of remote) {
+            commit.remote = true;
+        }
+    }
 
     return {
         branch,
         ...track,
-        commits: commits.slice(0, limit),
+        // The remote branch's commits the folder has not pulled come first: they are newer than what it has.
+        commits: [...remote, ...commits.slice(0, limit)],
         more: Math.max(0, commits.length - limit),
     };
 }

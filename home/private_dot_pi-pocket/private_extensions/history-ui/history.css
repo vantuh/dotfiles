@@ -72,6 +72,23 @@
     background: var(--card);
 }
 
+.gh-dot {
+    flex: none;
+    align-self: center;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+/* Not pushed: the same green as the header's push count. On the remote only: red, as its pull count. */
+.gh-dot-local {
+    background: var(--ok);
+}
+
+.gh-dot-remote {
+    background: var(--err);
+}
+
 .gh-hash {
     color: var(--muted);
 }

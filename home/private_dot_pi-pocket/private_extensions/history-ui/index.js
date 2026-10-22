@@ -275,10 +275,16 @@ export default function setup(pocket) {
                                   }}
                                   onClick=${() => setOpen(open === commit.hash ? null : commit.hash)}
                               >
+                                  ${commit.remote
+                                      ? html`<span class="gh-dot gh-dot-remote" title=${`On ${log.upstream}, not pulled`}></span>`
+                                      : commit.unpushed
+                                        ? html`<span class="gh-dot gh-dot-local" title="Not pushed"></span>`
+                                        : null}
                                   <span class="mono gh-hash">${commit.short}</span>
                                   <span class="gh-subject">${commit.subject || "(no message)"}</span>
                                   <span class="muted small gh-row-meta" title=${fullDate(commit.at)}>
                                       ${commit.author} · ${since(commit.at)}
+                                      ${commit.remote ? ` · on ${log.upstream}` : ""}
                                   </span>
                               </button>
                               ${open === commit.hash

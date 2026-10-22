@@ -138,6 +138,19 @@ test(
         assert.match(await text(".gh-chip"), /main/);
         assert.equal(await text(".gh-subject"), "third commit");
         assert.equal(await text(".gh-track"), "↑1");
+        // The commit that waits to be pushed has the small dot; the pushed ones have none.
+        assert.equal(
+            await inPage<number>(
+                `return JSON.stringify(document.querySelectorAll(".gh-dot").length)`,
+            ),
+            1,
+        );
+        assert.equal(
+            await inPage<number>(
+                `return JSON.stringify(document.querySelectorAll(".gh-dot-local").length)`,
+            ),
+            1,
+        );
         assert.equal(
             await inPage<number>(
                 `return JSON.stringify(document.querySelectorAll(".gh-row").length)`,
@@ -244,9 +257,21 @@ test(
                 `return JSON.stringify([...document.querySelectorAll(".ext-top-button .badge")].map((each) => each.textContent).join("|"))`,
             );
 
-        await page.click({ selector: `.session-row[data-id="${plainSession}"] button.session` });
+        const open = (id: number) =>
+            page.evaluate(`
+                const row = document.querySelector('.session-row[data-id="${id}"] button.session');
+                if (row === null) return JSON.stringify("no row");
+                row.click();
+                return JSON.stringify("ok");
+            `);
+        const at = () => inPage<string>(`return JSON.stringify(location.pathname)`);
+
+        await open(plainSession);
+        await until(async () => (await at()) === `/s/${plainSession}`, "the other session to open");
         await until(async () => (await counts()) === "", "the count to follow the other session");
-        await page.click({ selector: `.session-row[data-id="${session}"] button.session` });
+
+        await open(session);
+        await until(async () => (await at()) === `/s/${session}`, "the first session to open again");
         await until(async () => (await counts()) === "↑1", "the count to come back");
 
         await page.evaluate(`
