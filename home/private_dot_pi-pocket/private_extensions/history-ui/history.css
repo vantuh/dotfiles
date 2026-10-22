@@ -244,6 +244,144 @@
     overflow: hidden;
 }
 
+/* A comment, drawn by the app in the diff's light DOM: the diff's own slot gives it the row it sits in. */
+.gh-note {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: 0.25rem 0.5rem;
+    padding: 0.4rem 0.55rem;
+    background: var(--card);
+    border: 1px solid var(--accent-line);
+    border-radius: 8px;
+    font-family: var(--body, inherit);
+    font-size: 0.9rem;
+}
+
+.gh-note-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gh-note-where {
+    flex: 1 1 auto;
+    color: var(--muted);
+    font-size: 0.85em;
+}
+
+.gh-note-act {
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.85em;
+    cursor: pointer;
+}
+
+.gh-note-act:hover {
+    color: var(--accent);
+}
+
+.gh-note-text {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* The comment being written: at the bottom of the view, where a phone's keyboard leaves it in sight. */
+.gh-editor {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.6rem;
+    background: var(--card);
+    border: 1px solid var(--accent-line);
+    border-radius: 10px;
+    box-shadow: 0 -6px 20px color-mix(in srgb, var(--bg) 70%, transparent);
+}
+
+.gh-editor-head,
+.gh-editor-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gh-editor-where {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: 0.85em;
+}
+
+.gh-quote {
+    margin: 0;
+    padding: 0.3rem 0.45rem;
+    max-height: 4.5em;
+    overflow: auto;
+    background: var(--bg);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono, monospace);
+    font-size: 0.8em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.gh-input {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: inherit;
+    font: inherit;
+    resize: vertical;
+}
+
+.gh-input:focus {
+    outline: 2px solid var(--focus-ring, var(--accent-line));
+    outline-offset: -1px;
+}
+
+.gh-editor-actions {
+    justify-content: flex-end;
+}
+
+.gh-editor-actions .muted {
+    margin-right: auto;
+}
+
+/* The count of comments on one side of the review, in the list. */
+.gh-mark {
+    flex: none;
+    align-self: center;
+    min-width: 1.4em;
+    padding: 0 0.35em;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 0.8em;
+    text-align: center;
+}
+
+.gh-dot-work {
+    background: var(--accent);
+}
+
+.gh-review {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .gh-foot {
     display: flex;
     flex-wrap: wrap;

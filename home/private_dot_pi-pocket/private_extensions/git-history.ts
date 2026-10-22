@@ -3,6 +3,8 @@
  * app's own Changes and Branch views. Each file's diff is rendered by `@pierre/diffs` (`lib/pierre-ssr.js`).
  */
 import { execFile } from "node:child_process";
+import { stat } from "node:fs/promises";
+import { join } from "node:path";
 // In the drop-in folder, the types come from "./_pocket.d.ts".
 import type { Web } from "./_pocket.d.ts";
 
@@ -19,8 +21,16 @@ const MAX_BUFFER = 32 * 1024 * 1024;
 /** A commit's short fields, each ended by a NUL, and the record by a RS. A subject is text, so it can hold anything. */
 const LOG_FORMAT = "%H%x00%h%x00%an%x00%at%x00%s%x1e";
 const SHOW_FORMAT = "%H%x00%h%x00%an%x00%ae%x00%at%x00%P%x00%s%x00%b";
+/** An untracked file over this size is named but not read: the page cannot draw it, and its patch is not worth it. */
+const MAX_UNTRACKED_BYTES = 2 * 1024 * 1024;
+/** The most comments one request brings, and the longest path it may hold. */
+const MAX_COMMENTS = 500;
+const MAX_PATH_CHARS = 4000;
 
 type Kind = "modified" | "added" | "deleted" | "renamed";
+
+/** A comment the page holds for one line of one file: the side it sits on, and its line number. */
+type Comment = { path: string; side: "additions" | "deletions"; line: number };
 
 /** One commit in the list: `unpushed` when it is only here, `remote` when it is only on the remote branch. */
 type Logged = {
@@ -60,7 +70,11 @@ async function loadRenderer(): Promise<Pierre> {
     }
 }
 
-function git(cwd: string, args: string[], timeoutMs = GIT_TIMEOUT_MS): Promise<string> {
+/**
+ * Runs git, and gives its output. `allow` names exit codes that mean an answer, not a failure: `git diff --no-index`
+ * exits 1 when the two files differ, which is what it was asked for.
+ */
+function git(cwd: string, args: string[], timeoutMs = GIT_TIMEOUT_MS, allow: number[] = []): Promise<string> {
     return new Promise((resolve, reject) => {
         execFile(
             "git",
@@ -73,10 +87,12 @@ function git(cwd: string, args: string[], timeoutMs = GIT_TIMEOUT_MS): Promise<s
                 env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
             },
             (failure, stdout, stderr) => {
-                if (failure) {
-                    reject(new Error(`${stderr}`.trim() || failure.message));
-                } else {
+                if (failure === null) {
                     resolve(stdout);
+                } else if (allow.includes((failure as { code?: number }).code ?? -1)) {
+                    resolve(stdout);
+                } else {
+                    reject(new Error(`${stderr}`.trim() || failure.message));
                 }
             },
         );
@@ -196,6 +212,214 @@ function parseLog(output: string): Logged[] {
         });
 }
 
+/**
+ * The line numbers a file's patch shows, on each side, from its hunk headers: a comment may sit only on a line that is
+ * there, or the renderer has nowhere to put it.
+ */
+function linesOf(patch: string): { additions: Set<number>; deletions: Set<number> } {
+    const additions = new Set<number>();
+    const deletions = new Set<number>();
+    let oldLine = 0;
+    let newLine = 0;
+    let inHunk = false;
+
+    for (const line of patch.split("\n")) {
+        const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+
+        if (hunk !== null) {
+            oldLine = Number(hunk[1]);
+            newLine = Number(hunk[2]);
+            inHunk = true;
+        } else if (line.startsWith("+")) {
+            if (inHunk) {
+                additions.add(newLine++);
+            }
+        } else if (line.startsWith("-")) {
+            if (inHunk) {
+                deletions.add(oldLine++);
+            }
+        } else if (line.startsWith(" ")) {
+            if (inHunk) {
+                additions.add(newLine++);
+                deletions.add(oldLine++);
+            }
+        } else if (!line.startsWith("\\")) {
+            inHunk = false;
+        }
+    }
+
+    return { additions, deletions };
+}
+
+/** The comments a page sent, as far as they are safe to use: each one a path, a side, and a line number. */
+function commentsOf(value: unknown): Comment[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const comments: Comment[] = [];
+
+    for (const entry of value.slice(0, MAX_COMMENTS)) {
+        if (typeof entry !== "object" || entry === null) {
+            continue;
+        }
+
+        const { path, side, line } = entry as { path?: unknown; side?: unknown; line?: unknown };
+
+        if (
+            typeof path !== "string" ||
+            path.length === 0 ||
+            path.length > MAX_PATH_CHARS ||
+            (side !== "additions" && side !== "deletions") ||
+            typeof line !== "number" ||
+            !Number.isInteger(line) ||
+            line < 1
+        ) {
+            continue;
+        }
+
+        comments.push({ path, side, line });
+    }
+
+    return comments;
+}
+
+/** The look a page asks for, and the comments it holds. */
+function lookOf(body: unknown): { options: DiffOptions; comments: Comment[] } {
+    const asked = (typeof body === "object" && body !== null ? body : {}) as {
+        theme?: unknown;
+        style?: unknown;
+        comments?: unknown;
+    };
+    const style = asked.style === "split" ? "split" : "unified";
+
+    return {
+        options: {
+            themeType: asked.theme === "light" ? "light" : "dark",
+            diffStyle: style,
+            overflow: style === "split" ? "scroll" : "wrap",
+            hunkSeparators: "line-info",
+            disableFileHeader: true,
+        },
+        comments: commentsOf(asked.comments),
+    };
+}
+
+/** Each file of a patch, with its diff as HTML, and a comment's slot on every line that has one. */
+async function filesOf(patch: string, options: DiffOptions, comments: Comment[]) {
+    const { preloadPatchDiff } = await loadRenderer();
+    const files = [];
+    let used = 0;
+
+    for (const file of splitPatch(patch.replace(/^\n/, ""))) {
+        const drawn = {
+            path: file.path,
+            oldPath: file.oldPath,
+            kind: file.kind,
+            added: file.added,
+            removed: file.removed,
+            binary: file.binary,
+            html: "",
+            skipped: false,
+            error: "",
+        };
+
+        if (!file.binary) {
+            if (used + file.patch.length > MAX_PATCH_CHARS) {
+                drawn.skipped = true;
+            } else {
+                used += file.patch.length;
+
+                // A comment on a line the diff does not show is left out here, and stays in the page's own review.
+                const lines = linesOf(file.patch);
+                const annotations = comments
+                    .filter((comment) => comment.path === file.path && lines[comment.side].has(comment.line))
+                    .map((comment) => ({
+                        lineNumber: comment.line,
+                        side: comment.side,
+                        metadata: {},
+                    }));
+
+                try {
+                    drawn.html = (await preloadPatchDiff({ patch: file.patch, options, annotations }))
+                        .prerenderedHTML;
+                } catch (failure) {
+                    drawn.error = failure instanceof Error ? failure.message : String(failure);
+                }
+            }
+        }
+
+        files.push(drawn);
+    }
+
+    return files;
+}
+
+/**
+ * The folder's uncommitted work: the changes to tracked files against the last commit, then each untracked file as a
+ * new one. A folder with no commit yet compares what is staged instead.
+ */
+async function worktreeOf(web: Web, cwd: string, options: DiffOptions, comments: Comment[]) {
+    const inside = await git(cwd, ["rev-parse", "--is-inside-work-tree"]).then(
+        (answer) => answer.trim() === "true",
+        () => false,
+    );
+
+    if (!inside) {
+        throw web.error(400, "This folder is not a git repository.");
+    }
+
+    const head = await git(cwd, ["rev-parse", "--verify", "--quiet", "HEAD"]).then(
+        () => true,
+        () => false,
+    );
+    const tracked = await gitOrFail(web, cwd, [
+        "diff",
+        "--no-color",
+        "--find-renames",
+        ...(head ? ["HEAD"] : ["--cached"]),
+    ]);
+    const untracked = (
+        await gitOrFail(web, cwd, ["ls-files", "--others", "--exclude-standard", "-z"])
+    )
+        .split("\0")
+        .filter((path) => path !== "")
+        .sort();
+    const parts = [tracked];
+    const left: string[] = [];
+
+    for (const path of untracked) {
+        const size = await stat(join(cwd, path)).then(
+            (info) => info.size,
+            () => 0,
+        );
+
+        if (size > MAX_UNTRACKED_BYTES) {
+            left.push(path);
+            continue;
+        }
+
+        parts.push(
+            await git(
+                cwd,
+                ["diff", "--no-index", "--no-color", "--", "/dev/null", path],
+                GIT_TIMEOUT_MS,
+                [1],
+            ),
+        );
+    }
+
+    const files = await filesOf(parts.join(""), options, comments);
+
+    return {
+        files,
+        added: files.reduce((sum, file) => sum + file.added, 0),
+        removed: files.reduce((sum, file) => sum + file.removed, 0),
+        left,
+        omitted: files.filter((file) => file.skipped).length,
+    };
+}
+
 /** How far the checked-out branch is from the remote branch it follows: `{}` when it follows none. */
 async function trackOf(cwd: string): Promise<{ upstream?: string; ahead?: number; behind?: number }> {
     const upstream = await git(cwd, [
@@ -226,14 +450,37 @@ async function trackOf(cwd: string): Promise<{ upstream?: string; ahead?: number
     return { upstream, ahead: Number(ahead), behind: Number(behind) };
 }
 
+/** How many files the folder has changed, staged or not, and untracked ones too. */
+function changesOf(status: string): number {
+    const entries = status.split("\0").filter((entry) => entry !== "");
+    let count = 0;
+
+    for (let index = 0; index < entries.length; index++) {
+        const entry = entries[index]!;
+
+        count++;
+
+        // A rename or a copy is two records: its old path follows it.
+        if (entry.startsWith("R") || entry.startsWith("C")) {
+            index++;
+        }
+    }
+
+    return count;
+}
+
 /** The folder's commits, newest first, and whether there are more than the page shows. */
 async function logOf(web: Web, cwd: string, limit: number) {
-    const [branch, track] = await Promise.all([
+    const [branch, track, changes] = await Promise.all([
         git(cwd, ["rev-parse", "--abbrev-ref", "HEAD"]).then(
             (name) => name.trim(),
             () => "",
         ),
         trackOf(cwd),
+        git(cwd, ["status", "--porcelain=v1", "-z"]).then(
+            (status) => changesOf(status),
+            () => 0,
+        ),
     ]);
     let output: string;
 
@@ -244,7 +491,7 @@ async function logOf(web: Web, cwd: string, limit: number) {
 
         // A repository with no commit yet is empty, not broken.
         if (/does not have any commits yet/.test(words)) {
-            return { branch, ...track, commits: [], more: 0 };
+            return { branch, ...track, changes, commits: [], more: 0 };
         }
 
         throw web.error(400, words);
@@ -283,6 +530,7 @@ async function logOf(web: Web, cwd: string, limit: number) {
     return {
         branch,
         ...track,
+        changes,
         // The remote branch's commits the folder has not pulled come first: they are newer than what it has.
         commits: [...remote, ...commits.slice(0, limit)],
         more: Math.max(0, commits.length - limit),
@@ -290,7 +538,13 @@ async function logOf(web: Web, cwd: string, limit: number) {
 }
 
 /** One commit: who wrote it, when, what it says, and its files, each with its diff as HTML. */
-async function commitOf(web: Web, cwd: string, hash: string, options: DiffOptions) {
+async function commitOf(
+    web: Web,
+    cwd: string,
+    hash: string,
+    options: DiffOptions,
+    comments: Comment[],
+) {
     const meta = await gitOrFail(web, cwd, ["show", "-s", "--date=unix", `--format=${SHOW_FORMAT}`, hash]);
     const [
         full = "",
@@ -308,39 +562,7 @@ async function commitOf(web: Web, cwd: string, hash: string, options: DiffOption
         before.length > 0
             ? await gitOrFail(web, cwd, ["diff", "--no-color", "--find-renames", before[0]!, full])
             : await gitOrFail(web, cwd, ["show", "--no-color", "--format=", "--patch", full]);
-    const { preloadPatchDiff } = await loadRenderer();
-    const files = [];
-    let used = 0;
-
-    for (const file of splitPatch(patch.replace(/^\n/, ""))) {
-        const drawn = {
-            path: file.path,
-            oldPath: file.oldPath,
-            kind: file.kind,
-            added: file.added,
-            removed: file.removed,
-            binary: file.binary,
-            html: "",
-            skipped: false,
-            error: "",
-        };
-
-        if (!file.binary) {
-            if (used + file.patch.length > MAX_PATCH_CHARS) {
-                drawn.skipped = true;
-            } else {
-                used += file.patch.length;
-
-                try {
-                    drawn.html = (await preloadPatchDiff({ patch: file.patch, options })).prerenderedHTML;
-                } catch (failure) {
-                    drawn.error = failure instanceof Error ? failure.message : String(failure);
-                }
-            }
-        }
-
-        files.push(drawn);
-    }
+    const files = await filesOf(patch, options, comments);
 
     return {
         hash: full,
@@ -412,25 +634,30 @@ export default function createGitHistory(_host: unknown, web: Web) {
     );
 
     web.conversationRoute(
-        "GET",
+        "POST",
         "commit/:source/:commit",
-        async ({ conversation, params, query }) => {
+        async ({ conversation, params, body }) => {
             const hash = params.commit ?? "";
 
             if (!/^[0-9a-f]{4,64}$/i.test(hash)) {
                 throw web.error(400, "Not a commit id.");
             }
 
-            // The page asks for the look its theme and its width have: side by side when there is room, wrapped when not.
-            const style = query.get("style") === "split" ? "split" : "unified";
+            // The page asks for the look its theme and its width have, and names the lines that have a comment.
+            const look = lookOf(body);
 
-            return commitOf(web, conversation.cwd, hash, {
-                themeType: query.get("theme") === "light" ? "light" : "dark",
-                diffStyle: style,
-                overflow: style === "split" ? "scroll" : "wrap",
-                hunkSeparators: "line-info",
-                disableFileHeader: true,
-            });
+            return commitOf(web, conversation.cwd, hash, look.options, look.comments);
+        },
+        { conversation: "source" },
+    );
+
+    web.conversationRoute(
+        "POST",
+        "worktree/:source",
+        async ({ conversation, body }) => {
+            const look = lookOf(body);
+
+            return worktreeOf(web, conversation.cwd, look.options, look.comments);
         },
         { conversation: "source" },
     );

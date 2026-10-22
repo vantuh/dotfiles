@@ -301,3 +301,113 @@ test(
         assert.deepEqual(onRemote, ["third commit", "second commit", "first commit"]);
     },
 );
+
+test(
+    "a comment on an uncommitted line shows in the diff, stays after a fresh load, and goes to Pi as a message",
+    real,
+    async () => {
+        writeFileSync(
+            join(project, "a.txt"),
+            `${Array.from({ length: 150 }, (_, index) => `three line ${index + 1}`).join("\n")}\nextra line\n`,
+        );
+
+        await page.navigate(`${base}/s/${session}`);
+        await until(() => has('.ext-top-button[title="Git history"]'), "the history button");
+        await page.click({ selector: '.ext-top-button[title="Git history"]' });
+
+        // The uncommitted work comes first, and opens like a commit.
+        await until(() => has(".gh-dot-work"), "the row for the uncommitted work");
+        assert.match(await text(".gh-item:first-child .gh-subject"), /Uncommitted changes/);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await page.click({ selector: ".gh-item:first-child .gh-row" });
+        await until(() => has(".gh-file .gh-diff-view"), "the uncommitted diff");
+
+        // A tap on the number of the line that was added: the box opens for that line.
+        const added = () =>
+            inPage<boolean>(`
+                const view = document.querySelector(".gh-diff-view");
+                const gutter = view.shadowRoot.querySelector('[data-column-number="151"]');
+                if (gutter === null) return JSON.stringify(false);
+                gutter.click();
+                return JSON.stringify(true);
+            `);
+
+        await until(added, "the line number of the added line");
+        await until(() => has(".gh-editor"), "the box for the comment");
+        assert.match(await text(".gh-editor-where"), /a\.txt:151/);
+        assert.equal(await text(".gh-quote"), "extra line");
+
+        await page.type({ selector: ".gh-input" }, "Say why this line is here.");
+        await page.click({ selector: ".gh-editor-actions .button" });
+        await until(() => has(".gh-note"), "the comment in the diff");
+
+        // The diff's own grid made room for it: the slot the renderer left is filled.
+        const note = () =>
+            inPage<{ text: string; filled: boolean; slot: string }>(`
+                const node = document.querySelector(".gh-note");
+                return JSON.stringify({
+                    text: node.textContent.trim(),
+                    filled: node.assignedSlot !== null,
+                    slot: node.getAttribute("slot"),
+                });
+            `);
+
+        await until(async () => (await note()).filled, "the comment to fill its slot");
+        assert.match((await note()).text, /Say why this line is here\./);
+        assert.equal((await note()).slot, "annotation-additions-151");
+        assert.match(await text(".gh-review"), /1 comment/);
+
+        // A tap on that line again opens its own comment, with its words in the box, instead of a second one.
+        await until(added, "the same line again");
+        await until(() => has(".gh-editor"), "the box again");
+        assert.equal(
+            await inPage<string>(`return JSON.stringify(document.querySelector(".gh-input").value)`),
+            "Say why this line is here.",
+        );
+        await page.click({ selector: ".gh-editor-head .gh-note-act" });
+        await until(async () => !(await has(".gh-editor")), "the box to close");
+
+        // It is kept in this browser, so a fresh load of the app has it too.
+        const kept = await inPage<string>(
+            `return JSON.stringify(localStorage.getItem("x.git-history.review.${session}"))`,
+        );
+        assert.match(kept, /Say why this line is here\./);
+
+        // A fresh load of the app, as a reload gives: the drafts come from this browser, not from the page's memory.
+        await page.navigate(`${base}/s/${session}`);
+        await until(() => has('.ext-top-button[title="Git history"]'), "the history button again");
+        await page.click({ selector: '.ext-top-button[title="Git history"]' });
+        await until(() => has(".gh-dot-work"), "the uncommitted row again");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await page.click({ selector: ".gh-item:first-child .gh-row" });
+        await until(async () => (await note()).filled, "the comment after a fresh load");
+
+        // Send: the review goes into the message box, the page makes room for it, and its drafts are gone.
+        await page.click({ selector: ".gh-review .button" });
+        await until(async () => !(await has(".ext-page")), "the page to close");
+        await until(
+            async () =>
+                (
+                    await inPage<string>(
+                        `return JSON.stringify(document.querySelector(".composer-wrap textarea")?.value ?? "")`,
+                    )
+                ).includes("a.txt:151"),
+            "the review in the message box",
+        );
+
+        const message = await inPage<string>(
+            `return JSON.stringify(document.querySelector(".composer-wrap textarea").value)`,
+        );
+
+        assert.match(message, /Code review: please address these comments\./);
+        assert.match(message, /## Uncommitted changes/);
+        assert.match(message, /- `a\.txt:151` \(new\)/);
+        assert.match(message, /Say why this line is here\./);
+        assert.equal(
+            await inPage<string>(
+                `return JSON.stringify(localStorage.getItem("x.git-history.review.${session}"))`,
+            ),
+            "[]",
+        );
+    },
+);
