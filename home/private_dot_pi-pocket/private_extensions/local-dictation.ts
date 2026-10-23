@@ -9,8 +9,18 @@ import { pathToFileURL } from "node:url";
 
 import type { Web } from "./_pocket.d.ts";
 
-/** transcribe-cpp is installed beside no Pi Pocket package: `run_after_20-install-pi-dictation-deps.sh` puts it here. */
-const BINDINGS = join(homedir(), ".local", "share", "pi-dictation", "node_modules", "transcribe-cpp", "dist", "index.js");
+/**
+ * transcribe-cpp is not one of Pi Pocket's packages, so `run_after_20-install-local-dictation-deps.sh.tmpl` installs it
+ * in the browser module's folder, and it is imported by path: Node looks for packages only in `node_modules` beside here.
+ */
+const BINDINGS = join(
+    import.meta.dirname,
+    "local-dictation",
+    "node_modules",
+    "transcribe-cpp",
+    "dist",
+    "index.js",
+);
 const LANGUAGE = process.env.PI_DICTATION_LANGUAGE ?? "uk";
 /** The model holds ~900 MB with Metal, so it goes after this long without a dictation and loads again at the next one. */
 const IDLE_MS = Number(process.env.PI_DICTATION_IDLE_MINUTES ?? 10) * 60_000;

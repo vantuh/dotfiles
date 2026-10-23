@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "pi-dictation",
+      "name": "local-dictation",
       "dependencies": {
         "transcribe-cpp": "0.3.1",
       },

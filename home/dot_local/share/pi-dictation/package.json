@@ -1,9 +1,0 @@
-{
-  "name": "pi-dictation",
-  "private": true,
-  "type": "module",
-  "description": "The native transcribe.cpp bindings for Pi Pocket's local-dictation extension, which imports them from here.",
-  "dependencies": {
-    "transcribe-cpp": "0.3.1"
-  }
-}

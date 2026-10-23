@@ -27,8 +27,8 @@ Library/Application Support/lazygit/config.yml
 # The work profile shares the renamed personal Pi subagents config.
 .pi/profiles/work/agent/herdr-agents.json
 
-# The dictation daemon and its CLI moved into Pi Pocket's local-dictation extension; only its dependencies stay in
-# ~/.local/share/pi-dictation.
+# The dictation daemon and its CLI moved into Pi Pocket's local-dictation extension, its dependencies into the
+# extension's folder.
 .local/bin/pi-dictation.ts
-.local/share/pi-dictation/src
+.local/share/pi-dictation
 .local/state/pi-dictation
