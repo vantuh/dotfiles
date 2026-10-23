@@ -1,5 +1,5 @@
 // Local dictation's browser part: a microphone button in the message box that records, has the word sent to
-// `local-dictation.ts` to be transcribed on this machine, and puts the words into the box for the person to send.
+// `server.ts` to be transcribed on this machine, and puts the words into the box for the person to send.
 // Nothing goes to a speech service, and nothing is sent by itself.
 
 /** The version of `pocket` this module was written for: an older app does not load it. */

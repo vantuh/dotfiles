@@ -32,3 +32,10 @@ Library/Application Support/lazygit/config.yml
 .local/bin/pi-dictation.ts
 .local/share/pi-dictation
 .local/state/pi-dictation
+
+# Pi Pocket extensions live in a folder each now; the old flat files go. The entries <name>.ts stay: a chezmoi script
+# rewrites them, and removing them would reload every extension at each apply.
+.pi-pocket/extensions/history-ui
+.pi-pocket/extensions/git-history.test.ts
+.pi-pocket/extensions/git-history-ui.test.ts
+.pi-pocket/extensions/subagent-roles.test.ts

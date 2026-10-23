@@ -1,5 +1,5 @@
 // Provider usage, in the app: a top bar button, a launcher action, and the `/usage-limits` command open one sheet with
-// the rate-limit windows that `usage-limits.ts` reads on the server.
+// the rate-limit windows that `server.ts` reads on the server.
 
 /** The version of `pocket` this module was written for: an older app does not load it. */
 export const pocketApi = 1;

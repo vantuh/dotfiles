@@ -9,7 +9,7 @@ import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import type { Host, Web } from "./_pocket.d.ts";
+import type { Host, Web } from "../_pocket.d.ts";
 
 /** Anthropic reports limit resets only to the Claude Code CLI surface. */
 const CLAUDE_CLI_UA = "claude-cli/2.19.1 (external, cli)";

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Pi Pocket loads only the .ts files at the top of its drop-in folder, and watches nothing below it, while the source
+# state keeps each extension in a folder of its own. So each <name>/server.ts gets an entry <name>.ts beside its folder
+# that re-exports it with the description Pi Pocket reads. The entry's query changes with the file, so an edit reaches
+# Pi Pocket as a change of the entry, and Node imports the new version instead of the one it holds.
+set -u
+
+dest="{{ .chezmoi.destDir }}/.pi-pocket/extensions"
+marker='// Made by chezmoi'
+
+[[ -d "$dest" ]] || exit 0
+
+for server in "$dest"/*/server.ts; do
+  [[ -f "$server" ]] || continue
+  name="$(basename "$(dirname "$server")")"
+  entry="$dest/$name.ts"
+  version="$(cksum < "$server" | cut -d ' ' -f 1)"
+  wanted="$(
+    awk 'NR == 1 && !/^\/\*\*/ { exit } { print } /\*\// { exit }' "$server"
+    printf '%s from %s/server.ts: edit that file.\n' "$marker" "$name"
+    printf 'export { default } from "./%s/server.ts?v=%s";\n' "$name" "$version"
+  )"
+
+  if [[ -f "$entry" && ! -L "$entry" && "$(cat "$entry")" == "$wanted" ]]; then
+    continue
+  fi
+
+  printf '%s\n' "$wanted" > "$entry.tmp" && mv -f "$entry.tmp" "$entry"
+done
+
+# An entry made here whose folder went goes too.
+for entry in "$dest"/*.ts; do
+  [[ -f "$entry" ]] && grep -q "^$marker" "$entry" || continue
+  [[ -f "$dest/$(basename "$entry" .ts)/server.ts" ]] || rm -f "$entry"
+done

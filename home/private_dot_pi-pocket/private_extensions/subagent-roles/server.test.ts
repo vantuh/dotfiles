@@ -3,8 +3,8 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import createSubagentRoles from "./subagent-roles.ts";
-import type { Host } from "./_pocket.d.ts";
+import createSubagentRoles from "./server.ts";
+import type { Host } from "../_pocket.d.ts";
 
 type Recorded = Record<string, unknown>;
 

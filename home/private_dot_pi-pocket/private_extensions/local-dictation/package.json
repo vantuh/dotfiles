@@ -2,7 +2,7 @@
   "name": "local-dictation",
   "private": true,
   "type": "module",
-  "description": "The native transcribe.cpp bindings that local-dictation.ts imports.",
+  "description": "The native transcribe.cpp bindings that server.ts imports.",
   "dependencies": {
     "transcribe-cpp": "0.3.1"
   }

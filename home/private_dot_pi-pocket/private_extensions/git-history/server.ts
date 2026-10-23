@@ -5,8 +5,8 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-// In the drop-in folder, the types come from "./_pocket.d.ts".
-import type { Web } from "./_pocket.d.ts";
+// In the drop-in folder, the types come from "../_pocket.d.ts".
+import type { Web } from "../_pocket.d.ts";
 
 /** The most commits a page reads, and the number it reads by default. */
 const MAX_COMMITS = 200;
@@ -903,5 +903,5 @@ export default function createGitHistory(_host: unknown, web: Web) {
         await Promise.all(running.map((child) => stopReview(child)));
     });
 
-    web.client("history-ui");
+    web.client("git-history");
 }

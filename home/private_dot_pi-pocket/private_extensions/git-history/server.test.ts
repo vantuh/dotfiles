@@ -1,5 +1,5 @@
 // The Git history module: its routes read the session folder's commits and one commit's diff. Run it with
-// `node --test git-history.test.ts` in the drop-in folder.
+// `node --test git-history/server.test.ts` in the source state.
 import {
     cleanUp,
     newSession,
@@ -12,7 +12,7 @@ import {
 import { createHandler } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/http.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
@@ -34,12 +34,12 @@ let guestToken = "";
 
 before(async () => {
     mkdirSync(dropIns, { recursive: true });
-    // As in the data folder: the module is a link to where it lives, and its browser module is beside it. The diff
-    // renderer is not copied: the module finds it beside its real file.
-    symlinkSync(join(import.meta.dirname, "git-history.ts"), join(dropIns, "git-history.ts"));
-    cpSync(join(import.meta.dirname, "history-ui"), join(dropIns, "history-ui"), {
-        recursive: true,
-    });
+    // As in the data folder: the module's folder, and an entry beside it that loads its server part.
+    cpSync(import.meta.dirname, join(dropIns, "git-history"), { recursive: true });
+    writeFileSync(
+        join(dropIns, "git-history.ts"),
+        '/** Git history. */\nexport { default } from "./git-history/server.ts";\n',
+    );
 
     const identity = {
         GIT_AUTHOR_NAME: "Tess",

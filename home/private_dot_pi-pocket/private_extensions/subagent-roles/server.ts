@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { parseFrontmatter } from "@earendil-works/pi-coding-agent";
 import { defineExtension, wrapTool } from "@earendil-works/pi-durable";
 import type { ToolRegistration } from "@earendil-works/pi-durable";
-import type { Host } from "./_pocket.d.ts";
+import type { Host } from "../_pocket.d.ts";
 
 type Profile = {
     body: string;
