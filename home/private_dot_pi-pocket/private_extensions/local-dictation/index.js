@@ -62,11 +62,17 @@ async function toPcm(blob) {
     return pcm;
 }
 
+/** A warm-up that answers sooner than this found the model loaded: showing it would only flicker. */
+const LOADING_SHOWN_AFTER_MS = 300;
+
 /** @param {import("../_pocket.d.ts").Pocket} pocket */
 export default function setup(pocket) {
     let recorder = null;
     let stream = null;
     let busy = false;
+    let loading = false;
+
+    pocket.style("look.css");
 
     const button = pocket.composerButton({
         id: "mic",
@@ -75,7 +81,36 @@ export default function setup(pocket) {
         run: () => void toggle(),
     });
 
-    const idle = () => button.update({ title: "Dictate on this machine", badge: null });
+    // look.css draws the states from these: the badge as a red dot, "loading the model" in the title as yellow dots.
+    function show() {
+        const title =
+            recorder !== null ? "Stop dictating" : busy ? "Transcribing…" : "Dictate on this machine";
+
+        button.update({
+            title: loading ? `${title} (loading the model)` : title,
+            badge: recorder !== null ? "rec" : null,
+        });
+    }
+
+    function warm() {
+        let done = false;
+
+        setTimeout(() => {
+            if (!done) {
+                loading = true;
+                show();
+            }
+        }, LOADING_SHOWN_AFTER_MS);
+
+        pocket
+            .api("warm", {})
+            .catch((failure) => pocket.notify("error", String(failure.message ?? failure)))
+            .finally(() => {
+                done = true;
+                loading = false;
+                show();
+            });
+    }
 
     async function start() {
         if (typeof MediaRecorder === "undefined") {
@@ -105,9 +140,9 @@ export default function setup(pocket) {
         };
         recorder.onstop = () => void transcribe(chunks);
         recorder.start();
-        button.update({ title: "Stop dictating", badge: "rec" });
+        show();
         // The model loads on demand: start it now, so it is ready when the person stops speaking.
-        pocket.api("warm", {}).catch((failure) => pocket.notify("error", String(failure.message ?? failure)));
+        warm();
     }
 
     function stop() {
@@ -118,7 +153,7 @@ export default function setup(pocket) {
         const current = recorder;
 
         recorder = null;
-        idle();
+        show();
         current.stop();
         stream?.getTracks().forEach((track) => track.stop());
         stream = null;
@@ -139,7 +174,7 @@ export default function setup(pocket) {
     /** Sends the recording in parts, then has the server transcribe it whole: split audio loses words at the cuts. */
     async function transcribe(chunks) {
         busy = true;
-        button.update({ title: "Transcribing…", badge: null });
+        show();
 
         try {
             if (chunks.length === 0) {
@@ -176,7 +211,7 @@ export default function setup(pocket) {
             pocket.notify("error", String(failure.message ?? failure));
         } finally {
             busy = false;
-            idle();
+            show();
         }
     }
 

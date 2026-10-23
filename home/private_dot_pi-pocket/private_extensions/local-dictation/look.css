@@ -1,0 +1,68 @@
+/* The mic's states: a small red dot while it records, and three yellow dots under it while the model loads. */
+
+.ext-composer-button[data-module="local-dictation"] .badge {
+    top: 6px;
+    right: 6px;
+    min-width: 0;
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--err);
+    font-size: 0;
+    animation: local-dictation-rec 1.2s ease-in-out infinite;
+}
+
+.ext-composer-button[data-module="local-dictation"][title*="loading the model"]::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 3px;
+    width: 3px;
+    height: 3px;
+    margin-left: -1.5px;
+    border-radius: 50%;
+    background: var(--warn);
+    box-shadow:
+        -5px 0 var(--warn),
+        5px 0 var(--warn);
+    animation: local-dictation-loading 0.9s linear infinite;
+}
+
+@keyframes local-dictation-rec {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+/* One dot lit at a time, left to right; the others stay dim. */
+@keyframes local-dictation-loading {
+    0%,
+    100% {
+        background: color-mix(in srgb, var(--warn) 30%, transparent);
+        box-shadow:
+            -5px 0 var(--warn),
+            5px 0 color-mix(in srgb, var(--warn) 30%, transparent);
+    }
+
+    33% {
+        background: var(--warn);
+        box-shadow:
+            -5px 0 color-mix(in srgb, var(--warn) 30%, transparent),
+            5px 0 color-mix(in srgb, var(--warn) 30%, transparent);
+    }
+
+    66% {
+        background: color-mix(in srgb, var(--warn) 30%, transparent);
+        box-shadow:
+            -5px 0 color-mix(in srgb, var(--warn) 30%, transparent),
+            5px 0 var(--warn);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ext-composer-button[data-module="local-dictation"] .badge,
+    .ext-composer-button[data-module="local-dictation"][title*="loading the model"]::after {
+        animation: none;
+    }
+}
