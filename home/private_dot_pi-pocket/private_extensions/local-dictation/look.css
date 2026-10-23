@@ -1,5 +1,10 @@
 /* The mic's states: a small red dot while it records, and three yellow dots under it while the model loads. */
 
+/* This mic replaces the app's own browser dictation beside Send; PiP's has no replacement, so it stays. */
+.mic-button.composer-mic {
+    display: none;
+}
+
 .ext-composer-button[data-module="local-dictation"] .badge {
     top: 6px;
     right: 6px;
