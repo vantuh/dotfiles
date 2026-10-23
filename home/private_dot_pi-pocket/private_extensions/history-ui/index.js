@@ -12,6 +12,8 @@ const WORKTREE = "worktree";
 const WORKTREE_HEADING = "Uncommitted changes";
 /** How often the page asks whether the review tool has answered. */
 const REVIEW_POLL_MS = 1_500;
+/** A pencil, as the app has no icon for an edit. */
+const PENCIL = "M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4";
 
 /** How long ago, in a few characters, as the app's branch list says it. */
 function since(at) {
@@ -301,6 +303,51 @@ export default function setup(pocket) {
         </div>`;
     }
 
+    /** The sheet that edits a commit's title and description. `onSaved` gets the commit's new id. */
+    function Reword({ id, commit, onSaved, close }) {
+        const [subject, setSubject] = useState(commit.subject);
+        const [body, setBody] = useState(commit.body);
+        const [busy, setBusy] = useState(false);
+        const [error, setError] = useState(null);
+
+        const save = async (event) => {
+            event.preventDefault();
+            setBusy(true);
+
+            try {
+                const { hash } = await pocket.api(`reword/${id}/${commit.hash}`, { subject, body });
+
+                close();
+                pocket.notify("info", "The commit message is changed.");
+                onSaved(hash);
+            } catch (failure) {
+                setError(failure.message);
+                setBusy(false);
+            }
+        };
+
+        return html`<form class="gh-reword" onSubmit=${save}>
+            <p class="muted small">
+                <span class="mono">${commit.short}</span> and the commits after it get new ids. The files stay as they are.
+            </p>
+            <label class="gh-field">
+                <span class="small muted">Title</span>
+                <input value=${subject} autofocus onInput=${(event) => setSubject(event.currentTarget.value)} />
+            </label>
+            <label class="gh-field">
+                <span class="small muted">Description</span>
+                <textarea rows="8" value=${body} onInput=${(event) => setBody(event.currentTarget.value)}></textarea>
+            </label>
+            ${error !== null ? html`<p class="error-box">${error}</p>` : null}
+            <div class="row">
+                <button class="button ghost" type="button" onClick=${() => close()}>Cancel</button>
+                <button class="button primary grow" disabled=${busy || subject.trim() === ""}>
+                    ${busy ? "Saving…" : "Save"}
+                </button>
+            </div>
+        </form>`;
+    }
+
     /** The page: the branch and its commits, each opening into its diff. */
     function History() {
         const id = pocket.conversationId();
@@ -429,31 +476,52 @@ export default function setup(pocket) {
                           : null}
                       ${log.commits.map(
                           (commit) => html`<li class="gh-item">
-                              <button
-                                  class="gh-row"
-                                  type="button"
-                                  aria-expanded=${open === commit.hash}
-                                  ref=${(node) => {
-                                      if (node === null) {
-                                          rows.current.delete(commit.hash);
-                                      } else {
-                                          rows.current.set(commit.hash, node);
-                                      }
-                                  }}
-                                  onClick=${() => setOpen(open === commit.hash ? null : commit.hash)}
-                              >
-                                  ${commit.remote
-                                      ? html`<span class="gh-dot gh-dot-remote" title=${`On ${log.upstream}, not pulled`}></span>`
-                                      : commit.unpushed
-                                        ? html`<span class="gh-dot gh-dot-local" title="Not pushed"></span>`
-                                        : null}
-                                  <span class="mono gh-hash">${commit.short}</span>
-                                  <span class="gh-subject">${commit.subject || "(no message)"}</span>
-                                  <span class="muted small gh-row-meta" title=${fullDate(commit.at)}>
-                                      ${commit.author} · ${since(commit.at)}
-                                      ${commit.remote ? ` · on ${log.upstream}` : ""}
-                                  </span>
-                              </button>
+                              <div class="gh-line">
+                                  <button
+                                      class="gh-row"
+                                      type="button"
+                                      aria-expanded=${open === commit.hash}
+                                      ref=${(node) => {
+                                          if (node === null) {
+                                              rows.current.delete(commit.hash);
+                                          } else {
+                                              rows.current.set(commit.hash, node);
+                                          }
+                                      }}
+                                      onClick=${() => setOpen(open === commit.hash ? null : commit.hash)}
+                                  >
+                                      ${commit.remote
+                                          ? html`<span class="gh-dot gh-dot-remote" title=${`On ${log.upstream}, not pulled`}></span>`
+                                          : commit.unpushed
+                                            ? html`<span class="gh-dot gh-dot-local" title="Not pushed"></span>`
+                                            : null}
+                                      <span class="mono gh-hash">${commit.short}</span>
+                                      <span class="gh-subject">${commit.subject || "(no message)"}</span>
+                                      <span class="muted small gh-row-meta" title=${fullDate(commit.at)}>
+                                          ${commit.author} · ${since(commit.at)}
+                                          ${commit.remote ? ` · on ${log.upstream}` : ""}
+                                      </span>
+                                  </button>
+                                  ${!commit.remote && (log.upstream === undefined || commit.unpushed)
+                                      ? html`<button
+                                            class="gh-edit"
+                                            type="button"
+                                            title="Edit the commit message"
+                                            aria-label="Edit the commit message"
+                                            onClick=${() =>
+                                                pocket.openSheet("reword", {
+                                                    id,
+                                                    commit,
+                                                    onSaved: (hash) => {
+                                                        setOpen(open === commit.hash ? hash : null);
+                                                        void load();
+                                                    },
+                                                })}
+                                        >
+                                            <${Icon} path=${PENCIL} size=${15} />
+                                        </button>`
+                                      : null}
+                              </div>
                               ${open === commit.hash
                                   ? html`<${Section}
                                         id=${id}
@@ -476,6 +544,7 @@ export default function setup(pocket) {
 
     pocket.style("history.css");
     pocket.page({ id: "history", title: "Git history", component: History });
+    pocket.sheet({ id: "reword", title: "Edit commit message", component: Reword });
     pocket.menu({ id: "history", label: "Git history", hint: "commits", page: "history" });
     pocket.launcher({
         id: "history",

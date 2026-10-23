@@ -19,7 +19,7 @@ const GIT_REMOTE_TIMEOUT_MS = 120_000;
 const MAX_BUFFER = 32 * 1024 * 1024;
 
 /** A commit's short fields, each ended by a NUL, and the record by a RS. A subject is text, so it can hold anything. */
-const LOG_FORMAT = "%H%x00%h%x00%an%x00%at%x00%s%x1e";
+const LOG_FORMAT = "%H%x00%h%x00%an%x00%at%x00%s%x00%b%x1e";
 const SHOW_FORMAT = "%H%x00%h%x00%an%x00%ae%x00%at%x00%P%x00%s%x00%b";
 /** An untracked file over this size is named but not read: the page cannot draw it, and its patch is not worth it. */
 const MAX_UNTRACKED_BYTES = 2 * 1024 * 1024;
@@ -39,6 +39,7 @@ type Logged = {
     author: string;
     at: number;
     subject: string;
+    body: string;
     unpushed?: boolean;
     remote?: boolean;
 };
@@ -217,9 +218,9 @@ function parseLog(output: string): Logged[] {
         .map((record) => record.replace(/^\n/, "").replace(/\n$/, ""))
         .filter((record) => record !== "")
         .map((record) => {
-            const [hash = "", short = "", author = "", at = "", subject = ""] = record.split("\0");
+            const [hash = "", short = "", author = "", at = "", subject = "", body = ""] = record.split("\0");
 
-            return { hash, short, author, at: Number(at) * 1000, subject };
+            return { hash, short, author, at: Number(at) * 1000, subject, body: body.trim() };
         });
 }
 
@@ -504,6 +505,90 @@ async function commitOf(web: Web, cwd: string, hash: string, options: DiffOption
     };
 }
 
+/** `git commit-tree` with the message on its stdin: it gives the new commit's id. */
+function commitTree(cwd: string, args: string[], message: string, env: NodeJS.ProcessEnv): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const child = execFile(
+            "git",
+            ["commit-tree", ...args, "-F", "-"],
+            { cwd, timeout: GIT_TIMEOUT_MS, windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: "0", ...env } },
+            (failure, stdout, stderr) => {
+                if (failure === null) {
+                    resolve(stdout.trim());
+                } else {
+                    reject(new Error(`${stderr}`.trim() || failure.message));
+                }
+            },
+        );
+
+        child.stdin?.end(message);
+    });
+}
+
+/**
+ * Gives a commit a new message, and writes again each commit after it on the branch, with the same trees, authors, and
+ * messages. The index and the files are not touched: no tree changes. A commit on the remote branch is refused, since a
+ * plain push could not send the new history.
+ */
+async function reword(web: Web, cwd: string, hash: string, message: string) {
+    const target = (await gitOrFail(web, cwd, ["rev-parse", "--verify", `${hash}^{commit}`])).trim();
+    const head = (await gitOrFail(web, cwd, ["rev-parse", "--verify", "HEAD"])).trim();
+    const onBranch = (ref: string) =>
+        git(cwd, ["merge-base", "--is-ancestor", target, ref]).then(
+            () => true,
+            () => false,
+        );
+
+    if (!(await onBranch("HEAD"))) {
+        throw web.error(400, "Only a commit of the checked-out branch can be edited.");
+    }
+
+    if ((await trackOf(cwd)).upstream !== undefined && (await onBranch("@{upstream}"))) {
+        throw web.error(400, "This commit is pushed already: its message cannot change here.");
+    }
+
+    const sign = await git(cwd, ["config", "--bool", "commit.gpgsign"]).then(
+        (value) => value.trim() === "true",
+        () => false,
+    );
+    const after = (
+        await gitOrFail(web, cwd, ["rev-list", "--reverse", "--topo-order", "--ancestry-path", "--parents", `${target}..${head}`])
+    )
+        .split("\n")
+        .filter((line) => line !== "");
+    const parentsOf = async (commit: string) =>
+        (await gitOrFail(web, cwd, ["show", "-s", "--format=%P", commit])).trim().split(" ").filter((p) => p !== "");
+    const renamed = new Map<string, string>();
+
+    for (const [commit, parents, text] of [
+        [target, await parentsOf(target), message] as const,
+        ...after.map((line) => {
+            const [commit = "", ...parents] = line.split(" ");
+
+            return [commit, parents, null] as const;
+        }),
+    ]) {
+        const [tree = "", name = "", email = "", date = "", body = ""] = (
+            await gitOrFail(web, cwd, ["show", "-s", "--date=raw", "--format=%T%x00%an%x00%ae%x00%ad%x00%B", commit])
+        ).split("\0");
+        const made = await commitTree(
+            cwd,
+            [tree, ...parents.flatMap((parent) => ["-p", renamed.get(parent) ?? parent]), ...(sign ? ["-S"] : [])],
+            text ?? `${body.trimEnd()}\n`,
+            { GIT_AUTHOR_NAME: name, GIT_AUTHOR_EMAIL: email, GIT_AUTHOR_DATE: date },
+        ).catch((failure: unknown) => {
+            throw web.error(400, failure instanceof Error ? failure.message : String(failure));
+        });
+
+        renamed.set(commit, made);
+    }
+
+    // With the old id, the move fails if the branch moved while this worked. The reflog keeps the old history.
+    await gitOrFail(web, cwd, ["update-ref", "-m", `git-history: reword ${target.slice(0, 7)}`, "HEAD", renamed.get(head)!, head]);
+
+    return { hash: renamed.get(target)! };
+}
+
 /** A review as the browser reads it: the child process is not part of the answer. */
 function answerOf(review: Review | undefined) {
     if (review === undefined) {
@@ -717,6 +802,31 @@ export default function createGitHistory(_host: unknown, web: Web) {
                 hunkSeparators: "line-info",
                 disableFileHeader: true,
             });
+        },
+        { conversation: "source" },
+    );
+
+    web.conversationRoute(
+        "POST",
+        "reword/:source/:commit",
+        async ({ conversation, params, body }) => {
+            const hash = params.commit ?? "";
+            const asked = (typeof body === "object" && body !== null ? body : {}) as {
+                subject?: unknown;
+                body?: unknown;
+            };
+            const subject = typeof asked.subject === "string" ? asked.subject.trim() : "";
+            const description = typeof asked.body === "string" ? asked.body.trim() : "";
+
+            if (!/^[0-9a-f]{4,64}$/i.test(hash)) {
+                throw web.error(400, "Not a commit id.");
+            }
+
+            if (subject === "" || subject.includes("\n")) {
+                throw web.error(400, "A commit needs a title of one line.");
+            }
+
+            return reword(web, conversation.cwd, hash, `${subject}\n${description === "" ? "" : `\n${description}\n`}`);
         },
         { conversation: "source" },
     );

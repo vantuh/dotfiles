@@ -430,3 +430,63 @@ test("a folder with nothing to review answers at once, and starts no tool", asyn
         error: "There is nothing to review.",
     });
 });
+
+test("reword gives an unpushed commit a new message, keeps the files, and refuses a pushed one", async () => {
+    const repo = join(root, "reword");
+    const remote = join(root, "reword.git");
+    const run = (...args: string[]) =>
+        execFileSync("git", args, { cwd: repo, encoding: "utf8", stdio: "pipe" }).trim();
+
+    mkdirSync(repo, { recursive: true });
+    run("init", "-q", "-b", "main");
+    run("config", "user.name", "Tess");
+    run("config", "user.email", "tess@example.com");
+    run("config", "commit.gpgsign", "false");
+    writeFileSync(join(repo, "r.txt"), "1\n");
+    run("add", ".");
+    run("commit", "-q", "-m", "pushed one");
+    execFileSync("git", ["init", "--bare", "-q", remote], { stdio: "pipe" });
+    run("remote", "add", "origin", remote);
+    run("push", "-q", "-u", "origin", "main");
+
+    for (const [line, subject] of [["2", "local two"], ["3", "local three"]] as const) {
+        writeFileSync(join(repo, "r.txt"), `${line}\n`);
+        run("commit", "-q", "-am", subject, "--author", "Other <other@example.com>");
+    }
+
+    // Work that is not committed stays as it is.
+    writeFileSync(join(repo, "r.txt"), "dirty\n");
+
+    const trees = run("log", "--format=%T");
+    const two = run("rev-parse", "HEAD~1");
+    const sessionId = await newSession(app, repo);
+    const posted = async (hash: string, body: object) => {
+        const response = await fetch(`${base}/api/x/git-history/reword/${sessionId}/${hash}`, {
+            method: "POST",
+            headers: {
+                authorization: `Bearer ${app.config.ownerToken}`,
+                "x-pocket": "1",
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+
+        return { status: response.status, data: (await response.json()) as Record<string, unknown> };
+    };
+
+    const done = await posted(two, { subject: "  better two ", body: "why\n\nmore" });
+
+    assert.equal(done.status, 200, JSON.stringify(done.data));
+    assert.equal(done.data.hash, run("rev-parse", "HEAD~1"));
+    assert.equal(run("log", "-1", "--format=%B", "HEAD~1"), "better two\n\nwhy\n\nmore");
+    assert.deepEqual(run("log", "--format=%s").split("\n"), ["local three", "better two", "pushed one"]);
+    assert.equal(run("log", "--format=%T"), trees);
+    assert.equal(run("log", "-1", "--format=%an <%ae>", "HEAD~1"), "Other <other@example.com>");
+    assert.equal(readFileSync(join(repo, "r.txt"), "utf8"), "dirty\n");
+
+    const pushed = await posted(run("rev-parse", "HEAD~2"), { subject: "new" });
+
+    assert.equal(pushed.status, 400);
+    assert.match(String(pushed.data.error), /pushed/);
+    assert.equal((await posted(run("rev-parse", "HEAD"), { subject: " " })).status, 400);
+});

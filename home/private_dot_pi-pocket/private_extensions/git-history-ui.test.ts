@@ -412,3 +412,51 @@ test(
         }
     },
 );
+
+test("the pencil of an unpushed commit opens a sheet that changes its message", real, async () => {
+    const git = (...args: string[]) =>
+        execFileSync("git", args, { cwd: project, encoding: "utf8", stdio: "pipe" }).trim();
+
+    git("config", "user.name", "Tess");
+    git("config", "user.email", "tess@example.com");
+    git("config", "commit.gpgsign", "false");
+    git("stash", "-q", "--include-untracked");
+    git("commit", "-q", "--allow-empty", "-m", "fourth commit", "-m", "old words");
+
+    await page.navigate(`${base}/s/${session}`);
+    await until(() => has('.ext-top-button[title="Git history"]'), "the history button");
+    await page.click({ selector: '.ext-top-button[title="Git history"]' });
+    await until(() => has(".gh-row"), "the commits");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Only the commit that is not pushed has a pencil.
+    assert.equal(
+        await inPage<number>(`return JSON.stringify(document.querySelectorAll(".gh-edit").length)`),
+        1,
+    );
+
+    await page.click({ selector: ".gh-edit" });
+    await until(() => has(".gh-reword textarea"), "the sheet");
+    // The sheet fades in too: a click while it does is let go.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    assert.equal(
+        await inPage<string>(`return JSON.stringify(document.querySelector(".gh-reword textarea").value)`),
+        "old words",
+    );
+
+    await page.evaluate(`
+        const set = (selector, value) => {
+            const field = document.querySelector(selector);
+            field.value = value;
+            field.dispatchEvent(new Event("input", { bubbles: true }));
+        };
+        set(".gh-reword input", "fourth, better");
+        set(".gh-reword textarea", "new words");
+        return "ok";
+    `);
+    await page.click({ selector: ".gh-reword .button.primary" });
+
+    await until(async () => (await text(".gh-subject")) === "fourth, better", "the new title in the list");
+    assert.equal(git("log", "-1", "--format=%B"), "fourth, better\n\nnew words");
+    await until(async () => !(await has(".gh-reword")), "the sheet to close");
+});
