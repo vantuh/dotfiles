@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * pipocket — Pi Pocket in the background, like piweb.
+ * pipocket — Pi Pocket in the background.
  *
  *   pipocket [up]    start the launcher detached, publish it to the tailnet,
  *                    print the address

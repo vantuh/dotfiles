@@ -3,7 +3,7 @@
  *
  * It transcribes 16 kHz mono WAV with transcribe.cpp on the GGUF model Handy
  * already downloaded, and does nothing else. The phone-facing recorder lives in
- * the pi-web mic shim, which is its only client, so there is no page here and it
+ * Pi Pocket's local-dictation extension, its only client, so there is no page here and it
  * listens on loopback alone. Audio never leaves this machine.
  *
  *   GET  /health      model name, whether it is warm, and any load error
@@ -65,7 +65,7 @@ let warmError: string | null = null;
  * Loads the model once and keeps it resident: a cold load takes ~16 s on an
  * M4 Pro (Metal + ~900 MB of weights), a warm transcription runs ~20x faster
  * than real time, so paying that once at startup is what makes the button in
- * pi-web feel instant.
+ * Pi Pocket feel instant.
  */
 function warm(): Promise<void> {
   warming ??= (async () => {

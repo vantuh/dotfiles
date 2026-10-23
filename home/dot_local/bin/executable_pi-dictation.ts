@@ -5,7 +5,7 @@
  * The server itself lives in ~/.local/share/pi-dictation (see its README notes
  * in src/server.ts); this only owns the process: it starts the daemon detached
  * with the model loading in the background, keeps its pid and log under
- * ~/.local/state/pi-dictation. The daemon answers the pi-web mic shim over
+ * ~/.local/state/pi-dictation. The daemon answers Pi Pocket's local-dictation extension over
  * loopback and is published nowhere.
  *
  *   pi-dictation up      start if needed and wait for the model to be ready
@@ -110,7 +110,7 @@ async function report(pid: number): Promise<number> {
     if (state?.ready) {
       console.log(`pi-dictation: ready (pid ${pid}, ${state.model})`);
       console.log(
-        `pi-dictation: listening on http://127.0.0.1:${PORT} for the pi-web mic shim`,
+        `pi-dictation: listening on http://127.0.0.1:${PORT} for Pi Pocket`,
       );
       return 0;
     }

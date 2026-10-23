@@ -1,5 +1,5 @@
 /**
- * Process and environment helpers shared by the local service CLIs (piweb,
+ * Process and environment helpers shared by the local service CLIs (pipocket,
  * hwui, pi-dictation).
  *
  * They all start a detached server, find out whether it answers, and stop it by
