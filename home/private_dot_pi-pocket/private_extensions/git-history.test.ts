@@ -353,6 +353,26 @@ test("the review route sends the patch to Plannotator, and the page reads its an
     assert.match(patch, /\+untouched/);
 });
 
+test("a commit's review gets its own patch", async () => {
+    const heard = join(root, "review-commit.diff");
+    const bin = fakeTool(heard);
+    const before = process.env.PATH;
+    const hash = execFileSync("git", ["rev-parse", "HEAD"], { cwd: project, encoding: "utf8" }).trim();
+
+    await withPath(`${bin}:${before ?? ""}`, async () => {
+        const started = await post(`/api/x/git-history/review/${id}/${hash}`);
+
+        assert.deepEqual(started.data, { ok: true });
+
+        const review = () => call(`/api/x/git-history/review/${id}/${hash}`).then((answer) => answer.data);
+
+        await until(async () => (await review()).state !== "running", "the review's answer");
+        assert.equal((await review()).state, "done");
+    });
+
+    assert.match(readFileSync(heard, "utf8"), /\+three/);
+});
+
 test("a merge commit's review gets what it brought to its first parent", async () => {
     const heard = join(root, "review-merge.diff");
     const bin = fakeTool(heard);

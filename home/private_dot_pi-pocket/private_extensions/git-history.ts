@@ -344,7 +344,7 @@ async function patchOf(web: Web, cwd: string, target: string): Promise<string> {
     }
 
     const meta = await gitOrFail(web, cwd, ["show", "-s", "--format=%H%x00%P", target]);
-    const [full = "", parents = ""] = meta.split("\0");
+    const [full = "", parents = ""] = meta.trim().split("\0");
 
     return commitPatch(web, cwd, full, parents.split(" ").filter((parent) => parent !== ""));
 }
