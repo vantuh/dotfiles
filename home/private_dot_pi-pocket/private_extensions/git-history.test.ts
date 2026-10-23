@@ -7,11 +7,12 @@ import {
     owner,
     root,
     scriptedModel,
+    until,
 } from "/Users/vantuh/projects/opensource-test/pi-pocket/test/helpers.ts";
 import { createHandler } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/http.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
@@ -21,12 +22,14 @@ const dropIns = join(dataDir, "extensions");
 const project = join(root, "project");
 const origin = join(root, "origin.git");
 const plain = join(root, "plain");
+const merged = join(root, "merged");
 
 let app: Awaited<ReturnType<typeof openApp>>;
 let server: Server;
 let base = "";
 let id: number;
 let plainId: number;
+let mergedId: number;
 let guestToken = "";
 
 before(async () => {
@@ -66,6 +69,25 @@ before(async () => {
     writeFileSync(join(project, "a.txt"), "one\ntwo\nthree\n");
     git("commit", "-q", "-am", "third commit");
 
+    // A repository whose newest commit is a merge: its patch is what it brought to its first parent.
+    mkdirSync(merged, { recursive: true });
+    const mergeGit = (...args: string[]) =>
+        execFileSync("git", args, { cwd: merged, stdio: "pipe", env: { ...process.env, ...identity } });
+
+    mergeGit("init", "-q", "-b", "main");
+    writeFileSync(join(merged, "m.txt"), "base\n");
+    mergeGit("add", ".");
+    mergeGit("commit", "-q", "-m", "base");
+    mergeGit("checkout", "-q", "-b", "side");
+    writeFileSync(join(merged, "side.txt"), "side\n");
+    mergeGit("add", ".");
+    mergeGit("commit", "-q", "-m", "side work");
+    mergeGit("checkout", "-q", "main");
+    writeFileSync(join(merged, "main.txt"), "main\n");
+    mergeGit("add", ".");
+    mergeGit("commit", "-q", "-m", "main work");
+    mergeGit("merge", "-q", "--no-ff", "side", "-m", "merge side");
+
     app = await openApp(scriptedModel(), dataDir);
     server = createServer(
         createHandler({ app, listen: { host: "127.0.0.1", port: 0 }, restart: () => {} }),
@@ -77,6 +99,7 @@ before(async () => {
     await app.setExtensionEnabled(owner(app), "git-history.ts", true);
     id = await newSession(app, project);
     plainId = await newSession(app, plain);
+    mergedId = await newSession(app, merged);
 });
 
 after(async () => {
@@ -111,6 +134,37 @@ async function call(path: string, asGuest = false) {
     });
 
     return { status: response.status, data: (await response.json()) as Record<string, unknown> };
+}
+
+/** Runs `run` with `PATH` set to `path`, and puts the old one back afterwards. */
+async function withPath(path: string, run: () => Promise<void>) {
+    const before = process.env.PATH;
+
+    process.env.PATH = path;
+
+    try {
+        await run();
+    } finally {
+        if (before === undefined) {
+            delete process.env.PATH;
+        } else {
+            process.env.PATH = before;
+        }
+    }
+}
+
+/** A fake review tool in a folder of its own: it keeps the patch it reads, waits, and answers as Plannotator does. */
+function fakeTool(heard: string): string {
+    const bin = join(root, `fake-bin-${Math.random().toString(36).slice(2)}`);
+
+    mkdirSync(bin, { recursive: true });
+    writeFileSync(
+        join(bin, "plannotator"),
+        `#!/bin/sh\ncat > "${heard}"\nsleep 0.5\nprintf '%s' '{"decision":"annotated","message":"# Code Review Feedback\\n\\n- one"}'\n`,
+        { mode: 0o755 },
+    );
+
+    return bin;
 }
 
 test("the log route lists the session folder's commits, newest first, and how far they are unpushed", async () => {
@@ -258,4 +312,101 @@ test("the uncommitted work is the changes against the last commit, and each new 
 
 test("someone who cannot see the session cannot read its history", async () => {
     assert.equal((await call(`/api/x/git-history/log/${id}`, true)).status, 404);
+});
+
+test("the review route sends the patch to Plannotator, and the page reads its answer", async () => {
+    const heard = join(root, "review-patch.diff");
+    const bin = fakeTool(heard);
+    const before = process.env.PATH;
+
+    writeFileSync(join(project, "a.txt"), "one\ntwo\nthree\nfour\nfive\n");
+    writeFileSync(join(project, "c.txt"), "untouched\n");
+
+    await withPath(`${bin}:${before ?? ""}`, async () => {
+        const started = await post(`/api/x/git-history/review/${id}/worktree`);
+
+        assert.equal(started.status, 200, JSON.stringify(started.data));
+        assert.deepEqual(started.data, { ok: true });
+        assert.equal(
+            (await call(`/api/x/git-history/review/${id}/worktree`)).data.state,
+            "running",
+        );
+
+        const review = () =>
+            call(`/api/x/git-history/review/${id}/worktree`).then((answer) => answer.data);
+
+        await until(async () => (await review()).state !== "running", "the review's answer");
+
+        const done = await review();
+
+        assert.equal(done.state, "done");
+        assert.equal(done.decision, "annotated");
+        assert.equal(done.message, "# Code Review Feedback\n\n- one");
+    });
+
+    // The tool read the patch on its stdin: the change to the tracked file, and the new one.
+    const patch = readFileSync(heard, "utf8");
+
+    assert.match(patch, /diff --git a\/a\.txt b\/a\.txt/);
+    assert.match(patch, /\+five/);
+    assert.match(patch, /diff --git a\/c\.txt b\/c\.txt/);
+    assert.match(patch, /\+untouched/);
+});
+
+test("a merge commit's review gets what it brought to its first parent", async () => {
+    const heard = join(root, "review-merge.diff");
+    const bin = fakeTool(heard);
+    const before = process.env.PATH;
+    const hash = execFileSync("git", ["rev-parse", "HEAD"], { cwd: merged, encoding: "utf8" }).trim();
+
+    await withPath(`${bin}:${before ?? ""}`, async () => {
+        const started = await post(`/api/x/git-history/review/${mergedId}/${hash}`);
+
+        assert.deepEqual(started.data, { ok: true });
+
+        const review = () =>
+            call(`/api/x/git-history/review/${mergedId}/${hash}`).then((answer) => answer.data);
+
+        await until(async () => (await review()).state !== "running", "the review's answer");
+        assert.equal((await review()).state, "done");
+    });
+
+    // `git show` prints nothing for a merge: the patch is the side branch's file, not the work already on main.
+    const patch = readFileSync(heard, "utf8");
+
+    assert.match(patch, /diff --git a\/side\.txt b\/side\.txt/);
+    assert.doesNotMatch(patch, /diff --git a\/main\.txt/);
+});
+
+test("a missing review tool is a failure that names Plannotator", async () => {
+    // Git still needs a folder on PATH: this one has it, and no review tool.
+    await withPath("/usr/bin:/bin", async () => {
+        const started = await post(`/api/x/git-history/review/${id}/worktree`);
+
+        assert.equal(started.status, 200, JSON.stringify(started.data));
+
+        const review = () =>
+            call(`/api/x/git-history/review/${id}/worktree`).then((answer) => answer.data);
+
+        await until(async () => (await review()).state === "failed", "the review's failure");
+
+        assert.match(String((await review()).error), /Plannotator/);
+    });
+});
+
+test("a folder with nothing to review answers at once, and starts no tool", async () => {
+    const clean = join(root, "clean");
+
+    mkdirSync(clean, { recursive: true });
+    execFileSync("git", ["init", "-q", "-b", "main", clean], { stdio: "pipe" });
+
+    const cleanId = await newSession(app, clean);
+    const { status, data } = await post(`/api/x/git-history/review/${cleanId}/worktree`);
+
+    assert.equal(status, 200);
+    assert.deepEqual(data, { state: "failed", error: "There is nothing to review." });
+    assert.deepEqual((await call(`/api/x/git-history/review/${cleanId}/worktree`)).data, {
+        state: "failed",
+        error: "There is nothing to review.",
+    });
 });

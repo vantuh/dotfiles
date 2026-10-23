@@ -2,7 +2,7 @@
  * Git history: lists the commits of the session's folder, newest first, and shows the diff of each one, beside the
  * app's own Changes and Branch views. Each file's diff is rendered by `@pierre/diffs` (`lib/pierre-ssr.js`).
  */
-import { execFile } from "node:child_process";
+import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
 // In the drop-in folder, the types come from "./_pocket.d.ts".
@@ -23,6 +23,12 @@ const LOG_FORMAT = "%H%x00%h%x00%an%x00%at%x00%s%x1e";
 const SHOW_FORMAT = "%H%x00%h%x00%an%x00%ae%x00%at%x00%P%x00%s%x00%b";
 /** An untracked file over this size is named but not read: the page cannot draw it, and its patch is not worth it. */
 const MAX_UNTRACKED_BYTES = 2 * 1024 * 1024;
+
+/** The review tool: it opens the diff in the browser, and blocks until the person approves, writes, or closes. */
+const REVIEW_TOOL = "plannotator";
+/** The target of the uncommitted work in a review's address; a commit's own target is its hash. */
+const REVIEW_WORKTREE = "worktree";
+const REVIEW_STOP_MS = 2_000;
 
 type Kind = "modified" | "added" | "deleted" | "renamed";
 
@@ -49,6 +55,17 @@ type FilePatch = {
 
 type Pierre = typeof import("./lib/pierre-ssr.js");
 type DiffOptions = NonNullable<Parameters<Pierre["preloadPatchDiff"]>[0]["options"]>;
+
+type Decision = "approved" | "annotated" | "dismissed";
+
+/** One review: the tool is working, or it has answered, or it could not run. */
+type Review =
+    | { state: "running"; child: ChildProcess }
+    | { state: "done"; decision: Decision; message: string }
+    | { state: "failed"; error: string };
+
+/** The reviews of each conversation, by the target they open: one tool at a time for a conversation. */
+const reviews = new Map<number, Map<string, Review>>();
 
 /** The renderer is a bundle of `@pierre/diffs`, about 10 MB: read it when a commit is first opened, not at startup. */
 let renderer: Promise<Pierre> | undefined;
@@ -246,10 +263,10 @@ async function filesOf(patch: string, options: DiffOptions) {
 }
 
 /**
- * The folder's uncommitted work: the changes to tracked files against the last commit, then each untracked file as a
- * new one. A folder with no commit yet compares what is staged instead.
+ * The folder's uncommitted work as one patch: the changes to tracked files against the last commit, then each untracked
+ * file as a new one. A folder with no commit yet compares what is staged instead. `left` names what was too big.
  */
-async function worktreeOf(web: Web, cwd: string, options: DiffOptions) {
+async function worktreePatch(web: Web, cwd: string) {
     const inside = await git(cwd, ["rev-parse", "--is-inside-work-tree"]).then(
         (answer) => answer.trim() === "true",
         () => false,
@@ -299,7 +316,13 @@ async function worktreeOf(web: Web, cwd: string, options: DiffOptions) {
         );
     }
 
-    const files = await filesOf(parts.join(""), options);
+    return { patch: parts.join(""), left };
+}
+
+/** The folder's uncommitted work: its files, each with its diff as HTML. */
+async function worktreeOf(web: Web, cwd: string, options: DiffOptions) {
+    const { patch, left } = await worktreePatch(web, cwd);
+    const files = await filesOf(patch, options);
 
     return {
         files,
@@ -308,6 +331,22 @@ async function worktreeOf(web: Web, cwd: string, options: DiffOptions) {
         left,
         omitted: files.filter((file) => file.skipped).length,
     };
+}
+
+/** The patch text of a review's target, without rendering it: the uncommitted work, or one commit. */
+async function patchOf(web: Web, cwd: string, target: string): Promise<string> {
+    if (target === REVIEW_WORKTREE) {
+        return (await worktreePatch(web, cwd)).patch;
+    }
+
+    if (!/^[0-9a-f]{4,64}$/i.test(target)) {
+        throw web.error(400, "Not a commit id.");
+    }
+
+    const meta = await gitOrFail(web, cwd, ["show", "-s", "--format=%H%x00%P", target]);
+    const [full = "", parents = ""] = meta.split("\0");
+
+    return commitPatch(web, cwd, full, parents.split(" ").filter((parent) => parent !== ""));
 }
 
 /** How many files the folder has changed, staged or not, and untracked ones too. */
@@ -427,6 +466,13 @@ async function logOf(web: Web, cwd: string, limit: number) {
     };
 }
 
+/** A commit's patch: a merge shows what it brought to its first parent, as GitHub's own view does; a root shows all. */
+function commitPatch(web: Web, cwd: string, full: string, parents: string[]): Promise<string> {
+    return parents.length > 0
+        ? gitOrFail(web, cwd, ["diff", "--no-color", "--find-renames", parents[0]!, full])
+        : gitOrFail(web, cwd, ["show", "--no-color", "--format=", "--patch", full]);
+}
+
 /** One commit: who wrote it, when, what it says, and its files, each with its diff as HTML. */
 async function commitOf(web: Web, cwd: string, hash: string, options: DiffOptions) {
     const meta = await gitOrFail(web, cwd, ["show", "-s", "--date=unix", `--format=${SHOW_FORMAT}`, hash]);
@@ -441,11 +487,7 @@ async function commitOf(web: Web, cwd: string, hash: string, options: DiffOption
         body = "",
     ] = meta.split("\0");
     const before = parents.split(" ").filter((parent) => parent !== "");
-    // A merge shows what it brought to its first parent, as GitHub's own view does; a root commit shows all of it.
-    const patch =
-        before.length > 0
-            ? await gitOrFail(web, cwd, ["diff", "--no-color", "--find-renames", before[0]!, full])
-            : await gitOrFail(web, cwd, ["show", "--no-color", "--format=", "--patch", full]);
+    const patch = await commitPatch(web, cwd, full, before);
     const files = await filesOf(patch, options);
 
     return {
@@ -460,6 +502,144 @@ async function commitOf(web: Web, cwd: string, hash: string, options: DiffOption
         files,
         omitted: files.filter((file) => file.skipped).length,
     };
+}
+
+/** A review as the browser reads it: the child process is not part of the answer. */
+function answerOf(review: Review | undefined) {
+    if (review === undefined) {
+        return { state: "none" };
+    }
+
+    return review.state === "running" ? { state: "running" } : review;
+}
+
+/** Keeps a review that did not start, and gives the answer that says why. */
+function failedOf(id: number, target: string, error: string) {
+    const ofConversation = reviews.get(id) ?? new Map<string, Review>();
+
+    reviews.set(id, ofConversation);
+    ofConversation.set(target, { state: "failed", error });
+
+    return { state: "failed", error };
+}
+
+/** Ends a review's tool, and gives up waiting for it after the timeout. */
+function stopReview(child: ChildProcess): Promise<void> {
+    return new Promise((resolve) => {
+        if (child.exitCode !== null || child.signalCode !== null) {
+            resolve();
+            return;
+        }
+
+        const timer = setTimeout(resolve, REVIEW_STOP_MS);
+
+        child.once("close", () => {
+            clearTimeout(timer);
+            resolve();
+        });
+        child.kill();
+    });
+}
+
+/** One review's answer from the tool: one JSON record, or the reason there is none. */
+function parseReview(output: string): { decision: Decision; message: string } | null {
+    let answer: unknown;
+
+    try {
+        answer = JSON.parse(output.trim());
+    } catch {
+        return null;
+    }
+
+    const { decision, message } = (typeof answer === "object" && answer !== null ? answer : {}) as {
+        decision?: unknown;
+        message?: unknown;
+    };
+
+    if (decision !== "approved" && decision !== "annotated" && decision !== "dismissed") {
+        return null;
+    }
+
+    return { decision, message: typeof message === "string" ? message : "" };
+}
+
+/**
+ * Starts the review tool for one target: the patch goes to its stdin, and its one answer becomes the review's state.
+ * A review that runs in the same conversation is ended first, so one person sees one tab at a time.
+ */
+function startReview(id: number, cwd: string, target: string, patch: string) {
+    const ofConversation = reviews.get(id) ?? new Map<string, Review>();
+
+    reviews.set(id, ofConversation);
+
+    for (const [key, review] of ofConversation) {
+        if (review.state === "running") {
+            ofConversation.set(key, { state: "failed", error: "Another review replaced this one." });
+            review.child.kill();
+        }
+    }
+
+    const child = spawn(REVIEW_TOOL, ["review", "--patch-file", "-", "--json"], {
+        cwd,
+        env: { ...process.env, PLANNOTATOR_ORIGIN: "pi" },
+        stdio: ["pipe", "pipe", "pipe"],
+        windowsHide: true,
+    });
+    const record: Review = { state: "running", child };
+    /** Writes the state unless the review was replaced while the tool worked. */
+    const settle = (next: Review) => {
+        if (ofConversation.get(target) === record) {
+            ofConversation.set(target, next);
+        }
+    };
+    let stdout = "";
+    let stderr = "";
+
+    ofConversation.set(target, record);
+    child.stdout?.setEncoding("utf8");
+    child.stdout?.on("data", (text: string) => {
+        stdout += text;
+    });
+    child.stderr?.setEncoding("utf8");
+    child.stderr?.on("data", (text: string) => {
+        stderr += text;
+    });
+    // The tool may stop before it reads the whole patch: that is its answer, not this module's failure.
+    child.stdin?.on("error", () => {});
+    child.stdin?.end(patch);
+
+    child.on("error", (failure: NodeJS.ErrnoException) => {
+        settle({
+            state: "failed",
+            error:
+                failure.code === "ENOENT"
+                    ? "Plannotator is not installed, or it is not on PATH."
+                    : `Plannotator could not start: ${failure.message}`,
+        });
+    });
+
+    child.on("close", (code, signal) => {
+        const said = stderr.trim().slice(0, 300);
+
+        if (code !== 0) {
+            settle({
+                state: "failed",
+                error:
+                    said !== ""
+                        ? `Plannotator failed: ${said}`
+                        : `Plannotator stopped without an answer (${signal ?? `exit code ${code}`}).`,
+            });
+            return;
+        }
+
+        const answer = parseReview(stdout);
+
+        settle(
+            answer === null
+                ? { state: "failed", error: "Plannotator gave an answer that is not a review decision." }
+                : { state: "done", ...answer },
+        );
+    });
 }
 
 export default function createGitHistory(_host: unknown, web: Web) {
@@ -561,6 +741,57 @@ export default function createGitHistory(_host: unknown, web: Web) {
         },
         { conversation: "source" },
     );
+
+    // The review: the tool opens the patch in the browser, and the page polls until the person answers.
+    web.conversationRoute(
+        "POST",
+        "review/:source/:target",
+        async ({ conversation, params }) => {
+            const target = params.target ?? "";
+            let patch: string;
+
+            try {
+                patch = await patchOf(web, conversation.cwd, target);
+            } catch (failure) {
+                return failedOf(
+                    conversation.id,
+                    target,
+                    failure instanceof Error ? failure.message : String(failure),
+                );
+            }
+
+            if (patch.trim() === "") {
+                return failedOf(conversation.id, target, "There is nothing to review.");
+            }
+
+            startReview(conversation.id, conversation.cwd, target, patch);
+
+            return { ok: true };
+        },
+        { conversation: "source" },
+    );
+
+    web.conversationRoute(
+        "GET",
+        "review/:source/:target",
+        ({ conversation, params }) => answerOf(reviews.get(conversation.id)?.get(params.target ?? "")),
+        { conversation: "source" },
+    );
+
+    // A review holds a terminal and a browser tab: when this version goes, the tool goes with it.
+    web.onDispose(async () => {
+        const running: ChildProcess[] = [];
+
+        for (const ofConversation of reviews.values()) {
+            for (const review of ofConversation.values()) {
+                if (review.state === "running") {
+                    running.push(review.child);
+                }
+            }
+        }
+
+        await Promise.all(running.map((child) => stopReview(child)));
+    });
 
     web.client("history-ui");
 }

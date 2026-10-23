@@ -15,7 +15,7 @@ import type { BrowserPage } from "/Users/vantuh/projects/opensource-test/pi-pock
 import { createHandler } from "/Users/vantuh/projects/opensource-test/pi-pocket/src/server/http.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
@@ -52,6 +52,20 @@ const text = (selector: string) =>
     inPage<string>(
         `return JSON.stringify(document.querySelector(${JSON.stringify(selector)})?.textContent.trim() ?? "")`,
     );
+
+/** A fake review tool in a folder of its own: it keeps the patch it reads, waits, and answers as Plannotator does. */
+function fakeTool(heard: string): string {
+    const bin = join(root, `fake-bin-${Math.random().toString(36).slice(2)}`);
+
+    mkdirSync(bin, { recursive: true });
+    writeFileSync(
+        join(bin, "plannotator"),
+        `#!/bin/sh\ncat > "${heard}"\nsleep 0.5\nprintf '%s' '{"decision":"annotated","message":"# Code Review Feedback\\n\\n- one"}'\n`,
+        { mode: 0o755 },
+    );
+
+    return bin;
+}
 
 before(async () => {
     mkdirSync(dropIns, { recursive: true });
@@ -331,5 +345,70 @@ test(
                 ),
             "the added line",
         );
+    },
+);
+
+test(
+    "the Review button sends the work to Plannotator, and its comments reach the message box",
+    real,
+    async () => {
+        writeFileSync(
+            join(project, "a.txt"),
+            `${Array.from({ length: 150 }, (_, index) => `four line ${index + 1}`).join("\n")}\nreview me\n`,
+        );
+
+        const heard = join(root, "ui-review-patch.diff");
+        const bin = fakeTool(heard);
+        const before = process.env.PATH;
+
+        process.env.PATH = `${bin}:${before ?? ""}`;
+
+        try {
+            await page.navigate(`${base}/s/${session}`);
+            await until(() => has('.ext-top-button[title="Git history"]'), "the history button");
+            await page.click({ selector: '.ext-top-button[title="Git history"]' });
+            await until(() => has(".gh-dot-work"), "the row for the uncommitted work");
+
+            // The page fades in: a click while it does is let go (back.js), as the app's own UI tests wait it out.
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            await page.click({ selector: ".gh-item:first-child .gh-row" });
+            await until(() => has(".gh-review .button"), "the review button");
+            assert.equal(await text(".gh-review .button"), "Review");
+
+            await page.click({ selector: ".gh-review .button" });
+            await until(
+                async () => (await text(".gh-review .button")) === "Reviewing…",
+                "the review to start",
+            );
+            await until(
+                async () => (await text(".gh-review .button")) === "Review",
+                "the review to finish",
+            );
+
+            // The tool read the uncommitted work on its stdin.
+            const patch = readFileSync(heard, "utf8");
+
+            assert.match(patch, /diff --git a\/a\.txt b\/a\.txt/);
+            assert.match(patch, /\+review me/);
+
+            // The page covers the message box, so the text waits for it: closing the page brings both.
+            await page.press("Escape");
+            await until(() => has(".composer textarea"), "the message box");
+            await until(
+                async () =>
+                    (
+                        await inPage<string>(
+                            `return JSON.stringify(document.querySelector(".composer textarea").value)`,
+                        )
+                    ).includes("# Code Review Feedback"),
+                "the review's comments in the message box",
+            );
+        } finally {
+            if (before === undefined) {
+                delete process.env.PATH;
+            } else {
+                process.env.PATH = before;
+            }
+        }
     },
 );

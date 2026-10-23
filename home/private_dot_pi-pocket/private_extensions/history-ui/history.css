@@ -248,6 +248,13 @@
     overflow: hidden;
 }
 
+.gh-review {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
 .gh-foot {
     display: flex;
     flex-wrap: wrap;

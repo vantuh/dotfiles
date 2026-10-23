@@ -10,6 +10,8 @@ const KINDS = { added: "A", deleted: "D", renamed: "R", modified: "M" };
 /** The target of work that is not committed yet; a commit's own target is its hash. */
 const WORKTREE = "worktree";
 const WORKTREE_HEADING = "Uncommitted changes";
+/** How often the page asks whether the review tool has answered. */
+const REVIEW_POLL_MS = 1_500;
 
 /** How long ago, in a few characters, as the app's branch list says it. */
 function since(at) {
@@ -114,6 +116,107 @@ export default function setup(pocket) {
      */
     function Section({ id, target, onLoaded }) {
         const [state, setState] = useState({ loading: true });
+        const [review, setReview] = useState({ state: "none" });
+        /** The review's requests: a folded row or another page stops them. */
+        const reviewStop = useRef(null);
+        const reviewTimer = useRef(null);
+
+        useEffect(() => {
+            const stop = new AbortController();
+
+            reviewStop.current = stop;
+
+            return () => {
+                stop.abort();
+                clearTimeout(reviewTimer.current);
+            };
+        }, [id, target]);
+
+        /** Writes the review's answer: on `done` its text goes to the message box, on `failed` the panel says why. */
+        const settleReview = (answer) => {
+            setReview(answer);
+
+            if (answer.state === "failed") {
+                pocket.notify("error", answer.error);
+            } else if (answer.state === "done" && answer.decision === "dismissed") {
+                pocket.notify("info", "The review was closed without comments.");
+            } else if (answer.state === "done" && answer.message !== "") {
+                pocket.insertText(answer.message);
+                pocket.notify("info", "The review's comments are in the message box.");
+            } else if (answer.state === "done") {
+                pocket.notify("info", "Approved.");
+            }
+        };
+
+        /** Asks for the review's state until it is no longer running. */
+        const pollReview = async () => {
+            const stop = reviewStop.current;
+
+            try {
+                const answer = await pocket.api(`review/${id}/${target}`, undefined, {
+                    signal: stop.signal,
+                });
+
+                if (stop.signal.aborted) {
+                    return;
+                }
+
+                if (answer.state === "running") {
+                    setReview(answer);
+                    reviewTimer.current = setTimeout(() => void pollReview(), REVIEW_POLL_MS);
+                    return;
+                }
+
+                settleReview(answer);
+            } catch (failure) {
+                if (!stop.signal.aborted) {
+                    settleReview({ state: "failed", error: failure.message });
+                }
+            }
+        };
+
+        const startReview = async () => {
+            const stop = reviewStop.current;
+
+            // The button says it at once, and a second click waits: one review for one target.
+            setReview({ state: "running" });
+
+            try {
+                const answer = await pocket.api(`review/${id}/${target}`, {}, {
+                    method: "POST",
+                    signal: stop.signal,
+                });
+
+                if (stop.signal.aborted) {
+                    return;
+                }
+
+                if (answer.ok === true) {
+                    await pollReview();
+                } else {
+                    settleReview(answer);
+                }
+            } catch (failure) {
+                if (!stop.signal.aborted) {
+                    settleReview({ state: "failed", error: failure.message });
+                }
+            }
+        };
+
+        // A row that folds and opens again during a review finds it still running on the server.
+        useEffect(() => {
+            const stop = reviewStop.current;
+
+            pocket.api(`review/${id}/${target}`, undefined, { signal: stop.signal }).then(
+                (answer) => {
+                    if (!stop.signal.aborted && answer.state === "running") {
+                        setReview(answer);
+                        void pollReview();
+                    }
+                },
+                () => {},
+            );
+        }, [id, target]);
 
         useEffect(() => {
             const stop = new AbortController();
@@ -176,6 +279,18 @@ export default function setup(pocket) {
                 ${answer.files.length} ${answer.files.length === 1 ? "file" : "files"} ·
                 <span class="gh-add">${counts(added, 0)}</span> <span class="gh-del">${counts(0, removed)}</span>
             </p>
+            <div class="gh-review">
+                <button
+                    class="button"
+                    type="button"
+                    disabled=${review.state === "running"}
+                    onClick=${() => void startReview()}
+                >
+                    ${review.state === "running" ? "Reviewing…" : "Review"}
+                </button>
+                <span class="muted small">Open this diff in Plannotator.</span>
+            </div>
+            ${review.state === "failed" ? html`<p class="error-box">${review.error}</p>` : null}
             ${answer.left !== undefined && answer.left.length > 0
                 ? html`<p class="muted small gh-note">Too big to show: ${answer.left.join(", ")}</p>`
                 : null}
