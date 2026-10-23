@@ -87,7 +87,7 @@ after(async () => {
 });
 
 /** A POST as the owner. */
-async function post(path: string, body: object = {}) {
+async function post(path: string) {
     const response = await fetch(`${base}${path}`, {
         method: "POST",
         headers: {
@@ -95,7 +95,7 @@ async function post(path: string, body: object = {}) {
             "x-pocket": "1",
             "content-type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: "{}",
     });
 
     return { status: response.status, data: (await response.json()) as Record<string, unknown> };
@@ -140,10 +140,7 @@ test("the commit route shows one commit's files, each with the diff that @pierre
     const hash = (log.data.commits as { hash: string; subject: string }[]).find(
         (commit) => commit.subject === "second commit",
     )!.hash;
-    const { status, data } = await post(`/api/x/git-history/commit/${id}/${hash}`, {
-        theme: "dark",
-        style: "split",
-    });
+    const { status, data } = await call(`/api/x/git-history/commit/${id}/${hash}?theme=dark&style=split`);
     const files = data.files as {
         path: string;
         added: number;
@@ -225,7 +222,7 @@ test("a commit that is only on the remote comes first, marked as not pulled", as
 });
 
 test("a commit id that is not one, and a folder outside a repository, get 400 with the reason", async () => {
-    assert.equal((await post(`/api/x/git-history/commit/${id}/nope`)).status, 400);
+    assert.equal((await call(`/api/x/git-history/commit/${id}/nope`)).status, 400);
 
     const outside = await call(`/api/x/git-history/log/${plainId}`);
 
@@ -233,42 +230,10 @@ test("a commit id that is not one, and a folder outside a repository, get 400 wi
     assert.match(String(outside.data.error), /not a git repository/);
 });
 
-test("a comment comes back as a slot under its own line, and only on a line the diff shows", async () => {
+test("the uncommitted work is the changes against the last commit, and each new file", async () => {
     writeFileSync(join(project, "a.txt"), "one\ntwo\nthree\nfour\n");
     writeFileSync(join(project, "b.txt"), "fresh\nlines\n");
 
-    const { status, data } = await post(`/api/x/git-history/worktree/${id}`, {
-        theme: "dark",
-        style: "unified",
-        comments: [
-            { path: "a.txt", side: "additions", line: 4 },
-            { path: "b.txt", side: "additions", line: 2 },
-            // A line the diff does not show, and a path it does not have: both are left out.
-            { path: "a.txt", side: "additions", line: 900 },
-            { path: "gone.txt", side: "additions", line: 1 },
-        ],
-    });
-    const files = data.files as { path: string; kind: string; html: string; error: string }[];
-
-    assert.equal(status, 200);
-    assert.deepEqual(
-        files.map((file) => [file.path, file.kind]),
-        [
-            ["a.txt", "modified"],
-            ["b.txt", "added"],
-        ],
-    );
-
-    const inA = files[0]!.html;
-    const inB = files[1]!.html;
-
-    // The renderer writes the slot in the shadow root; the page fills it from the light DOM.
-    assert.match(inA, /name="annotation-additions-4"/);
-    assert.doesNotMatch(inA, /annotation-additions-900/);
-    assert.match(inB, /name="annotation-additions-2"/);
-});
-
-test("the uncommitted work is the changes against the last commit, and each new file", async () => {
     const { status, data } = await post(`/api/x/git-history/worktree/${id}`);
     const files = data.files as { path: string; kind: string; added: number; html: string }[];
 

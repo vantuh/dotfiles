@@ -303,7 +303,7 @@ test(
 );
 
 test(
-    "a comment on an uncommitted line shows in the diff, stays after a fresh load, and goes to Pi as a message",
+    "the uncommitted work is the first row, and opens into its diff",
     real,
     async () => {
         writeFileSync(
@@ -315,153 +315,21 @@ test(
         await until(() => has('.ext-top-button[title="Git history"]'), "the history button");
         await page.click({ selector: '.ext-top-button[title="Git history"]' });
 
-        // The uncommitted work comes first, and opens like a commit.
         await until(() => has(".gh-dot-work"), "the row for the uncommitted work");
         assert.match(await text(".gh-item:first-child .gh-subject"), /Uncommitted changes/);
+        assert.match(await text(".gh-item:first-child .gh-row-meta"), /1 file changed/);
+
+        // The page fades in: a click while it does is let go (back.js), as the app's own UI tests wait it out.
         await new Promise((resolve) => setTimeout(resolve, 500));
         await page.click({ selector: ".gh-item:first-child .gh-row" });
         await until(() => has(".gh-file .gh-diff-view"), "the uncommitted diff");
-
-        // A pointer that rests on a line's number shows a plus there, beside the number.
-        const at = () =>
-            inPage<{ x: number; y: number }>(`
-                const gutter = document
-                    .querySelector(".gh-diff-view")
-                    .shadowRoot.querySelector('[data-column-number="151"]');
-
-                gutter.scrollIntoView({ block: "center" });
-                const rect = gutter.getBoundingClientRect();
-
-                return JSON.stringify({
-                    x: Math.round(rect.left + rect.width / 2),
-                    y: Math.round(rect.top + rect.height / 2),
-                });
-            `);
-        // The plus is a box with two bars in it, drawn in the CSS and not in the renderer's HTML.
-        const plus = () =>
-            inPage<{ bars: number; color: string; width: number; height: number }>(`
-                const gutter = document
-                    .querySelector(".gh-diff-view")
-                    .shadowRoot.querySelector('[data-column-number="151"]');
-                const style = getComputedStyle(gutter, "::after");
-
-                return JSON.stringify({
-                    bars: style.backgroundImage.split("linear-gradient").length - 1,
-                    color: style.backgroundColor,
-                    width: Math.round(parseFloat(style.width)),
-                    height: Math.round(parseFloat(style.height)),
-                });
-            `);
-
-        const point = await at();
-
-        const numberOpacity = () =>
-            inPage<string>(`
-                const gutter = document
-                    .querySelector(".gh-diff-view")
-                    .shadowRoot.querySelector('[data-column-number="151"]');
-
-                return JSON.stringify(
-                    getComputedStyle(gutter.querySelector("[data-line-number-content]")).opacity,
-                );
-            `);
-
-        await page.input([{ type: "mouse", x: point.x, y: point.y }]);
-        await until(async () => (await plus()).bars === 2, "the plus on the line's number");
-        // A chip, not a dot: taller than the line it belongs to, and with room in it.
-        const chip = await plus();
-
-        assert.ok(chip.width >= 16 && chip.height > chip.width, JSON.stringify(chip));
-        assert.notEqual(chip.color, "rgba(0, 0, 0, 0)");
-        // The plus stands beside the number: the number stays in sight.
-        assert.equal(await numberOpacity(), "1");
-
-        // A tap on the number of the line that was added: the box opens for that line.
-        const added = () =>
-            inPage<boolean>(`
-                const view = document.querySelector(".gh-diff-view");
-                const gutter = view.shadowRoot.querySelector('[data-column-number="151"]');
-                if (gutter === null) return JSON.stringify(false);
-                gutter.click();
-                return JSON.stringify(true);
-            `);
-
-        await until(added, "the line number of the added line");
-        await until(() => has(".gh-editor"), "the box for the comment");
-        assert.match(await text(".gh-editor-where"), /a\.txt:151/);
-        assert.equal(await text(".gh-quote"), "extra line");
-
-        await page.type({ selector: ".gh-input" }, "Say why this line is here.");
-        await page.click({ selector: ".gh-editor-actions .button" });
-        await until(() => has(".gh-note"), "the comment in the diff");
-
-        // The diff's own grid made room for it: the slot the renderer left is filled.
-        const note = () =>
-            inPage<{ text: string; filled: boolean; slot: string }>(`
-                const node = document.querySelector(".gh-note");
-                return JSON.stringify({
-                    text: node.textContent.trim(),
-                    filled: node.assignedSlot !== null,
-                    slot: node.getAttribute("slot"),
-                });
-            `);
-
-        await until(async () => (await note()).filled, "the comment to fill its slot");
-        assert.match((await note()).text, /Say why this line is here\./);
-        assert.equal((await note()).slot, "annotation-additions-151");
-        assert.match(await text(".gh-review"), /1 comment/);
-
-        // A tap on that line again opens its own comment, with its words in the box, instead of a second one.
-        await until(added, "the same line again");
-        await until(() => has(".gh-editor"), "the box again");
-        assert.equal(
-            await inPage<string>(`return JSON.stringify(document.querySelector(".gh-input").value)`),
-            "Say why this line is here.",
-        );
-        await page.click({ selector: ".gh-editor-head .gh-note-act" });
-        await until(async () => !(await has(".gh-editor")), "the box to close");
-
-        // It is kept in this browser, so a fresh load of the app has it too.
-        const kept = await inPage<string>(
-            `return JSON.stringify(localStorage.getItem("x.git-history.review.${session}"))`,
-        );
-        assert.match(kept, /Say why this line is here\./);
-
-        // A fresh load of the app, as a reload gives: the drafts come from this browser, not from the page's memory.
-        await page.navigate(`${base}/s/${session}`);
-        await until(() => has('.ext-top-button[title="Git history"]'), "the history button again");
-        await page.click({ selector: '.ext-top-button[title="Git history"]' });
-        await until(() => has(".gh-dot-work"), "the uncommitted row again");
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await page.click({ selector: ".gh-item:first-child .gh-row" });
-        await until(async () => (await note()).filled, "the comment after a fresh load");
-
-        // Send: the review goes into the message box, the page makes room for it, and its drafts are gone.
-        await page.click({ selector: ".gh-review .button" });
-        await until(async () => !(await has(".ext-page")), "the page to close");
+        assert.equal(await text(".gh-item:first-child .gh-path"), "a.txt");
         await until(
-            async () =>
-                (
-                    await inPage<string>(
-                        `return JSON.stringify(document.querySelector(".composer-wrap textarea")?.value ?? "")`,
-                    )
-                ).includes("a.txt:151"),
-            "the review in the message box",
-        );
-
-        const message = await inPage<string>(
-            `return JSON.stringify(document.querySelector(".composer-wrap textarea").value)`,
-        );
-
-        assert.match(message, /Code review: please address these comments\./);
-        assert.match(message, /## Uncommitted changes/);
-        assert.match(message, /- `a\.txt:151` \(new\)/);
-        assert.match(message, /Say why this line is here\./);
-        assert.equal(
-            await inPage<string>(
-                `return JSON.stringify(localStorage.getItem("x.git-history.review.${session}"))`,
-            ),
-            "[]",
+            () =>
+                inPage<boolean>(
+                    `return JSON.stringify([...document.querySelectorAll(".gh-diff-view")].some((each) => (each.shadowRoot?.textContent ?? "").includes("extra line")))`,
+                ),
+            "the added line",
         );
     },
 );

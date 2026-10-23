@@ -10,19 +10,8 @@ export type DiffOptions = {
     disableLineNumbers?: boolean;
 };
 
-/**
- * An empty block under one line of a diff. The HTML it renders holds a slot named `annotation-<side>-<line>`, which the
- * page fills from the light DOM, so the diff's own grid makes room for it.
- */
-export type Annotation = {
-    lineNumber: number;
-    side: "additions" | "deletions";
-    metadata?: unknown;
-};
-
 /** HTML for one file's patch, with its own styles, for a shadow root. It throws when the patch is not one file's. */
 export function preloadPatchDiff(options: {
     patch: string;
     options?: DiffOptions;
-    annotations?: Annotation[];
 }): Promise<{ prerenderedHTML: string }>;
