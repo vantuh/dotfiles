@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# pi-dictation needs one native npm package next to its source, so the tree has
-# to be installed once per machine. node_modules stays out of the source state
-# (see .chezmoiignore.tmpl) and is created here on the first apply.
+# Pi Pocket's local-dictation extension imports one native npm package from here, so the tree has to be installed once
+# per machine. node_modules stays out of the source state (see .chezmoiignore.tmpl) and is created on the first apply.
 set -u
 
 app_dir="{{ .chezmoi.destDir }}/.local/share/pi-dictation"

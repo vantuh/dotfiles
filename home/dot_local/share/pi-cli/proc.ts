@@ -1,6 +1,6 @@
 /**
  * Process and environment helpers shared by the local service CLIs (pipocket,
- * hwui, pi-dictation).
+ * hwui).
  *
  * They all start a detached server, find out whether it answers, and stop it by
  * whoever holds the port, so that logic lives here once instead of in each CLI.

@@ -12,5 +12,4 @@ alias piw='PI_CODING_AGENT_DIR="$HOME/.pi/profiles/work/agent" pi'
 # up|down|status (`tailnet-serve-url` takes a port instead).
 alias pipocket='pipocket.ts'
 alias hwui='hwui.ts'
-alias dictate='pi-dictation.ts'
 alias tailnet-serve-url='tailnet-serve-url.ts'

@@ -1,17 +1,30 @@
 /**
  * Local dictation: a microphone button in the message box that records the browser's microphone and transcribes it on
- * this machine with the pi-dictation daemon, so no audio goes to a speech service.
+ * this machine with transcribe.cpp, so no audio goes to a speech service.
  */
+import { readdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+
 import type { Web } from "./_pocket.d.ts";
 
-/** The daemon of `~/.local/bin/pi-dictation.ts`: loopback only, 16 kHz mono 16-bit WAV in, `{ text }` out. */
-const DAEMON = (process.env.PI_POCKET_DICTATION ?? "http://127.0.0.1:8791").replace(/\/+$/, "");
+/** transcribe-cpp is installed beside no Pi Pocket package: `run_after_20-install-pi-dictation-deps.sh` puts it here. */
+const BINDINGS = join(homedir(), ".local", "share", "pi-dictation", "node_modules", "transcribe-cpp", "dist", "index.js");
+const LANGUAGE = process.env.PI_DICTATION_LANGUAGE ?? "uk";
+/** The model holds ~900 MB with Metal, so it goes after this long without a dictation and loads again at the next one. */
+const IDLE_MS = Number(process.env.PI_DICTATION_IDLE_MINUTES ?? 10) * 60_000;
 const RATE = 16_000;
-/** The daemon's own cap on one recording; past it, memory is the risk, not the model. */
+/** Past this, memory is the risk, not the model. */
 const MAX_BYTES = 32 * 1024 * 1024;
 /** A recording that the browser never finished sending is dropped after this long. */
 const STALE_MS = 10 * 60_000;
-const HEALTH_TIMEOUT_MS = 2_000;
+
+/** The part of transcribe-cpp's `TranscribeModel` used here. */
+interface Model {
+    transcribe(pcm: Float32Array, options: { language: string }): Promise<{ text: string }>;
+    dispose(): void;
+}
 
 /** The parts of one recording that the browser sent, by part number, while it records. */
 interface Recording {
@@ -20,34 +33,50 @@ interface Recording {
     at: number;
 }
 
-const recordings = new Map<string, Recording>();
+/** The whisper GGUF that Handy downloaded, the Q8_0 large-v3-turbo first. */
+function findModel(): string {
+    const configured = process.env.PI_DICTATION_MODEL?.trim();
 
-/** What to tell the person when the daemon is not there: the command that starts it, which is the usual cause. */
-function unreachable(failure: unknown): string {
-    const reason = failure instanceof Error ? failure.message : String(failure);
+    if (configured) {
+        return configured;
+    }
 
-    return `The dictation daemon at ${DAEMON} did not answer (${reason}). Start it with \`dictate up\`.`;
+    const hub = join(homedir(), ".cache", "huggingface", "hub");
+    const candidates: string[] = [];
+
+    for (const repo of readdirSync(hub).filter((name) => name.startsWith("models--handy-computer--whisper-"))) {
+        const snapshots = join(hub, repo, "snapshots");
+
+        for (const revision of readdirSync(snapshots)) {
+            const dir = join(snapshots, revision);
+
+            for (const file of readdirSync(dir)) {
+                if (file.endsWith(".gguf")) {
+                    candidates.push(join(dir, file));
+                }
+            }
+        }
+    }
+
+    const turbo = candidates.filter((path) => path.includes("large-v3-turbo"));
+    const chosen = [turbo.find((path) => path.includes("Q8_0")), turbo[0], candidates[0]].find(Boolean);
+
+    if (chosen === undefined) {
+        throw new Error("No Handy whisper GGUF under ~/.cache/huggingface/hub. Set PI_DICTATION_MODEL.");
+    }
+
+    return chosen;
 }
 
-/** A 16 kHz mono 16-bit WAV around raw little-endian PCM, as the daemon takes it. */
-function wav(pcm: Buffer): Buffer {
-    const header = Buffer.alloc(44);
+/** Raw little-endian 16-bit PCM as the float samples the model takes. */
+function toFloat(pcm: Buffer): Float32Array {
+    const samples = new Float32Array(pcm.length >> 1);
 
-    header.write("RIFF", 0);
-    header.writeUInt32LE(36 + pcm.length, 4);
-    header.write("WAVE", 8);
-    header.write("fmt ", 12);
-    header.writeUInt32LE(16, 16);
-    header.writeUInt16LE(1, 20);
-    header.writeUInt16LE(1, 22);
-    header.writeUInt32LE(RATE, 24);
-    header.writeUInt32LE(RATE * 2, 28);
-    header.writeUInt16LE(2, 32);
-    header.writeUInt16LE(16, 34);
-    header.write("data", 36);
-    header.writeUInt32LE(pcm.length, 40);
+    for (let at = 0; at < samples.length; at++) {
+        samples[at] = pcm.readInt16LE(at * 2) / 32768;
+    }
 
-    return Buffer.concat([header, pcm]);
+    return samples;
 }
 
 function idOf(value: unknown, web: Web): string {
@@ -76,20 +105,72 @@ export default function createLocalDictation(_host: unknown, web: Web) {
         throw new Error("local-dictation needs Pi Pocket 0.14.0 or later. Update it and restart the server.");
     }
 
-    web.route("GET", "health", async () => {
-        try {
-            const response = await fetch(`${DAEMON}/health`, {
-                signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
-            });
-            const status = await response.json().catch(() => ({}));
+    const recordings = new Map<string, Recording>();
+    let loading: Promise<Model> | null = null;
+    let idle: NodeJS.Timeout | undefined;
+    let gone = false;
 
-            return { ok: response.ok, ...status };
-        } catch (failure) {
-            return { ok: false, error: unreachable(failure) };
+    // Loaded at the first use, not with the module: a reload then never holds two models at once.
+    function model(): Promise<Model> {
+        clearTimeout(idle);
+
+        if (loading === null) {
+            const started = (async () => {
+                const { TranscribeModel } = await import(pathToFileURL(BINDINGS).href);
+                const loaded: Model = await TranscribeModel.load(findModel());
+
+                if (gone) {
+                    loaded.dispose();
+
+                    throw new Error("Local dictation was turned off.");
+                }
+
+                return loaded;
+            })();
+
+            loading = started;
+            // A failed load is tried again at the next dictation.
+            started.catch(() => {
+                if (loading === started) {
+                    loading = null;
+                }
+            });
         }
+
+        return loading;
+    }
+
+    // dispose() waits behind the model's own lock, so a transcription that still runs finishes first.
+    function unload(): void {
+        clearTimeout(idle);
+        void loading?.then((loaded) => loaded.dispose(), () => undefined);
+        loading = null;
+    }
+
+    function rest(): void {
+        clearTimeout(idle);
+        idle = setTimeout(unload, IDLE_MS);
+        idle.unref();
+    }
+
+    function failed(failure: unknown): Error {
+        return web.error(503, `The dictation model did not load: ${failure instanceof Error ? failure.message : failure}`);
+    }
+
+    // The browser asks for this when recording starts, so the model loads while the person speaks.
+    web.route("POST", "warm", async () => {
+        try {
+            await model();
+        } catch (failure) {
+            throw failed(failure);
+        }
+
+        rest();
+
+        return { ok: true };
     });
 
-    // Audio reaches the daemon through these routes: the page's content security policy allows no other site.
+    // Audio reaches the server through these routes: the page's content security policy allows no other site.
     web.route("POST", "audio", ({ body }) => {
         const id = idOf(body.id, web);
         const seq = Number(body.seq);
@@ -125,7 +206,7 @@ export default function createLocalDictation(_host: unknown, web: Web) {
         return { bytes: recording.bytes };
     });
 
-    web.route("POST", "transcribe", async ({ body, signal }) => {
+    web.route("POST", "transcribe", async ({ body }) => {
         const id = idOf(body.id, web);
         const recording = recordings.get(id);
 
@@ -143,41 +224,29 @@ export default function createLocalDictation(_host: unknown, web: Web) {
             throw web.error(400, "Too short to transcribe.");
         }
 
-        let response: Response;
+        let loaded: Model;
 
         try {
-            response = await fetch(`${DAEMON}/transcribe`, {
-                method: "POST",
-                headers: { "content-type": "audio/wav" },
-                body: wav(pcm),
-                signal,
-            });
+            loaded = await model();
         } catch (failure) {
-            if (signal.aborted) {
-                throw web.error(499, "The recording was cancelled.");
-            }
-
-            throw web.error(503, unreachable(failure));
+            throw failed(failure);
         }
 
-        const payload = (await response.json().catch(() => ({}))) as {
-            text?: string;
-            ms?: number;
-            audioSeconds?: number;
-            error?: string;
-        };
+        try {
+            const { text } = await loaded.transcribe(toFloat(pcm), { language: LANGUAGE });
 
-        if (!response.ok) {
-            throw web.error(502, payload.error ?? `The dictation daemon answered ${response.status}.`);
+            return { text: text.trim() };
+        } catch (failure) {
+            throw web.error(500, `Transcription failed: ${failure instanceof Error ? failure.message : failure}`);
+        } finally {
+            rest();
         }
-
-        return {
-            text: (payload.text ?? "").trim(),
-            ms: payload.ms,
-            audioSeconds: payload.audioSeconds,
-        };
     });
 
-    web.onDispose(() => recordings.clear());
+    web.onDispose(() => {
+        gone = true;
+        recordings.clear();
+        unload();
+    });
     web.client("local-dictation");
 }

@@ -9,7 +9,7 @@ export const pocketApi = 1;
 const MIC =
     "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3";
 
-/** What the daemon takes: 16 kHz mono 16-bit PCM. */
+/** What the model takes: 16 kHz mono 16-bit PCM. */
 const RATE = 16000;
 /** Bytes of PCM in one request: base64 keeps it well under a route's 1 MB body. */
 const PART_BYTES = 300_000;
@@ -106,6 +106,8 @@ export default function setup(pocket) {
         recorder.onstop = () => void transcribe(chunks);
         recorder.start();
         button.update({ title: "Stop dictating", badge: "rec" });
+        // The model loads on demand: start it now, so it is ready when the person stops speaking.
+        pocket.api("warm", {}).catch((failure) => pocket.notify("error", String(failure.message ?? failure)));
     }
 
     function stop() {
@@ -134,7 +136,7 @@ export default function setup(pocket) {
         }
     }
 
-    /** Sends the recording in parts, then has the daemon transcribe it whole: split audio loses words at the cuts. */
+    /** Sends the recording in parts, then has the server transcribe it whole: split audio loses words at the cuts. */
     async function transcribe(chunks) {
         busy = true;
         button.update({ title: "Transcribing…", badge: null });
