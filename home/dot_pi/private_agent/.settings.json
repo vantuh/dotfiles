@@ -7,7 +7,6 @@
   "packages": [
     "npm:pi-web-access",
     "npm:@gotgenes/pi-anthropic-auth",
-    "npm:pi-cursor-sdk",
     "~/projects/personal/pi-kiro-acp",
     "~/projects/personal/pi-herdr-subagents"
   ],
