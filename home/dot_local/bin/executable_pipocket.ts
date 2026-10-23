@@ -8,10 +8,11 @@
  *   pipocket link    print the owner sign-in link (the owner's key: keep it private)
  *   pipocket down    stop the launcher, which stops the server
  *
- * It runs what `npm run dev` runs. Without a terminal the launcher shows no
- * menu: it reuses the last access choice and writes its panel, sign-in link
- * included, to the log; that is why the log is 0600. `tailscale serve` adds
- * HTTPS on the tailnet, which push and dictation need on a phone.
+ * New sessions start in ~, since one server works on every repository.
+ * Without a terminal the launcher shows no menu: it reuses the last access
+ * choice and writes its panel, sign-in link included, to the log; that is why
+ * the log is 0600. `tailscale serve` adds HTTPS on the tailnet, which push and
+ * dictation need on a phone.
  */
 import {
   chmodSync,
@@ -117,7 +118,7 @@ async function up(): Promise<number> {
   writeFileSync(LOG_FILE, '', { mode: 0o600 });
   chmodSync(LOG_FILE, 0o600);
   const pid = spawnDetached({
-    command: [node, LAUNCHER, '--cwd', REPO],
+    command: [node, LAUNCHER, '--cwd', HOME],
     cwd: REPO,
     env: process.env,
     logFile: LOG_FILE,
