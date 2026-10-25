@@ -4,6 +4,16 @@
       "url": "http://localhost:6006/mcp",
       "exposure": "codemode",
       "enabled": false
+    },
+    "ha": {
+      "command": "uvx",
+      "args": [
+        "ha-mcp==8.7.0"
+      ],
+      "env": {
+        "HOMEASSISTANT_URL": "https://homeassistant.tail0911f8.ts.net",
+        "HOMEASSISTANT_TOKEN": "!security find-generic-password -s homeassistant-mcp -w"
+      }
     }
   }
 }
