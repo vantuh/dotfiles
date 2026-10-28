@@ -127,9 +127,10 @@ rex config reload
 
 Rex's theme is rendered from the color settings in
 `home/dot_config/ghostty/config.ghostty.tmpl`, without its Herdr command.
-`run_after_40-configure-rex.sh.tmpl` also derives the font family, style, and size
-from that file and writes only those macOS preferences plus an empty startup
-command (Rex's default shell). No account, connection, or session data is managed.
+`run_after_40-configure-rex.sh.tmpl` also derives the font family and style from
+that file. Rex uses size 14 and disables font smoothing to avoid thicker strokes.
+The script writes only these macOS font preferences plus an empty startup command
+(Rex's default shell). No account, connection, or session data is managed.
 
 On macOS, `chezmoi apply` imports changed theme colors through the running Rex app.
 Enable **Settings → Rex Server → Remote Control**. If Rex is closed, the import

@@ -27,10 +27,12 @@ result = apply();
 assert.equal(result.status, 0, result.stderr);
 let calls = readFileSync(env.TEST_LOG, "utf8");
 assert.equal(calls.split("\n").filter(line => line === "import").length, 1, "Unchanged colors must not create duplicate themes");
-for (const [setting, key, type] of [["font-family", "terminalFontName", "string"], ["font-style", "terminalFontStyle", "string"], ["font-size", "terminalFontPointSize", "float"]]) {
+for (const [setting, key, type] of [["font-family", "terminalFontName", "string"], ["font-style", "terminalFontStyle", "string"]]) {
   const value = ghostty.match(new RegExp(`^${setting} = (.+)$`, "m"))![1];
   assert(calls.includes(`write com.superlogical.rex Workspace.${key} -${type} ${value}`));
 }
+assert(calls.includes("write com.superlogical.rex Workspace.terminalFontPointSize -float 14"));
+assert(calls.includes("write com.superlogical.rex Workspace.terminalFontSmoothing -bool false"));
 writeFileSync(`${home}/.config/rex/catppuccin-mocha.ghostty`, theme + "\n# changed\n");
 const previousHash = readFileSync(state, "utf8");
 env.TEST_CONNECTED = "1";

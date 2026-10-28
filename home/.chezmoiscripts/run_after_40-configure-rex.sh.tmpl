@@ -6,7 +6,8 @@ set -eu
 # Rex stores font preferences in UserDefaults, not init.lua.
 defaults write com.superlogical.rex Workspace.terminalFontName -string {{ regexFind "(?m)^font-family = .+$" $ghostty | trimPrefix "font-family = " | quote }}
 defaults write com.superlogical.rex Workspace.terminalFontStyle -string {{ regexFind "(?m)^font-style = .+$" $ghostty | trimPrefix "font-style = " | quote }}
-defaults write com.superlogical.rex Workspace.terminalFontPointSize -float {{ regexFind "(?m)^font-size = .+$" $ghostty | trimPrefix "font-size = " }}
+defaults write com.superlogical.rex Workspace.terminalFontPointSize -float 14
+defaults write com.superlogical.rex Workspace.terminalFontSmoothing -bool false
 defaults write com.superlogical.rex Workspace.terminalStartupCommand -string ""
 
 theme="{{ .chezmoi.destDir }}/.config/rex/catppuccin-mocha.ghostty"
