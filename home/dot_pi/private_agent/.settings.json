@@ -30,7 +30,7 @@
     "opencode-go/deepseek-v4.1-flash"
   ],
   "defaultThinkingLevel": "medium",
-  "showHardwareCursor": false,
+  "showHardwareCursor": true,
   "collapseChangelog": true,
   "tuiMode": "fullscreen",
   "deviceId": "faf2e207-5602-4512-b672-bf788257bea8",
@@ -40,5 +40,8 @@
     "-skills/check-pipeline/SKILL.md",
     "-skills/resolve-mr-comments/SKILL.md",
     "-skills/split-to-prs/SKILL.md"
-  ]
+  ],
+  "terminal": {
+    "showTerminalProgress": true
+  }
 }
