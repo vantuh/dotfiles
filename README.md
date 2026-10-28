@@ -12,6 +12,7 @@ one-to-one to `$HOME` using chezmoi's source-state naming:
 | `home/dot_zshrc` | `~/.zshrc` |
 | `home/dot_config/nvim` | `~/.config/nvim` |
 | `home/dot_config/herdr` | `~/.config/herdr` |
+| `home/dot_config/rex/init.lua` | `~/.config/rex/init.lua` |
 | `home/dot_config/llama-swap` | `~/.config/llama-swap` (WSL) |
 | `home/dot_config/ghostty` | `~/.config/ghostty` (macOS) |
 | `home/dot_config/lazygit` | `~/.config/lazygit` |
@@ -91,6 +92,36 @@ chezmoi update
 
 `chezmoi apply <target>` limits an apply to one target or subtree. The `dotfix`
 shell helper runs `chezmoi update`.
+
+## Rex shortcuts
+
+`home/dot_config/rex/init.lua` ports the Herdr shortcuts and the matching archived
+tmux bindings. Rex sessions correspond to Herdr workspaces. Physical key bindings
+work in both English and Ukrainian layouts; the labels below use the US layout.
+
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl+A`, then `S` | Session picker |
+| `Ctrl+A`, then `C` / `,` | New tab / rename tab |
+| `Ctrl+A`, then `\|` / `-` | Split right / down |
+| `Ctrl+A`, then `X` / `Z` / `B` | Close pane / zoom / toggle sidebar |
+| `Ctrl+A`, then `Ctrl+A` | Send `Ctrl+A` to the terminal (including nested tmux) |
+| `Shift+Left` / `Shift+Right` | Previous / next tab |
+| `Alt+Arrow` | Focus pane in that direction |
+| `Alt+1` … `Alt+9` | Select tab by index |
+| `Ctrl+Shift+1` … `Ctrl+Shift+9` | Select session in server order |
+
+`Escape` cancels a prefix sequence. Pane closing uses Rex's native behavior, not
+our tmux confirmation prompt. Herdr's picker-only `J`/`K`/arrow navigation is not
+bound globally, so ordinary terminal input remains intact. Other Rex defaults stay
+unchanged; shortcuts set in the Rex UI take priority over this file.
+
+```bash
+luajit tests/rex-config.lua
+chezmoi apply ~/.config/rex/init.lua
+rex config check
+rex config reload
+```
 
 ## Shared agent skills
 
