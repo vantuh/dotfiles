@@ -125,19 +125,26 @@ rex config reload
 
 ### Ghostty appearance
 
-Rex's theme is rendered from the color settings in
-`home/dot_config/ghostty/config.ghostty.tmpl`, without its Herdr command.
-`run_after_40-configure-rex.sh.tmpl` also derives the font family and style from
-that file. Rex uses size 14 and disables font smoothing to avoid thicker strokes.
-The script writes only these macOS font preferences plus an empty startup command
-(Rex's default shell). No account, connection, or session data is managed.
+`home/dot_config/rex/catppuccin-mocha.ghostty` is a plain theme file copied from
+Ghostty's colors. Edit it directly; it is independent of the Ghostty config.
+Chezmoi copies the file but does not import or select themes in Rex.
 
-On macOS, `chezmoi apply` imports changed theme colors through the running Rex app.
-Enable **Settings → Rex Server → Remote Control**. If Rex is closed, the import
-stays pending until the next apply while Rex is open. A local hash avoids creating
-a new custom theme on every apply. Color changes create a new imported theme;
-existing themes are preserved. Font preferences may need Rex to be reopened.
-`rex config reload` reloads Lua shortcuts, not macOS font preferences.
+On macOS, `run_after_40-configure-rex.sh.tmpl` sets JetBrainsMonoNL Nerd Font,
+Light, size 14, and disables font smoothing. It also clears the startup command
+so Rex uses its default shell, not Herdr. No account, connection, or session data
+is managed. Font preferences may need Rex to be reopened; `rex config reload`
+reloads Lua shortcuts, not macOS font preferences.
+
+To import the theme once (or after editing its colors), open Rex, enable
+**Settings → Rex Server → Remote Control**, and run:
+
+```bash
+chezmoi apply ~/.config/rex/catppuccin-mocha.ghostty
+rex do client.theme.import path="$HOME/.config/rex/catppuccin-mocha.ghostty"
+```
+
+There is no automatic theme import, hash tracking, or dependency on a running Rex
+app during `chezmoi apply`.
 
 `Shift+Enter` sends the same CSI-u sequence as Ghostty. Karabiner maps
 `Ctrl+Shift+C/V` to native `Cmd+C/V` only in Rex. Native `Cmd+C/V` remain unchanged.

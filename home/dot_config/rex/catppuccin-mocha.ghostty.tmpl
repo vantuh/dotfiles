@@ -1,5 +1,0 @@
-{{- range splitList "\n" (include "dot_config/ghostty/config.ghostty.tmpl") -}}
-{{- if regexMatch "^(background|foreground|cursor-color|cursor-text|selection-background|selection-foreground|palette) =" . }}
-{{ . }}
-{{- end -}}
-{{- end }}

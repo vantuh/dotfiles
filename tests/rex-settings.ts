@@ -1,51 +1,25 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const directory = mkdtempSync(resolve(".git/rex-settings-"));
-const home = `${directory}/home`;
 const bin = `${directory}/bin`;
-mkdirSync(`${home}/.config/rex`, { recursive: true });
 mkdirSync(bin);
-const render = (path: string) => execFileSync("chezmoi", ["--destination", home, "execute-template", "-f", path], { encoding: "utf8" });
-const theme = render("home/dot_config/rex/catppuccin-mocha.ghostty.tmpl");
-const ghostty = readFileSync("home/dot_config/ghostty/config.ghostty.tmpl", "utf8");
-const colors = ghostty.split("\n").filter(line => /^(background|foreground|cursor-color|cursor-text|selection-background|selection-foreground|palette) =/.test(line));
-assert.deepEqual(theme.trim().split("\n"), colors);
-writeFileSync(`${home}/.config/rex/catppuccin-mocha.ghostty`, theme);
-writeFileSync(`${directory}/apply.sh`, render("home/.chezmoiscripts/run_after_40-configure-rex.sh.tmpl"));
+const template = "home/.chezmoiscripts/run_after_40-configure-rex.sh.tmpl";
+const script = execFileSync("chezmoi", ["execute-template", "-f", template], { encoding: "utf8" });
+writeFileSync(`${directory}/apply.sh`, script);
 writeFileSync(`${bin}/defaults`, '#!/bin/sh\nprintf "%s\\n" "$*" >> "$TEST_LOG"\n', { mode: 0o755 });
-writeFileSync(`${bin}/rex`, '#!/bin/sh\ncase "$*" in\n  *"client inspect"*) exit "$TEST_CONNECTED" ;;\n  *"theme.import"*) printf "import\\n" >> "$TEST_LOG"; exit "$TEST_IMPORT_STATUS" ;;\n  *) exit 1 ;;\nesac\n', { mode: 0o755 });
-const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, TEST_LOG: `${directory}/calls`, TEST_CONNECTED: "0", TEST_IMPORT_STATUS: "0" };
-const state = `${home}/.local/state/rex/chezmoi-theme.sha256`;
-const apply = () => spawnSync("sh", [`${directory}/apply.sh`], { env, encoding: "utf8" });
-let result = apply();
-assert.equal(result.status, 0, result.stderr);
-assert(existsSync(state));
-result = apply();
-assert.equal(result.status, 0, result.stderr);
-let calls = readFileSync(env.TEST_LOG, "utf8");
-assert.equal(calls.split("\n").filter(line => line === "import").length, 1, "Unchanged colors must not create duplicate themes");
-for (const [setting, key, type] of [["font-family", "terminalFontName", "string"], ["font-style", "terminalFontStyle", "string"]]) {
-  const value = ghostty.match(new RegExp(`^${setting} = (.+)$`, "m"))![1];
-  assert(calls.includes(`write com.superlogical.rex Workspace.${key} -${type} ${value}`));
-}
-assert(calls.includes("write com.superlogical.rex Workspace.terminalFontPointSize -float 14"));
-assert(calls.includes("write com.superlogical.rex Workspace.terminalFontSmoothing -bool false"));
-writeFileSync(`${home}/.config/rex/catppuccin-mocha.ghostty`, theme + "\n# changed\n");
-const previousHash = readFileSync(state, "utf8");
-env.TEST_CONNECTED = "1";
-result = apply();
-assert.equal(result.status, 0);
-assert(result.stderr.includes("Rex theme pending"));
-assert.equal(readFileSync(state, "utf8"), previousHash, "An unavailable app must leave the import pending");
-env.TEST_CONNECTED = "0";
-env.TEST_IMPORT_STATUS = "1";
-assert.notEqual(apply().status, 0);
-assert.equal(readFileSync(state, "utf8"), previousHash, "A rejected import must remain retryable");
-env.TEST_IMPORT_STATUS = "0";
-result = apply();
-assert.equal(result.status, 0, result.stderr);
-assert.notEqual(readFileSync(state, "utf8"), previousHash);
-console.log("Rex appearance checks passed");
+writeFileSync(`${bin}/rex`, "#!/bin/sh\nexit 99\n", { mode: 0o755 });
+execFileSync("sh", [`${directory}/apply.sh`], {
+  env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, TEST_LOG: `${directory}/calls` },
+});
+assert.deepEqual(readFileSync(`${directory}/calls`, "utf8").split("\n").slice(0, -1), [
+  "write com.superlogical.rex Workspace.terminalFontName -string JetBrainsMonoNL Nerd Font",
+  "write com.superlogical.rex Workspace.terminalFontStyle -string Light",
+  "write com.superlogical.rex Workspace.terminalFontPointSize -float 14",
+  "write com.superlogical.rex Workspace.terminalFontSmoothing -bool false",
+  "write com.superlogical.rex Workspace.terminalStartupCommand -string ",
+]);
+assert.equal(execFileSync("chezmoi", ["--override-data", '{"chezmoi":{"os":"linux"}}', "execute-template", "-f", template], { encoding: "utf8" }), "");
+console.log("Rex font preference checks passed");

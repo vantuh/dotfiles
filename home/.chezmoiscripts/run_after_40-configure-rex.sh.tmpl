@@ -1,28 +1,11 @@
 {{- if eq .chezmoi.os "darwin" -}}
-{{- $ghostty := include "dot_config/ghostty/config.ghostty.tmpl" -}}
 #!/bin/sh
 set -eu
 
 # Rex stores font preferences in UserDefaults, not init.lua.
-defaults write com.superlogical.rex Workspace.terminalFontName -string {{ regexFind "(?m)^font-family = .+$" $ghostty | trimPrefix "font-family = " | quote }}
-defaults write com.superlogical.rex Workspace.terminalFontStyle -string {{ regexFind "(?m)^font-style = .+$" $ghostty | trimPrefix "font-style = " | quote }}
+defaults write com.superlogical.rex Workspace.terminalFontName -string "JetBrainsMonoNL Nerd Font"
+defaults write com.superlogical.rex Workspace.terminalFontStyle -string "Light"
 defaults write com.superlogical.rex Workspace.terminalFontPointSize -float 14
 defaults write com.superlogical.rex Workspace.terminalFontSmoothing -bool false
 defaults write com.superlogical.rex Workspace.terminalStartupCommand -string ""
-
-theme="{{ .chezmoi.destDir }}/.config/rex/catppuccin-mocha.ghostty"
-state="{{ .chezmoi.destDir }}/.local/state/rex/chezmoi-theme.sha256"
-hash=$(shasum -a 256 "$theme" | cut -d ' ' -f 1)
-if [ -f "$state" ] && [ "$(head -n 1 "$state")" = "$hash" ]; then
-    exit 0
-fi
-
-# Importing creates a custom theme, so only repeat it when its colors change.
-if ! command -v rex >/dev/null 2>&1 || ! rex --autostart=false client inspect --json >/dev/null 2>&1; then
-    printf 'Rex theme pending: open Rex with Remote Control enabled, then run chezmoi apply.\n' >&2
-    exit 0
-fi
-rex --autostart=false do client.theme.import path="$theme" >/dev/null
-mkdir -p "$(dirname "$state")"
-printf '%s\n' "$hash" > "$state"
 {{ end -}}
