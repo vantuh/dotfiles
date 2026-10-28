@@ -123,6 +123,33 @@ rex config check
 rex config reload
 ```
 
+### Ghostty appearance
+
+Rex's theme is rendered from the color settings in
+`home/dot_config/ghostty/config.ghostty.tmpl`, without its Herdr command.
+`run_after_40-configure-rex.sh.tmpl` also derives the font family, style, and size
+from that file and writes only those macOS preferences plus an empty startup
+command (Rex's default shell). No account, connection, or session data is managed.
+
+On macOS, `chezmoi apply` imports changed theme colors through the running Rex app.
+Enable **Settings → Rex Server → Remote Control**. If Rex is closed, the import
+stays pending until the next apply while Rex is open. A local hash avoids creating
+a new custom theme on every apply. Color changes create a new imported theme;
+existing themes are preserved. Font preferences may need Rex to be reopened.
+`rex config reload` reloads Lua shortcuts, not macOS font preferences.
+
+`Shift+Enter` sends the same CSI-u sequence as Ghostty. Karabiner maps
+`Ctrl+Shift+C/V` to native `Cmd+C/V` only in Rex. Native `Cmd+C/V` remain unchanged.
+The port does not force Ghostty's zero padding, maximized window, Option-key mode,
+close confirmation, clipboard permissions, or `Cmd+Space` handling: these do not
+have verified equivalents in the current Rex Lua/client API. Existing settings
+for those features are left alone.
+
+```bash
+bun tests/rex-settings.ts
+chezmoi apply
+```
+
 ## Shared agent skills
 
 `home/.agents/` is the source of truth for skills and shared instructions.

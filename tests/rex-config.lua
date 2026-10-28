@@ -21,6 +21,7 @@ dofile("home/dot_config/rex/init.lua")
 assert(bindings["ctrl+[KeyA]>shift+[Backslash]"].args.direction == "right")
 assert(bindings["ctrl+[KeyA]>[Minus]"].args.direction == "down")
 assert(bindings["ctrl+[KeyA]>ctrl+[KeyA]"].args.key == "ctrl+a")
+assert(bindings["shift+enter"].args.data == string.char(27) .. "[13;2u")
 assert(not bindings["j"] and not bindings["k"] and not bindings["up"] and not bindings["down"])
 for index = 1, 9 do
   assert(bindings["alt+[Digit" .. index .. "]"].args.index == index)

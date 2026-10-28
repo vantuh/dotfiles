@@ -15,6 +15,7 @@ rex.bind("alt+left", "pane.focus", { direction = "left" })
 rex.bind("alt+right", "pane.focus", { direction = "right" })
 rex.bind("alt+up", "pane.focus", { direction = "up" })
 rex.bind("alt+down", "pane.focus", { direction = "down" })
+rex.bind("shift+enter", "com.superlogical.terminal.write", { data = "\27[13;2u" })
 
 rex.action{
   name = "select_session_by_index",
