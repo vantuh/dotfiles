@@ -27,7 +27,11 @@
     "cursor/grok-4.7@256k:slow",
     "local/qwen3.8-flash-next-coder-iq1_m",
     "anthropic/claude-haiku-5-5",
-    "opencode-go/deepseek-v4.1-flash"
+    "opencode-go/deepseek-v4.1-flash",
+    "kiro-acp/claude-sonnet-5.5",
+    "kiro-acp/claude-opus-5.5",
+    "kiro-acp/auto",
+    "kiro-acp/claude-haiku-4.5"
   ],
   "defaultThinkingLevel": "medium",
   "showHardwareCursor": true,
