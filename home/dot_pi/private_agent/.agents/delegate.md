@@ -1,4 +1,5 @@
 ---
+thinking: "max"
 name: delegate
 description: Lightweight general-purpose subagent with no default reads
 tools: read, grep, find, ls, bash, edit, write
