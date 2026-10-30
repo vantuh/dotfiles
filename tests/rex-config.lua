@@ -1,6 +1,6 @@
 local bindings, actions, queued = {}, {}, {}
 local response, failure
-local windows, calls = {}, {}
+local windows, calls, processes = {}, {}, "  100     1 login\n  101   100 -zsh\n  300     1 login\n  301   300 lazygit\n"
 rex = {
   bind = function(key, action, args)
     assert(not bindings[key], "Duplicate binding: " .. key)
@@ -13,13 +13,21 @@ rex = {
   end,
   session = {
     view = function() return { windows = windows } end,
-    focus_window = function(args) calls[#calls + 1] = { "focus", args } end,
+    focus_block = function(args) calls[#calls + 1] = { "focus", args } end,
     new_window = function(args)
       calls[#calls + 1] = { "new", args }
       return {}
     end,
   },
-  block = { call = function() return { pwd = "file://host/src/my%20repo" } end },
+  block = {
+    call = function(_, method, args)
+      if method == "pwd" then
+        return { pwd = "file://host/src/my%20repo" }
+      end
+      return { child = { pid = args.block_id == "git-pane" and 200 or 100 } }
+    end,
+  },
+  exec = function() return { ok = true, stdout = processes } end,
   layout = { block = function(block) return block end },
   client = {
     queue = function(action, args)
@@ -60,7 +68,11 @@ lazygit({ block_id = "current" })
 local new = calls[1][2]
 assert(calls[1][1] == "new" and new.window_label == "lazygit")
 assert(new.layout.options.cwd == "/src/my repo" and new.layout.options.command[1] == "lazygit")
-windows = { { window_id = "shell", label = "shell" }, { window_id = "git", label = "lazygit" } }
+local function pane(id) return { layers = { { blocks = { { block_id = id } } } } } end
+windows = { pane("shell"), pane("git-pane") }
 lazygit({ block_id = "current" })
-assert(#calls == 2 and calls[2][1] == "focus" and calls[2][2].window_id == "git", "Reuses the open lazygit tab")
+assert(calls[2][1] == "new", "A lazygit outside the session does not count")
+processes = processes .. "  200     1 login\n  201   200 -zsh\n  202   201 /opt/homebrew/bin/lazygit\n"
+lazygit({ block_id = "current" })
+assert(#calls == 3 and calls[3][1] == "focus" and calls[3][2].block_id == "git-pane", "Reuses lazygit started in any pane")
 print("Rex shortcut checks passed")

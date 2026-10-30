@@ -36,6 +36,42 @@ rex.action{
   end,
 }
 
+local terminal = "com.superlogical.terminal"
+
+-- Rex only sees each terminal's root process (login), so walk the process tree.
+local function find_lazygit_block(view)
+  local ps = rex.exec({ "ps", "-axo", "pid=,ppid=,comm=" })
+  if not ps or not ps.ok then
+    return nil
+  end
+  local parent, lazygit = {}, {}
+  for pid, ppid, comm in ps.stdout:gmatch("(%d+)%s+(%d+)%s+([^\n]+)") do
+    parent[pid] = ppid
+    if comm:match("lazygit$") then
+      lazygit[#lazygit + 1] = pid
+    end
+  end
+  if #lazygit == 0 then
+    return nil
+  end
+  for _, window in ipairs(view.windows or {}) do
+    for _, layer in ipairs(window.layers or {}) do
+      for _, block in ipairs(layer.blocks or {}) do
+        local process = rex.block.call(terminal, "process", { block_id = block.block_id })
+        local root = process and process.child and tostring(process.child.pid)
+        for _, pid in ipairs(lazygit) do
+          while pid and pid ~= root do
+            pid = parent[pid]
+          end
+          if pid then
+            return block.block_id
+          end
+        end
+      end
+    end
+  end
+end
+
 rex.action{
   name = "lazygit",
   title = "Open Lazygit",
@@ -44,14 +80,11 @@ rex.action{
     if not view then
       error(err, 0)
     end
-    for _, window in ipairs(view.windows or {}) do
-      if window.label == "lazygit" then
-        rex.session.focus_window{ window_id = window.window_id }
-        return
-      end
+    local open = find_lazygit_block(view)
+    if open then
+      rex.session.focus_block{ block_id = open }
+      return
     end
-    -- The tab closes when lazygit exits, so a matching label means it still runs.
-    local terminal = "com.superlogical.terminal"
     local reported = rex.block.call(terminal, "pwd", { block_id = ctx.block_id })
     local cwd = reported and reported.pwd and reported.pwd:gsub("^file://[^/]*", ""):gsub("%%(%x%x)", function(hex)
       return string.char(tonumber(hex, 16))
