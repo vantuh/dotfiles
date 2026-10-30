@@ -101,7 +101,7 @@ work in both English and Ukrainian layouts; the labels below use the US layout.
 
 | Shortcut | Action |
 | --- | --- |
-| `Ctrl+A`, then `S` / `N` | Session picker / new session |
+| `Ctrl+A`, then `S` / `Shift+N` | Session picker / new session |
 | `Ctrl+A`, then `C` / `,` | New tab / rename tab |
 | `Ctrl+A`, then `\|` / `-` | Split right / down |
 | `Ctrl+A`, then `X` / `Z` / `B` | Close pane / zoom / toggle sidebar |
