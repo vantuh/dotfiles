@@ -1,4 +1,5 @@
 {
+    "global": { "show_in_menu_bar": false },
     "profiles": [
         {
             "complex_modifications": {
@@ -402,27 +403,45 @@
                         "description": "Rex terminal copy/paste (Ctrl+Shift+C/V)",
                         "manipulators": [
                             {
-                                "conditions": [{
-                                    "bundle_identifiers": ["^com\\.superlogical\\.rex$"],
-                                    "type": "frontmost_application_if"
-                                }],
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.superlogical\\.rex$"
+                                        ],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "c",
                                     "modifiers": { "mandatory": ["control", "shift"] }
                                 },
-                                "to": [{ "key_code": "c", "modifiers": ["left_command"] }],
+                                "to": [
+                                    {
+                                        "key_code": "c",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
                                 "type": "basic"
                             },
                             {
-                                "conditions": [{
-                                    "bundle_identifiers": ["^com\\.superlogical\\.rex$"],
-                                    "type": "frontmost_application_if"
-                                }],
+                                "conditions": [
+                                    {
+                                        "bundle_identifiers": [
+                                            "^com\\.superlogical\\.rex$"
+                                        ],
+                                        "type": "frontmost_application_if"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "v",
                                     "modifiers": { "mandatory": ["control", "shift"] }
                                 },
-                                "to": [{ "key_code": "v", "modifiers": ["left_command"] }],
+                                "to": [
+                                    {
+                                        "key_code": "v",
+                                        "modifiers": ["left_command"]
+                                    }
+                                ],
                                 "type": "basic"
                             }
                         ]
@@ -1656,9 +1675,7 @@
                                 ],
                                 "from": {
                                     "key_code": "p",
-                                    "modifiers": {
-                                        "mandatory": ["control", "shift"]
-                                    }
+                                    "modifiers": { "mandatory": ["control", "shift"] }
                                 },
                                 "to": [
                                     {
