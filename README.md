@@ -123,6 +123,20 @@ rex config check
 rex config reload
 ```
 
+### Session names
+
+`home/dot_config/rex/session-names.lua` names each session after the directory
+of its first tab (`~` for home) and follows later `cd`s there. A label set by
+hand or by an agent is kept. `home/dot_zshrc.d/66-rex.zsh` reports each new
+shell's start directory and starts the watcher once (`rex do --all`), the same
+way as the Herdr tab watcher. The shell that starts the watcher may miss its own
+start directory; its session is named after the next `cd`.
+
+```bash
+luajit tests/rex-session-names.lua
+pkill -f session-names.lua  # restart after editing; the next shell starts it
+```
+
 ### Ghostty appearance
 
 `home/dot_config/rex/catppuccin-mocha.ghostty` is a plain theme file copied from
