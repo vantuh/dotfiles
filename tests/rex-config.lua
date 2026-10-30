@@ -18,6 +18,7 @@ rex = {
 }
 dofile("home/dot_config/rex/init.lua")
 
+assert(bindings["ctrl+[KeyA]>[KeyN]"].action == "session.new")
 assert(bindings["ctrl+[KeyA]>shift+[Backslash]"].args.direction == "right")
 assert(bindings["ctrl+[KeyA]>[Minus]"].args.direction == "down")
 assert(bindings["ctrl+[KeyA]>ctrl+[KeyA]"].args.key == "ctrl+a")

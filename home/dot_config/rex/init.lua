@@ -1,5 +1,6 @@
 -- Physical keys preserve the Herdr shortcuts across English and Ukrainian layouts.
 rex.bind("ctrl+[KeyA]>[KeyS]", "session.switch")
+rex.bind("ctrl+[KeyA]>[KeyN]", "session.new")
 rex.bind("ctrl+[KeyA]>[KeyC]", "client.tab.new")
 rex.bind("ctrl+[KeyA]>[Comma]", "client.tab.rename")
 rex.bind("ctrl+[KeyA]>shift+[Backslash]", "pane.split", { direction = "right" })

@@ -2,10 +2,35 @@
 #!/bin/sh
 set -eu
 
-# Rex stores font preferences in UserDefaults, not init.lua.
-defaults write com.superlogical.rex Workspace.terminalFontName -string "JetBrainsMonoNL Nerd Font"
-defaults write com.superlogical.rex Workspace.terminalFontStyle -string "Light"
-defaults write com.superlogical.rex Workspace.terminalFontPointSize -float 14
-defaults write com.superlogical.rex Workspace.terminalFontSmoothing -bool false
-defaults write com.superlogical.rex Workspace.terminalStartupCommand -string ""
+# Rex stores UI preferences in UserDefaults, not init.lua.
+d="com.superlogical.rex"
+defaults write "$d" Workspace.terminalFontName -string "JetBrainsMonoNL Nerd Font"
+defaults write "$d" Workspace.terminalFontStyle -string "Light"
+defaults write "$d" Workspace.terminalFontPointSize -float 14
+defaults write "$d" Workspace.terminalFontSmoothing -bool false
+defaults write "$d" Workspace.terminalStartupCommand -string ""
+defaults write "$d" Workspace.terminalCopyOnSelect -bool true
+defaults write "$d" Workspace.terminalImproveTextContrast -bool true
+defaults write "$d" Workspace.appearance -string "dark"
+defaults write "$d" Workspace.lightThemeID -string "merino-light"
+defaults write "$d" Workspace.interfaceStyle -string "blendTheme"
+defaults write "$d" Workspace.appIconVisibility -string "dockOnly"
+defaults write "$d" Workspace.paneDensity -string "compact"
+defaults write "$d" Workspace.showsPaneHeaders -bool false
+defaults write "$d" Workspace.showsActivePaneBorder -bool true
+defaults write "$d" Workspace.activePaneBorderColor -string "magenta"
+defaults write "$d" Workspace.inactivePaneFadeMode -string "both"
+defaults write "$d" Workspace.usesStandardInactiveWindowPaneStyles -bool true
+defaults write "$d" Workspace.tintsPanesWithProgramBackground -bool true
+defaults write "$d" Workspace.focusFollowsMouse -bool true
+defaults write "$d" Workspace.sidebarPosition -string "right"
+defaults write "$d" Workspace.tabStyle -string "horizontal"
+defaults write "$d" Workspace.tabsFillAvailableSpace -bool false
+defaults write "$d" Workspace.tabIconCount -int 3
+defaults write "$d" Workspace.tabIconTintMode -string "off"
+defaults write "$d" Workspace.shellIconTheme -string "default"
+defaults write "$d" rex.agents.names-sessions -bool true
+defaults write "$d" rex.client.remoteControl -bool true
+defaults write "$d" rex.server.automatic-restart-enabled -bool true
+defaults write "$d" rex.server.block-plugin-reload-enabled -bool false
 {{ end -}}

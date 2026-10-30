@@ -101,7 +101,7 @@ work in both English and Ukrainian layouts; the labels below use the US layout.
 
 | Shortcut | Action |
 | --- | --- |
-| `Ctrl+A`, then `S` | Session picker |
+| `Ctrl+A`, then `S` / `N` | Session picker / new session |
 | `Ctrl+A`, then `C` / `,` | New tab / rename tab |
 | `Ctrl+A`, then `\|` / `-` | Split right / down |
 | `Ctrl+A`, then `X` / `Z` / `B` | Close pane / zoom / toggle sidebar |
@@ -131,8 +131,11 @@ Chezmoi copies the file but does not import or select themes in Rex.
 
 On macOS, `run_after_40-configure-rex.sh.tmpl` sets JetBrainsMonoNL Nerd Font,
 Light, size 14, and disables font smoothing. It also clears the startup command
-so Rex uses its default shell, not Herdr. No account, connection, or session data
-is managed. Font preferences may need Rex to be reopened; `rex config reload`
+so Rex uses its default shell, not Herdr, and writes the appearance, pane, tab,
+and Remote Control preferences chosen in the Rex UI. The imported dark theme gets
+a random ID, so select it once in Settings after import. No account, connection,
+Tailscale, web-client, or session data is managed. Preferences may need Rex to be
+reopened; `rex config reload`
 reloads Lua shortcuts, not macOS font preferences.
 
 To import the theme once (or after editing its colors), open Rex, enable
