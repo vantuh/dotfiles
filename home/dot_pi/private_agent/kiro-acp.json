@@ -6,5 +6,6 @@
   "usageFooter": {
     "enabled": false,
     "pollMinutes": 1
-  }
+  },
+  "agentEngine": "v3"
 }
