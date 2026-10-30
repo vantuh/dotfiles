@@ -8,6 +8,7 @@ rex.bind("ctrl+[KeyA]>[Minus]", "pane.split", { direction = "down" })
 rex.bind("ctrl+[KeyA]>[KeyX]", "pane.close")
 rex.bind("ctrl+[KeyA]>[KeyZ]", "pane.zoom")
 rex.bind("ctrl+[KeyA]>[KeyB]", "client.sidebar.toggle")
+rex.bind("ctrl+[KeyA]>[KeyG]", "lazygit")
 rex.bind("ctrl+[KeyA]>ctrl+[KeyA]", "pane.send_key", { key = "ctrl+a" })
 
 rex.bind("shift+left", "client.tab.previous")
@@ -31,6 +32,39 @@ rex.action{
     local session = (result.sessions or {})[args.index]
     if session then
       rex.client.queue("session.select", { session_id = session.session_id })
+    end
+  end,
+}
+
+rex.action{
+  name = "lazygit",
+  title = "Open Lazygit",
+  run = function(ctx)
+    local view, err = rex.session.view{}
+    if not view then
+      error(err, 0)
+    end
+    for _, window in ipairs(view.windows or {}) do
+      if window.label == "lazygit" then
+        rex.session.focus_window{ window_id = window.window_id }
+        return
+      end
+    end
+    -- The tab closes when lazygit exits, so a matching label means it still runs.
+    local terminal = "com.superlogical.terminal"
+    local reported = rex.block.call(terminal, "pwd", { block_id = ctx.block_id })
+    local cwd = reported and reported.pwd and reported.pwd:gsub("^file://[^/]*", ""):gsub("%%(%x%x)", function(hex)
+      return string.char(tonumber(hex, 16))
+    end)
+    local _, failure = rex.session.new_window{
+      window_label = "lazygit",
+      layout = rex.layout.block{
+        flavor = terminal .. ".shell",
+        options = { command = { "lazygit" }, cwd = cwd },
+      },
+    }
+    if failure then
+      error(failure, 0)
     end
   end,
 }

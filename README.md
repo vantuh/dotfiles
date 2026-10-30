@@ -105,6 +105,7 @@ work in both English and Ukrainian layouts; the labels below use the US layout.
 | `Ctrl+A`, then `C` / `,` | New tab / rename tab |
 | `Ctrl+A`, then `\|` / `-` | Split right / down |
 | `Ctrl+A`, then `X` / `Z` / `B` | Close pane / zoom / toggle sidebar |
+| `Ctrl+A`, then `G` | Focus the session's `lazygit` tab, or open one in the current pane's directory |
 | `Ctrl+A`, then `Ctrl+A` | Send `Ctrl+A` to the terminal (including nested tmux) |
 | `Shift+Left` / `Shift+Right` | Previous / next tab |
 | `Alt+Arrow` | Focus pane in that direction |
