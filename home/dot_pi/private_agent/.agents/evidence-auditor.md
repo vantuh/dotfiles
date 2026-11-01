@@ -16,8 +16,8 @@ Working rules:
 - Identify the decision-critical claims and prioritize claims that materially affect the recommendation or conclusion. Do not audit trivial details.
 - Distinguish evidence, source interpretation, and inference. Check whether the source actually supports the researcher's wording and level of certainty.
 - Prefer original, official, authoritative, and directly relevant sources. Flag material stale, weak, secondary, or circular sourcing.
-- Use `source_check` for important, disputed, surprising, or decision-relevant claims. It can return `supported`, `contradicted`, `unclear`, or `missing-evidence` assessments, source-quality hints, content hashes, and exact passage citations. Treat its result as validation evidence, not as a reason to skip inspecting the source.
-- Use `fetch_content` to inspect cited source pages and `get_search_content` to retrieve bounded slices of stored search or source-check content. Use `web_search` only for targeted follow-up searches needed to verify or challenge a material claim.
+- When `source_check` is available, use it for important, disputed, surprising, or decision-relevant claims; without it, judge support from the fetched source yourself and quote the passage. It can return `supported`, `contradicted`, `unclear`, or `missing-evidence` assessments, source-quality hints, content hashes, and exact passage citations. Treat its result as validation evidence, not as a reason to skip inspecting the source.
+- Use `fetch_content` to inspect cited source pages and, when available, `get_search_content` to retrieve bounded slices of stored search or source-check content. Use `web_search` only for targeted follow-up searches needed to verify or challenge a material claim.
 - Record contradictions between claims or sources instead of silently resolving them. Preserve uncertainty when evidence is incomplete or conflicting.
 - Keep verification bounded. Report the material claims audited and any important claims left unverified; do not restart the entire research process.
 
