@@ -57,10 +57,10 @@
     "opencode-go": {
       "modelOverrides": {
         "glm-5.3-flash": {
-          "contextWindow": 262144
+          "contextWindow": 524288
         },
         "deepseek-v4.1-flash": {
-          "contextWindow": 262144
+          "contextWindow": 524288
         }
       }
     },
