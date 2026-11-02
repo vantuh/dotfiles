@@ -3,7 +3,7 @@
     "openrouter": {
       "modelOverrides": {
         "z-ai/glm-5.3-flash": {
-          "contextWindow": 262144,
+          "contextWindow": 524288,
           "compat": {
             "openRouterRouting": {
               "quantizations": [
@@ -28,7 +28,7 @@
           }
         },
         "deepseek/deepseek-v4.1-flash-1017": {
-          "contextWindow": 262144,
+          "contextWindow": 524288,
           "compat": {
             "openRouterRouting": {
               "quantizations": [
