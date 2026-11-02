@@ -1,8 +1,8 @@
 ---
 name: reviewer
 description: Versatile review specialist for code diffs, plans, proposed solutions, codebase health, and PR/issue validation
-tools: read, grep, find, ls, bash
-model: "kiro-acp/claude-opus-5.5"
+tools: read, bash
+model: "openai/gpt-6.1-sol"
 thinking: "high"
 skills: none
 system-prompt: replace

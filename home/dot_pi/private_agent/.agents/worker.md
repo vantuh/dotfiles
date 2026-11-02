@@ -1,9 +1,9 @@
 ---
 name: worker
 description: Implementation agent for normal tasks and approved plans
-tools: read, grep, find, ls, bash, edit, write, browser
+tools: read, bash, edit, write, browser, codemode
 model: "opencode-go/deepseek-v4.1-flash"
-thinking: high
+thinking: "max"
 skills: tdd
 system-prompt: replace
 ---
