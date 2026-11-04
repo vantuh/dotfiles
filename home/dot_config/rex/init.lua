@@ -19,6 +19,24 @@ rex.bind("alt+up", "pane.focus", { direction = "up" })
 rex.bind("alt+down", "pane.focus", { direction = "down" })
 rex.bind("shift+enter", "com.superlogical.terminal.write", { data = "\27[13;2u" })
 
+-- Rex ships no clipboard paste action, so mirror Ghostty's Ctrl+Shift+V by hand.
+rex.bind("ctrl+shift+[KeyV]", function(ctx)
+  local clipboard = rex.exec({ "pbpaste" })
+  if not clipboard or not clipboard.ok or clipboard.stdout == "" then
+    return true
+  end
+  local data = clipboard.stdout
+  local modes = rex.block.call("com.superlogical.terminal", "modes", { block_id = ctx.block_id })
+  for _, mode in ipairs((modes and modes.modes) or {}) do
+    if mode.name == "bracketed_paste" and mode.set then
+      data = "\27[200~" .. data .. "\27[201~"
+      break
+    end
+  end
+  rex.block.call("com.superlogical.terminal", "write", { block_id = ctx.block_id, data = data })
+  return true
+end)
+
 rex.action{
   name = "select_session_by_index",
   title = "Select Session by Index",

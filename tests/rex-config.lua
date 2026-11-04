@@ -1,5 +1,6 @@
-local bindings, actions, queued = {}, {}, {}
+local bindings, actions, queued, writes = {}, {}, {}, {}
 local response, failure
+local clip, bracketed = "pasted text", true
 local windows, calls, processes = {}, {}, "  100     1 login\n  101   100 -zsh\n  300     1 login\n  301   300 lazygit\n"
 rex = {
   bind = function(key, action, args)
@@ -24,10 +25,22 @@ rex = {
       if method == "pwd" then
         return { pwd = "file://host/src/my%20repo" }
       end
+      if method == "modes" then
+        return { modes = { { name = "bracketed_paste", set = bracketed } } }
+      end
+      if method == "write" then
+        writes[#writes + 1] = args.data
+        return {}
+      end
       return { child = { pid = args.block_id == "git-pane" and 200 or 100 } }
     end,
   },
-  exec = function() return { ok = true, stdout = processes } end,
+  exec = function(argv)
+    if argv[1] == "pbpaste" then
+      return { ok = true, stdout = clip }
+    end
+    return { ok = true, stdout = processes }
+  end,
   layout = { block = function(block) return block end },
   client = {
     queue = function(action, args)
@@ -75,4 +88,14 @@ assert(calls[2][1] == "new", "A lazygit outside the session does not count")
 processes = processes .. "  200     1 login\n  201   200 -zsh\n  202   201 /opt/homebrew/bin/lazygit\n"
 lazygit({ block_id = "current" })
 assert(#calls == 3 and calls[3][1] == "focus" and calls[3][2].block_id == "git-pane", "Reuses lazygit started in any pane")
+local paste = bindings["ctrl+shift+[KeyV]"]
+assert(type(paste.action) == "function", "Ctrl+Shift+V must run a function")
+assert(paste.action({ block_id = "current" }) == true)
+assert(writes[1] == "\27[200~pasted text\27[201~", "Bracketed paste must wrap the clipboard")
+bracketed = false
+paste.action({ block_id = "current" })
+assert(writes[2] == "pasted text", "Terminals without bracketed paste get the raw clip")
+clip = ""
+paste.action({ block_id = "current" })
+assert(#writes == 2, "An empty clipboard must write nothing")
 print("Rex shortcut checks passed")
