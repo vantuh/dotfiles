@@ -111,7 +111,7 @@
           }
         },
         {
-          "id": "qwen3.8-flash-next-iq3_xxs",
+          "id": "iq3_xxs",
           "name": "Qwen 3.8 Flash Next IQ3_XXS (local)",
           "reasoning": true,
           "input": [
