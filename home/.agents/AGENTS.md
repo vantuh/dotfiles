@@ -59,10 +59,10 @@ You are the orchestrator. Keep your own context for decisions, synthesis, and ta
 ## Git
 
 - Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval first.
-- Commit each completed, verified concern locally as you go, or at the commit points a skill defines; no need to ask. Never push.
+- Commit one logical concern once, after checks and any reviewer feedback are resolved, or at the commit points a skill defines; no need to ask. Iterations on the same work are not separate concerns. Never push.
 - Follow the repo's commit conventions, else caveman-commit (Conventional Commits). Subject line only; add a body only for what the diff cannot show (breaking change, migration, reverted decision). Never restate the diff.
 - Stage only your own paths or hunks. Let hooks run; no `--no-verify`.
-- Amend only your own unpushed commits from the current task. Never rewrite other history.
+- Fold fixes to your own work from the current task into the original commit with `git commit --amend` when it is unpushed and still HEAD; do not create a separate fix commit. If it was pushed or is no longer HEAD, do not rewrite history without explicit approval. Never amend another author's commit.
 
 ## Safety
 
