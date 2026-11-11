@@ -10,7 +10,7 @@
     "~/projects/personal/pi-kiro-acp",
     "~/projects/personal/pi-herdr-subagents"
   ],
-  "lastChangelogVersion": "1.4.0",
+  "lastChangelogVersion": "1.5.0",
   "hideThinkingBlock": true,
   "compaction": {
     "enabled": true,
@@ -47,5 +47,9 @@
   ],
   "terminal": {
     "showTerminalProgress": true
+  },
+  "extensionChangelogVersions": {
+    "{\"source\":\"npm:pi-web-access\",\"scope\":\"user\"}": "0.47.0",
+    "{\"source\":\"npm:@gotgenes/pi-anthropic-auth\",\"scope\":\"user\"}": "3.4.4"
   }
 }
