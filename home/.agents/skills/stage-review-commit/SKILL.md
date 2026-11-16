@@ -1,5 +1,6 @@
 ---
 name: stage-review-commit
+disable-model-invocation: true
 description: >
   Run an interactive human-review gate for a large dirty Git tree: stage one logical slice, let the
   user inspect it side by side, commit only after explicit approval, then stage the next slice. Use

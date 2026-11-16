@@ -1,5 +1,6 @@
 ---
 name: check-pipeline
+disable-model-invocation: true
 description: Check the status of the current or latest GitLab CI pipeline with glab, wait for it if it is still running, pull the logs of failed jobs, and explain concretely why they failed. Use this whenever the user asks about CI/CD state or pipeline results — "check the pipeline", "did CI pass?", "why is the build red?", "що з пайплайном", "перевір ci", "чому впав пайплайн", "подивись чи пройшли тести на гітлабі" — and also right after pushing a commit or opening an MR, when the user wants to know whether the pipeline they just triggered is green. Prefer this skill over ad-hoc glab commands, because bare `glab ci` commands drop into interactive pickers or block forever on `--live`.
 compatibility: Requires `glab` authenticated via `glab auth status`, plus `jq` and `perl`. Run from inside the target Git repository.
 ---

@@ -1,5 +1,6 @@
 ---
 name: transcribe-local
+disable-model-invocation: true
 description: Extracts audio from a video file if needed and runs WhisperX transcription, with optional output folders for audio and transcript files. Use when the user says "транскрибуй", "transcribe", "розпізнай аудіо", "whisper", or provides a video/audio file path and wants text output.
 ---
 

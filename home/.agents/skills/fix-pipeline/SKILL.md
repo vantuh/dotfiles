@@ -1,5 +1,6 @@
 ---
 name: fix-pipeline
+disable-model-invocation: true
 description: Diagnose a failed GitLab CI pipeline with glab, reproduce each failing job locally using the exact command CI ran, fix the root cause in the code, and verify locally before the user pushes. Use whenever the user wants CI made green rather than just explained — "fix the pipeline", "fix the failing jobs", "CI is red, sort it out", "пофіксь пайплайн", "виправ те що впало в ci", "зроби щоб пайплайн був зелений", "лінтер впав, полагодь" — including after a check-pipeline report when they ask you to act on it. Use check-pipeline instead when they only want to know the status.
 compatibility: Requires `glab` (authenticated), `jq`, `perl`, and the project's own toolchain (whatever CI runs — npm, gradle, make…). Run from inside the target Git repository.
 ---

@@ -1,5 +1,6 @@
 ---
 name: resolve-mr-comments
+disable-model-invocation: true
 description: Fetch unresolved review comments on a GitLab merge request with glab, analyze each one against the actual codebase, and write a checkboxed fix plan to mr-<id>-comments-fix-plan.md at the repo root — then optionally implement the fixes while ticking off progress. Use this whenever the user wants to address, triage, resolve, or plan fixes for MR / merge-request review comments, reviewer feedback, or code-review notes, even if they only give an MR number and say something like "fix the comments on MR 9022", "подивись що просять у ревʼю", "розберись із зауваженнями рев'юера", or "go through the unresolved threads on !1234".
 ---
 

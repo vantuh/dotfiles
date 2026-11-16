@@ -1,5 +1,6 @@
 ---
 name: split-to-commits
+disable-model-invocation: true
 description: >
   Split a large dirty working tree into small, logical, sequential git commits — one concern per
   commit. Use whenever the user asks to split commits, break up changes, organize uncommitted work,

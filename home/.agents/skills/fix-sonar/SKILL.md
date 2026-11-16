@@ -1,5 +1,6 @@
 ---
 name: fix-sonar
+disable-model-invocation: true
 description: Fetch SonarQube issues for the current repository, automatically discover the Sonar project key, analyze findings against local code, and fix them with verification. Use whenever the user asks to inspect, address, resolve, or fix Sonar/SonarQube findings, errors, bugs, vulnerabilities, code smells, quality-gate failures, or says things like "fix sonar", "витягни зауваження з sonar", or "пофікси помилки sonarqube".
 compatibility: Requires Node.js 22+ (or Node 18+ with `npx --yes tsx`), git, SONAR_TOKEN, and FOODTECH_SONAR_URL. The token must be a SonarQube user token with Browse permission.
 ---
