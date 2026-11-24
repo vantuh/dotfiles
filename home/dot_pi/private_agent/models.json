@@ -185,6 +185,23 @@
           }
         },
         {
+          "id": "inkling-2-mini-sq-20",
+          "name": "Inkling 2 Mini SQ-20 (local)",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 262144,
+          "maxTokens": 32768,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        },
+        {
           "id": "qwen3.8-27b-ridge",
           "name": "Qwen 3.8 27B Ridge (local)",
           "reasoning": true,
