@@ -5,15 +5,6 @@ gui:
   theme:
     selectedLineBgColor:
       - "#3377cc"
-# Standalone lazygit (Herdr tab `lg`): open files in existing Herdr nvim via herdr-nvim-edit.ts.
-# Absolute path: Herdr/lazygit PATH often omits ~/.local/bin.
-os:
-  edit: "{{ .chezmoi.destDir }}/.local/bin/herdr-nvim-edit.ts {{ `{{filename}}` }}"
-  editAtLine: "{{ .chezmoi.destDir }}/.local/bin/herdr-nvim-edit.ts +{{ `{{line}}` }} {{ `{{filename}}` }}"
-  editAtLineAndWait: "nvim +{{ `{{line}}` }} {{ `{{filename}}` }}"
-  # false = don't suspend lazygit (herdr-nvim-edit.ts is non-blocking). Default vim preset is true.
-  editInTerminal: false
-# Root-level (not under gui). Backup if something still uses RunSubprocessAndRefresh.
 promptToReturnFromSubprocess: false
 git:
   diffRenderers:

@@ -43,26 +43,13 @@ Reply in the user's language (Ukrainian or English). Everything written to a rep
 - Never make checks pass by weakening tests, suppressing type errors, or disabling lint rules.
 - Never report stubs, placeholders, or partial wiring as done. If blocked, finish all reachable in-scope work and name the missing prerequisite.
 
-## Subagents
-
-This section applies only to the top-level session. If you are a subagent, ignore it: do your assigned task and do not delegate further.
-
-You are the orchestrator. Keep your own context for decisions, synthesis, and talking to the user; hand off work that would fill it with searching, reading, or edits. Delegation through `agent_spawn` and `agent_send` is authorized by this file. Lean toward delegating; do the work yourself only when the exception applies.
-
-- Repository facts (where is X, how does Y flow, what calls Z): `scout`, one per independent question, in parallel; then read only the files their summaries name. Exception: one known file answers it in one or two reads.
-- Web or external information: `researcher`. Exception: a single quick lookup.
-- Edits and implementation: `worker`, with the check to run in its task. Chain `scout` then `worker` when the area is unfamiliar. Exception: a small edit in a file you already have open (rename, one-line fix, moving a few lines).
-- Parallel workers only on disjoint files; one writer per worktree.
-- After a non-trivial `worker` change, `reviewer` gives an independent review.
-- You stay accountable: read the diff and run the check yourself before reporting success. Do not redo the subagent's work.
-
 ## Git
 
 - Stay on the current branch by default. For substantial work that benefits from isolation, propose a branch or worktree and get approval first.
-- Commit each completed, verified concern locally as you go, or at the commit points a skill defines; no need to ask. Never push.
+- Commit one logical concern once, after checks and any reviewer feedback are resolved, or at the commit points a skill defines; no need to ask. Iterations on the same work are not separate concerns. Never push.
 - Follow the repo's commit conventions, else caveman-commit (Conventional Commits). Subject line only; add a body only for what the diff cannot show (breaking change, migration, reverted decision). Never restate the diff.
 - Stage only your own paths or hunks. Let hooks run; no `--no-verify`.
-- Amend only your own unpushed commits from the current task. Never rewrite other history.
+- Fold fixes to your own work from the current task into the original commit with `git commit --amend` when it is unpushed and still HEAD; do not create a separate fix commit. If it was pushed or is no longer HEAD, do not rewrite history without explicit approval. Never amend another author's commit.
 
 ## Safety
 
