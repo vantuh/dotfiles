@@ -19,19 +19,18 @@
   },
   "theme": "dark",
   "enabledModels": [
-    "simplex/qwen3.8-27b-exl3-3.0bpw",
     "openai/gpt-6.1-sol",
     "openai/gpt-6-luna",
     "anthropic/claude-opus-5-5",
     "anthropic/claude-sonnet-5-5",
     "cursor/grok-4.7@256k:slow",
-    "local/qwen3.8-flash-next-coder-iq1_m",
     "anthropic/claude-haiku-5-5",
     "opencode-go/deepseek-v4.1-flash",
     "kiro-acp/claude-sonnet-5.5",
     "kiro-acp/claude-opus-5.5",
     "kiro-acp/auto",
-    "kiro-acp/claude-haiku-4.5"
+    "kiro-acp/claude-haiku-4.5",
+    "local/inkling-2-mini-sq-20"
   ],
   "defaultThinkingLevel": "medium",
   "showHardwareCursor": true,
