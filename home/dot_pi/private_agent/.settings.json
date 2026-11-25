@@ -30,7 +30,7 @@
     "kiro-acp/claude-opus-5.5",
     "kiro-acp/auto",
     "kiro-acp/claude-haiku-4.5",
-    "local/inkling-2-mini-sq-20"
+    "local/inkling-2-mini-sq-10"
   ],
   "defaultThinkingLevel": "medium",
   "showHardwareCursor": true,
