@@ -2,8 +2,8 @@
 name: worker
 description: Implementation agent for normal tasks and approved plans
 tools: read, bash, edit, write, browser, codemode
-model: "opencode-go/deepseek-v4.1-flash"
-thinking: "max"
+model: "kiro-acp/claude-sonnet-5.5"
+thinking: "high"
 skills: tdd
 system-prompt: replace
 ---

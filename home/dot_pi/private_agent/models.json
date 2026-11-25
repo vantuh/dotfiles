@@ -65,7 +65,7 @@
       }
     },
     "local": {
-      "baseUrl": "http://192.168.31.109:8080/v1",
+      "baseUrl": "http://169.254.83.107:47832/v1",
       "api": "openai-completions",
       "apiKey": "local",
       "compat": {
@@ -76,6 +76,43 @@
         {
           "id": "qwen3.8-flash-next-coder-iq1_m",
           "name": "Qwen 3.8 Flash Next Coder IQ1_M (local)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 262144,
+          "maxTokens": 32768,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": "medium",
+            "high": "xhigh",
+            "xhigh": null,
+            "max": null
+          },
+          "compat": {
+            "thinkingFormat": "chat-template",
+            "chatTemplateKwargs": {
+              "enable_thinking": {
+                "$var": "thinking.enabled"
+              },
+              "reasoning_effort": {
+                "$var": "thinking.effort",
+                "omitWhenOff": true
+              },
+              "preserve_thinking": true
+            }
+          },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        },
+        {
+          "id": "iq3_xxs",
+          "name": "Qwen 3.8 Flash Next IQ3_XXS (local)",
           "reasoning": true,
           "input": [
             "text"
@@ -140,6 +177,23 @@
               "preserve_thinking": true
             }
           },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        },
+        {
+          "id": "inkling-2-mini-sq-20",
+          "name": "Inkling 2 Mini SQ-20 (local)",
+          "reasoning": false,
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 262144,
+          "maxTokens": 32768,
           "cost": {
             "input": 0,
             "output": 0,
