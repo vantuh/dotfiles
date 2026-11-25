@@ -65,7 +65,7 @@
       }
     },
     "local": {
-      "baseUrl": "http://169.254.83.107:47832/v1",
+      "baseUrl": "http://192.168.31.109:47832/v1",
       "api": "openai-completions",
       "apiKey": "local",
       "compat": {
@@ -187,13 +187,36 @@
         {
           "id": "inkling-2-mini-sq-20",
           "name": "Inkling 2 Mini SQ-20 (local)",
-          "reasoning": false,
+          "reasoning": true,
           "input": [
             "text",
             "image"
           ],
           "contextWindow": 262144,
           "maxTokens": 32768,
+          "thinkingLevelMap": {
+            "off": "none",
+            "minimal": "minimal",
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": null
+          },
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 1.0,
+            "top_k": 0,
+            "min_p": 0.0
+          },
+          "compat": {
+            "thinkingFormat": "chat-template",
+            "chatTemplateKwargs": {
+              "reasoning_effort": {
+                "$var": "thinking.effort"
+              }
+            }
+          },
           "cost": {
             "input": 0,
             "output": 0,
